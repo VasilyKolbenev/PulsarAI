@@ -149,11 +149,24 @@ IMPORTANT: Always start with a Thought. Use tools when needed. Give a Final Answ
             self._trace.append({"type": "answer", "content": content})
             return content
 
-        # Execute tool calls
-        self.memory.add("assistant", content or "")
+        # Build OpenAI-format tool_calls for the assistant message
+        openai_tool_calls = [
+            {
+                "id": tc.get("id", f"call_{i}"),
+                "type": "function",
+                "function": {
+                    "name": tc["name"],
+                    "arguments": json.dumps(tc["arguments"]),
+                },
+            }
+            for i, tc in enumerate(tool_calls)
+        ]
+        self.memory.add("assistant", content or "", tool_calls=openai_tool_calls)
+
         for tc in tool_calls:
             tool_name = tc["name"]
             tool_args = tc["arguments"]
+            call_id = tc.get("id", "")
 
             self._trace.append({
                 "type": "tool_call",
@@ -162,7 +175,7 @@ IMPORTANT: Always start with a Thought. Use tools when needed. Give a Final Answ
             })
 
             observation = self._execute_tool(tool_name, tool_args)
-            self.memory.add("tool", f"[{tool_name}] {observation}")
+            self.memory.add("tool", observation, tool_call_id=call_id)
             self._trace.append({
                 "type": "observation",
                 "tool": tool_name,

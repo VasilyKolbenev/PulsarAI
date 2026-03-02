@@ -6,6 +6,7 @@ import { AssistantMessages } from "./AssistantMessages"
 const QUICK_ACTIONS = [
   { label: "Status", cmd: "/status" },
   { label: "Datasets", cmd: "/datasets" },
+  { label: "Workflows", cmd: "/workflows" },
   { label: "Recommend", cmd: "/recommend" },
   { label: "Hardware", cmd: "/hardware" },
 ]
@@ -75,7 +76,7 @@ export function AssistantWidget() {
               {status?.llm_available ? (
                 <>
                   <span className="w-1.5 h-1.5 rounded-full bg-success inline-block" />
-                  LLM connected
+                  AI mode
                 </>
               ) : (
                 <>

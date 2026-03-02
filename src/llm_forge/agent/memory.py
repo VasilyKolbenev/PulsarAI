@@ -30,7 +30,7 @@ class ShortTermMemory:
         self, max_tokens: int = 4096, system_prompt: str = ""
     ) -> None:
         self.max_tokens = max_tokens
-        self._messages: list[dict[str, str]] = []
+        self._messages: list[dict[str, Any]] = []
         self._system_prompt = system_prompt
 
         if system_prompt:
@@ -39,21 +39,24 @@ class ShortTermMemory:
                 "content": system_prompt,
             })
 
-    def add(self, role: str, content: str) -> None:
+    def add(self, role: str, content: str, **kwargs: Any) -> None:
         """Add a message to memory.
 
         Args:
             role: Message role ('user', 'assistant', 'tool', 'system').
             content: Message content.
+            **kwargs: Extra fields (e.g. tool_calls, tool_call_id).
         """
-        self._messages.append({"role": role, "content": content})
+        msg: dict[str, Any] = {"role": role, "content": content}
+        msg.update(kwargs)
+        self._messages.append(msg)
         self._trim()
 
-    def get_messages(self) -> list[dict[str, str]]:
+    def get_messages(self) -> list[dict[str, Any]]:
         """Get all messages in memory.
 
         Returns:
-            List of message dicts with 'role' and 'content'.
+            List of message dicts with 'role', 'content', and optional fields.
         """
         return list(self._messages)
 
@@ -72,7 +75,7 @@ class ShortTermMemory:
         Returns:
             Approximate token count.
         """
-        total_chars = sum(len(m["content"]) for m in self._messages)
+        total_chars = sum(len(m.get("content") or "") for m in self._messages)
         return total_chars // self.CHARS_PER_TOKEN
 
     def _trim(self) -> None:

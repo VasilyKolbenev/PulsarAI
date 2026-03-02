@@ -1,6 +1,7 @@
 """Tests for Forge Co-pilot assistant: tools, command parser, and API."""
 
 import json
+import os
 import pytest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
@@ -9,6 +10,7 @@ from fastapi.testclient import TestClient
 
 from llm_forge.ui.assistant import (
     _get_forge_tools,
+    _check_llm_available,
     parse_command,
     HELP_TEXT,
 )
@@ -23,13 +25,14 @@ class TestForgeTools:
     """Test that forge tools are properly registered."""
 
     def test_registry_has_all_tools(self):
-        """Test all 10 forge tools are registered."""
+        """Test all 14 forge tools are registered."""
         tools = _get_forge_tools()
         expected = {
             "list_experiments", "get_experiment", "start_training",
             "check_training", "cancel_training", "list_datasets",
             "preview_dataset", "recommend_params", "get_hardware",
-            "run_evaluation",
+            "run_evaluation", "list_workflows", "get_workflow",
+            "estimate_training_cost", "suggest_config",
         }
         assert set(tools.list_tools()) == expected
 
@@ -124,6 +127,80 @@ class TestForgeTools:
         result = tools.get("start_training").execute(name="test")
         assert "dataset_path is required" in result
 
+    def test_list_workflows_empty(self):
+        """Test list_workflows with no workflows."""
+        tools = _get_forge_tools()
+        with patch("llm_forge.ui.workflow_store.WorkflowStore") as mock_cls:
+            mock_cls.return_value.list_all.return_value = []
+            result = tools.get("list_workflows").execute()
+        assert "No saved workflows" in result
+
+    def test_list_workflows_with_data(self):
+        """Test list_workflows returns formatted list."""
+        tools = _get_forge_tools()
+        with patch("llm_forge.ui.workflow_store.WorkflowStore") as mock_cls:
+            mock_cls.return_value.list_all.return_value = [
+                {"id": "w1", "name": "My Pipeline", "nodes": [1, 2], "edges": [1],
+                 "run_count": 3},
+            ]
+            result = tools.get("list_workflows").execute()
+        assert "w1" in result
+        assert "My Pipeline" in result
+
+    def test_get_workflow_not_found(self):
+        """Test get_workflow returns error for missing workflow."""
+        tools = _get_forge_tools()
+        with patch("llm_forge.ui.workflow_store.WorkflowStore") as mock_cls:
+            mock_cls.return_value.get.return_value = None
+            result = tools.get("get_workflow").execute(workflow_id="missing")
+        assert "not found" in result
+
+    def test_estimate_training_cost_default(self):
+        """Test estimate_training_cost returns estimate."""
+        tools = _get_forge_tools()
+        result = tools.get("estimate_training_cost").execute()
+        assert "Estimated time" in result
+        assert "Estimated cost" in result
+
+    def test_estimate_training_cost_large_model(self):
+        """Test estimate_training_cost for 70B model."""
+        tools = _get_forge_tools()
+        result = tools.get("estimate_training_cost").execute(
+            model="70B", dataset_rows=5000, epochs=2
+        )
+        assert "70B" in result
+        assert "multi-GPU" in result
+
+    def test_suggest_config_chatbot(self):
+        """Test suggest_config for chatbot use case."""
+        tools = _get_forge_tools()
+        result = tools.get("suggest_config").execute(use_case="chatbot")
+        assert "chatbot" in result
+        assert "Model:" in result
+
+    def test_suggest_config_low_budget(self):
+        """Test suggest_config downgrades model for low budget."""
+        tools = _get_forge_tools()
+        result = tools.get("suggest_config").execute(
+            use_case="chatbot", budget="low"
+        )
+        assert "3B" in result
+
+    def test_check_llm_available_with_key(self):
+        """Test _check_llm_available returns True when key is set."""
+        with patch.dict("os.environ", {"OPENAI_API_KEY": "sk-test123"}):
+            assert _check_llm_available() is True
+
+    def test_check_llm_available_without_key(self):
+        """Test _check_llm_available returns False without key."""
+        with patch.dict("os.environ", {"OPENAI_API_KEY": ""}):
+            assert _check_llm_available() is False
+
+    def test_check_llm_available_missing_key(self):
+        """Test _check_llm_available returns False when env var not set."""
+        with patch.dict("os.environ", {}, clear=True):
+            assert _check_llm_available() is False
+
 
 # ──────────────────────────────────────────────────────────
 # Command Parser
@@ -196,6 +273,27 @@ class TestCommandParser:
             result = parse_command("/cancel job_id=j1")
         assert result is not None
         assert "cancelled" in result["results"][0]
+
+    def test_workflows_command(self):
+        """Test /workflows calls list_workflows."""
+        with patch("llm_forge.ui.workflow_store.WorkflowStore") as mock_cls:
+            mock_cls.return_value.list_all.return_value = []
+            result = parse_command("/workflows")
+        assert result is not None
+        assert "No saved workflows" in result["results"][0]
+
+    def test_estimate_command(self):
+        """Test /estimate with parameters."""
+        result = parse_command("/estimate model=7B rows=2000 epochs=5")
+        assert result is not None
+        assert "7B" in result["results"][0]
+        assert "Estimated" in result["results"][0]
+
+    def test_estimate_command_defaults(self):
+        """Test /estimate with default parameters."""
+        result = parse_command("/estimate")
+        assert result is not None
+        assert "3B" in result["results"][0]
 
 
 # ──────────────────────────────────────────────────────────

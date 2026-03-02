@@ -1,8 +1,8 @@
 """Forge Co-pilot — AI assistant with platform management tools.
 
 Two operating modes:
-- Command Mode: slash-commands (/status, /train, /recommend) — always available
-- LLM Mode: full ReAct agent with forge tools — when LLM server is connected
+- Command Mode: slash-commands (/status, /train, /workflows, etc.) — always available
+- LLM Mode: GPT-4o-mini agent with 14 forge tools — when OPENAI_API_KEY is set
 """
 
 import json
@@ -35,7 +35,7 @@ def _get_forge_tools() -> ToolRegistry:
     """Create a ToolRegistry with all forge platform tools.
 
     Returns:
-        ToolRegistry with 10 forge tools.
+        ToolRegistry with 14 forge tools.
     """
     registry = ToolRegistry()
 
@@ -264,6 +264,162 @@ def _get_forge_tools() -> ToolRegistry:
         )
     registry.register(run_evaluation_tool)
 
+    @tool(name="list_workflows", description="List saved visual workflows from the pipeline builder")
+    def list_workflows_tool() -> str:
+        """List all saved workflows with IDs and stats."""
+        from llm_forge.ui.workflow_store import WorkflowStore
+        store = WorkflowStore()
+        workflows = store.list_all()
+        if not workflows:
+            return "No saved workflows found. Create one in the Visual Builder."
+        lines = []
+        for wf in workflows:
+            nodes = len(wf.get("nodes", []))
+            edges = len(wf.get("edges", []))
+            runs = wf.get("run_count", 0)
+            lines.append(
+                f"  [{wf['id']}] {wf['name']} — {nodes} nodes, "
+                f"{edges} edges, {runs} runs"
+            )
+        return "Saved workflows:\n" + "\n".join(lines)
+    registry.register(list_workflows_tool)
+
+    @tool(name="get_workflow", description="Get details of a saved workflow by ID")
+    def get_workflow_tool(workflow_id: str) -> str:
+        """Get workflow details including nodes and edges."""
+        from llm_forge.ui.workflow_store import WorkflowStore
+        store = WorkflowStore()
+        wf = store.get(workflow_id)
+        if not wf:
+            return f"Workflow '{workflow_id}' not found."
+        nodes = wf.get("nodes", [])
+        edges = wf.get("edges", [])
+        lines = [f"Workflow: {wf['name']} [{wf['id']}]"]
+        lines.append(f"Created: {wf.get('created_at', '?')}")
+        lines.append(f"Updated: {wf.get('updated_at', '?')}")
+        lines.append(f"Run count: {wf.get('run_count', 0)}")
+        lines.append(f"\nNodes ({len(nodes)}):")
+        for n in nodes:
+            label = n.get("data", {}).get("label", n["id"])
+            ntype = n.get("type", "default")
+            lines.append(f"  - {label} (type={ntype})")
+        lines.append(f"\nEdges ({len(edges)}):")
+        for e in edges:
+            lines.append(f"  - {e['source']} → {e['target']}")
+        return "\n".join(lines)
+    registry.register(get_workflow_tool)
+
+    @tool(
+        name="estimate_training_cost",
+        description="Estimate GPU time and cost for a training run",
+    )
+    def estimate_training_cost_tool(
+        model: str = "3B",
+        dataset_rows: int = 1000,
+        epochs: int = 3,
+    ) -> str:
+        """Estimate training duration and approximate cost.
+
+        Args:
+            model: Model size label (1B, 3B, 7B, 13B, 70B).
+            dataset_rows: Number of training rows.
+            epochs: Training epochs.
+        """
+        size_map = {
+            "1B": (1, 0.5), "3B": (3, 1.0), "7B": (7, 2.5),
+            "13B": (13, 5.0), "70B": (70, 30.0),
+        }
+        key = model.upper().replace("B", "") + "B"
+        params_b, base_hours = size_map.get(key, (3, 1.0))
+
+        # Rough heuristic: time scales with rows, epochs, model size
+        row_factor = dataset_rows / 1000.0
+        total_hours = base_hours * row_factor * epochs
+        total_hours = max(0.1, round(total_hours, 2))
+
+        # Cost estimate: ~$1/hr for A100-equivalent
+        cost_per_hour = 1.0 if params_b <= 7 else 2.5
+        total_cost = round(total_hours * cost_per_hour, 2)
+
+        vram_needed = {
+            "1B": "~4 GB", "3B": "~8 GB", "7B": "~16 GB",
+            "13B": "~32 GB", "70B": "~80 GB (multi-GPU)",
+        }.get(key, "~8 GB")
+
+        return (
+            f"Training estimate for {key} model:\n"
+            f"  Dataset: {dataset_rows} rows × {epochs} epochs\n"
+            f"  Estimated time: ~{total_hours} hours\n"
+            f"  Estimated cost: ~${total_cost} (cloud GPU)\n"
+            f"  VRAM required: {vram_needed} (QLoRA)\n"
+            f"  Strategy: {'QLoRA' if params_b <= 13 else 'QLoRA + DeepSpeed'}"
+        )
+    registry.register(estimate_training_cost_tool)
+
+    @tool(
+        name="suggest_config",
+        description="Suggest a training configuration for a given use case",
+    )
+    def suggest_config_tool(
+        use_case: str = "chatbot",
+        budget: str = "medium",
+    ) -> str:
+        """Suggest a training configuration.
+
+        Args:
+            use_case: One of chatbot, coding, classification, summarization.
+            budget: One of low (consumer GPU), medium (single A100), high (multi-GPU).
+        """
+        configs = {
+            "chatbot": {
+                "model": "Qwen/Qwen2.5-7B-Instruct",
+                "method": "SFT + DPO",
+                "dataset_format": "JSONL chat (messages array)",
+                "min_rows": 500,
+                "tips": "Use diverse conversation styles. Add system prompts.",
+            },
+            "coding": {
+                "model": "Qwen/Qwen2.5-Coder-7B-Instruct",
+                "method": "SFT",
+                "dataset_format": "instruction/input/output CSV",
+                "min_rows": 1000,
+                "tips": "Include edge cases and error handling examples.",
+            },
+            "classification": {
+                "model": "Qwen/Qwen2.5-3B-Instruct",
+                "method": "SFT",
+                "dataset_format": "instruction/output CSV (label as output)",
+                "min_rows": 200,
+                "tips": "Balance classes. 3B is usually enough.",
+            },
+            "summarization": {
+                "model": "Qwen/Qwen2.5-7B-Instruct",
+                "method": "SFT",
+                "dataset_format": "instruction/input/output CSV",
+                "min_rows": 300,
+                "tips": "Vary text lengths. Include both short and long inputs.",
+            },
+        }
+        cfg = configs.get(use_case.lower(), configs["chatbot"])
+
+        budget_mod = ""
+        if budget == "low":
+            cfg["model"] = cfg["model"].replace("7B", "3B")
+            budget_mod = "  Note: downgraded to 3B for low budget.\n"
+        elif budget == "high":
+            budget_mod = "  Note: consider full fine-tune or larger model.\n"
+
+        return (
+            f"Suggested config for '{use_case}' ({budget} budget):\n"
+            f"  Model: {cfg['model']}\n"
+            f"  Method: {cfg['method']}\n"
+            f"  Dataset format: {cfg['dataset_format']}\n"
+            f"  Min rows: {cfg['min_rows']}\n"
+            f"{budget_mod}"
+            f"  Tips: {cfg['tips']}"
+        )
+    registry.register(suggest_config_tool)
+
     return registry
 
 
@@ -281,10 +437,13 @@ HELP_TEXT = """Available commands:
   /recommend model=X   — Get hyperparameter recommendations
   /hardware            — Show GPU info
   /experiments         — List all experiments
+  /workflows           — List saved visual workflows
+  /estimate model=3B rows=1000 epochs=3  — Estimate training cost
   /cancel job_id=X     — Cancel a training job
+  /preview id=X        — Preview a dataset
   /help                — Show this help
 
-You can also type freely when an LLM server is connected."""
+Type freely for AI-powered answers (requires OPENAI_API_KEY)."""
 
 
 def parse_command(message: str) -> dict[str, Any] | None:
@@ -345,6 +504,17 @@ def parse_command(message: str) -> dict[str, Any] | None:
             return {"results": ["Usage: /cancel job_id=X"]}
         results.append(tools.get("cancel_training").execute(job_id=job_id))
 
+    elif cmd == "workflows":
+        results.append(tools.get("list_workflows").execute())
+
+    elif cmd == "estimate":
+        model = kwargs.get("model", "3B")
+        rows = int(kwargs.get("rows", "1000"))
+        epochs = int(kwargs.get("epochs", "3"))
+        results.append(tools.get("estimate_training_cost").execute(
+            model=model, dataset_rows=rows, epochs=epochs,
+        ))
+
     elif cmd == "preview":
         ds_id = kwargs.get("id", args_str)
         if not ds_id:
@@ -362,17 +532,14 @@ def parse_command(message: str) -> dict[str, Any] | None:
 # ──────────────────────────────────────────────────────────
 
 def _check_llm_available() -> bool:
-    """Check if an LLM server is reachable.
+    """Check if an LLM backend is available.
 
     Returns:
-        True if LLM server responds.
+        True if OPENAI_API_KEY is configured.
     """
-    try:
-        import requests
-        resp = requests.get("http://localhost:8080/v1/models", timeout=2)
-        return resp.status_code == 200
-    except Exception:
-        return False
+    import os
+    key = os.environ.get("OPENAI_API_KEY", "").strip()
+    return bool(key)
 
 
 def _get_or_create_session(session_id: str | None) -> tuple[str, list[dict]]:
@@ -392,12 +559,83 @@ def _get_or_create_session(session_id: str | None) -> tuple[str, list[dict]]:
     return new_id, _sessions[new_id]["history"]
 
 
+def _build_system_prompt(context: dict | None = None) -> str:
+    """Build the system prompt for the Forge Co-pilot.
+
+    Args:
+        context: Optional UI context with page, active_jobs.
+
+    Returns:
+        Complete system prompt string.
+    """
+    ctx_lines = []
+    if context:
+        page = context.get("page", "unknown")
+        ctx_lines.append(f"User is currently on page: {page}")
+        active = context.get("active_jobs", [])
+        if active:
+            ctx_lines.append(f"Active training jobs: {len(active)}")
+            for job in active[:3]:
+                ctx_lines.append(
+                    f"  - Job {job.get('job_id', '?')}: {job.get('status', '?')} "
+                    f"(experiment: {job.get('experiment_id', '?')})"
+                )
+    ctx_block = "\n".join(ctx_lines)
+
+    return (
+        "You are Forge Co-pilot, the built-in AI assistant for the LLM Forge platform.\n\n"
+        "## Platform Overview\n"
+        "LLM Forge is a self-hosted, open-source platform for the full LLM lifecycle:\n"
+        "- 26 visual workflow node types in 7 categories: Data, Training, Agent, "
+        "Protocols, Safety, Evaluation, Ops\n"
+        "- Visual DAG pipeline builder for orchestrating multi-step ML workflows\n"
+        "- Fine-tuning: SFT and DPO with LoRA/QLoRA, Unsloth 2x speedup\n"
+        "- Supported models: Qwen, Llama, Mistral, Gemma via HuggingFace\n"
+        "- Serving: vLLM, llama.cpp, TGI, Ollama\n"
+        "- Agent framework: ReAct loops, tool calling, guardrails\n"
+        "- Evaluation: LLM-as-Judge, A/B testing, custom metrics\n"
+        "- Observability: tracing, cost tracking, semantic cache\n\n"
+        "## Your Capabilities\n"
+        "You have tools to:\n"
+        "- List and inspect training experiments and their metrics\n"
+        "- Start, monitor, and cancel training jobs\n"
+        "- List and preview uploaded datasets\n"
+        "- Recommend hyperparameters based on model size, dataset, and hardware\n"
+        "- Detect GPU hardware and VRAM\n"
+        "- Run evaluations on trained models\n"
+        "- List and inspect saved visual workflows\n"
+        "- Estimate training cost and duration\n"
+        "- Suggest training configs for common use cases\n\n"
+        "## How to Help\n"
+        "- Fine-tuning setup: help choose model, dataset format, hyperparameters. "
+        "Suggest QLoRA for GPUs under 24GB.\n"
+        "- Hyperparameter tuning: use recommend_params tool, explain reasoning. "
+        "batch_size x gradient_accumulation = effective batch size.\n"
+        "- Dataset management: help with dataset formats (CSV with instruction/input/output, "
+        "or JSONL chat format). Preview datasets to check quality.\n"
+        "- GPU monitoring: check hardware, explain VRAM requirements "
+        "(1B~4GB, 3B~8GB, 7B~16GB with QLoRA).\n"
+        "- Troubleshooting: if training fails, check status, suggest lowering batch size "
+        "or sequence length, or switching to QLoRA.\n\n"
+        "## Slash Commands (always available)\n"
+        "Users can also use: /status, /datasets, /train, /recommend, /hardware, "
+        "/experiments, /workflows, /estimate, /cancel, /preview, /help\n\n"
+        "## Response Style\n"
+        "- Be concise and actionable. Prefer bullet points.\n"
+        "- Mention relevant slash commands as shortcuts.\n"
+        "- Use tool calls to get real data before answering.\n"
+        "- Respond in the same language as the user's message.\n\n"
+        "## Current Context\n"
+        f"{ctx_block if ctx_block else 'No additional context available.'}"
+    )
+
+
 def _run_llm_mode(
     message: str,
     session_id: str,
     context: dict | None = None,
 ) -> dict[str, Any]:
-    """Run the assistant in LLM mode with forge tools.
+    """Run the assistant in LLM mode with forge tools via OpenAI API.
 
     Args:
         message: User message.
@@ -407,44 +645,37 @@ def _run_llm_mode(
     Returns:
         Dict with answer, tool_calls trace.
     """
+    import os
     from llm_forge.agent.base import BaseAgent
     from llm_forge.agent.client import ModelClient
     from llm_forge.agent.memory import ShortTermMemory
     from llm_forge.agent.guardrails import GuardrailsConfig
 
     tools = _get_forge_tools()
+    system_prompt = _build_system_prompt(context)
 
-    ctx_str = ""
-    if context:
-        ctx_str = f"\nUser is currently on page: {context.get('page', 'unknown')}"
-        active = context.get("active_jobs", [])
-        if active:
-            ctx_str += f"\nActive training jobs: {len(active)}"
-
-    system_prompt = (
-        "You are Forge Co-pilot, an AI assistant for the llm-forge training platform. "
-        "You help users manage training experiments, recommend hyperparameters, "
-        "upload datasets, and monitor training progress. "
-        "Use the available tools to interact with the platform. "
-        "Be concise and helpful."
-        f"{ctx_str}"
+    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    client = ModelClient(
+        base_url="https://api.openai.com/v1",
+        model="gpt-4o-mini",
+        timeout=30,
+        api_key=api_key,
     )
+    memory = ShortTermMemory(max_tokens=8192, system_prompt=system_prompt)
+    guardrails = GuardrailsConfig(max_iterations=5, max_tokens=16384)
 
-    client = ModelClient(base_url="http://localhost:8080/v1", model="default")
-    memory = ShortTermMemory(max_tokens=4096, system_prompt=system_prompt)
-    guardrails = GuardrailsConfig(max_iterations=10, max_tokens=8192)
-
-    # Restore session history
+    # Restore session history (only user/assistant messages for OpenAI compat)
     sid, history = _get_or_create_session(session_id)
     for msg in history:
-        memory.add(msg["role"], msg["content"])
+        if msg["role"] in ("user", "assistant"):
+            memory.add(msg["role"], msg["content"])
 
     agent = BaseAgent(
         client=client,
         tools=tools,
         memory=memory,
         guardrails=guardrails,
-        use_native_tools=False,
+        use_native_tools=True,
     )
 
     answer = agent.run(message)

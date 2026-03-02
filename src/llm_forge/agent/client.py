@@ -105,6 +105,7 @@ class ModelClient:
         if message.get("tool_calls"):
             result["tool_calls"] = [
                 {
+                    "id": tc.get("id", ""),
                     "name": tc["function"]["name"],
                     "arguments": json.loads(tc["function"]["arguments"]),
                 }
