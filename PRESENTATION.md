@@ -315,7 +315,7 @@ Unified access point for all your agents:
 2. **New Experiment** — 4-step wizard (setup → dataset → params → live progress)
 3. **Experiments** — table with compare, detail view, loss charts
 4. **Datasets** — drag-and-drop upload, preview with column view
-5. **Workflow Builder** — visual DAG editor with 14 node types
+5. **Workflow Builder** — visual DAG editor with 26 node types
 6. **Prompt Lab** — version history, diff view, template testing
 7. **Monitoring** — real-time GPU util/VRAM/temp/power + CPU/RAM charts
 8. **Compute** — remote GPU targets, SSH test, hardware auto-detection
@@ -338,14 +338,23 @@ Plus: **Forge Co-pilot** (floating assistant widget on every page)
 
 ## Deployment
 
+### Cloud (SaaS)
+Managed platform — sign up and start building immediately.
+- API access to GPT-4o, Claude, Llama, Mistral and more
+- Managed GPU compute with auto-scaling
+- Free tier: 2 GPU-hours/month
+
+### Self-Hosted
+Turnkey deployment on your infrastructure:
+
 ```bash
-# Development
+# Docker (recommended)
+docker compose up -d  # → http://localhost:8888
+
+# From source
 pip install -e ".[ui,dev]"
 cd ui && npm install && npm run build
 forge ui  # → http://localhost:8888
-
-# Production (Docker)
-docker compose up -d  # → http://localhost:8888
 ```
 
 Environment variables:
@@ -374,36 +383,29 @@ Environment variables:
 
 ## Monetization Strategy
 
-### Tier Model
+### Two Deployment Models
 
-| Tier | Price | Target | Features |
-|------|-------|--------|----------|
-| **Community** | Free / OSS | Individual devs, researchers | Full local platform, 26 nodes, MCP/A2A, guardrails, unlimited training, self-hosted |
-| **Team** | $49/user/month | Startups (5-20 people) | + Team collaboration, shared workflows, RBAC, audit log |
-| **Enterprise** | $199/user/month | Enterprise (50+) | + SSO/SAML, multi-cluster compute, priority support, SLA |
-| **Cloud** | Usage-based | Anyone | Managed hosting, GPU marketplace, pay-per-training-hour |
+| Model | Price | Target | Features |
+|-------|-------|--------|----------|
+| **Cloud (SaaS)** | From $49/user/month | Startups, teams, individual devs | API access to GPT-4o/Claude/Llama/Mistral, managed GPU compute with auto-scaling, fine-tuning as a service, visual workflow builder, observability + tracing + cost tracking, team collaboration + RBAC, free tier (2 GPU-hours/month) |
+| **Self-Hosted** | Custom pricing | Enterprise, regulated industries | Turnkey on-premise deployment, air-gapped / closed network support, any open-weight model locally, Docker/Kubernetes + GPU passthrough, SSO/SAML + audit log + SOC2/HIPAA, dedicated onboarding + support, SLA + custom integrations |
 
 ### Revenue Streams
 
-**1. Managed Cloud (Primary — 60% revenue)**
-- Hosted version with GPU marketplace
-- Pay per GPU-hour: $0.50-$2.00/hr depending on GPU tier
+**1. Cloud SaaS Subscriptions (Primary — 65% revenue)**
+- Managed platform with API access to top models
+- Pay per GPU-hour for fine-tuning: $0.50-$2.00/hr depending on GPU tier
+- Subscription tiers starting at $49/user/month
 - Zero-config deployment, auto-scaling
 - Estimated: 500 teams x $500/month avg = $250K MRR
 
-**2. Enterprise Licenses (30% revenue)**
-- Air-gapped deployment support
+**2. Self-Hosted Enterprise Licenses (35% revenue)**
+- Turnkey deployment into client's closed infrastructure
+- Air-gapped network support for regulated industries
 - Custom integrations (Databricks, Snowflake, internal systems)
-- Dedicated support engineer
+- Dedicated support engineer + SLA
 - Compliance packages (HIPAA, SOC2, FedRAMP)
 - Estimated: 20 enterprises x $5K/month avg = $100K MRR
-
-**3. Marketplace (10% revenue)**
-- Pre-built workflow templates ($10-50 each)
-- Fine-tuned model registry (community + premium)
-- Plugin ecosystem (custom node types)
-- Training dataset marketplace
-- 15% platform commission
 
 ### Competitive Landscape
 
@@ -422,17 +424,19 @@ No competitor offers this integrated cycle. Each iteration compounds the value.
 
 ### Go-to-Market
 
-**Phase 1 (Months 1-3)**: Open-source launch, developer community
+**Phase 1 (Months 1-3)**: Cloud SaaS launch + developer community
+- Cloud platform with free tier (2 GPU-hours/month)
 - GitHub, ProductHunt, HackerNews, Reddit /r/LocalLLaMA
-- Target: 1000 GitHub stars, 200 active users
+- Target: 1000 GitHub stars, 50 paying cloud teams
 
-**Phase 2 (Months 4-6)**: Cloud beta
-- Managed hosting with free tier (2 GPU-hours/month)
-- Target: 50 paying teams
-
-**Phase 3 (Months 7-12)**: Enterprise
+**Phase 2 (Months 4-6)**: Self-Hosted offering
+- Turnkey enterprise deployment package
 - SOC2 compliance, SAML SSO
-- First 5 enterprise contracts
+- Target: first 5 enterprise contracts
+
+**Phase 3 (Months 7-12)**: Scale
+- Cloud: 200+ paying teams
+- Self-Hosted: 20 enterprise contracts
 - Target: $100K MRR
 
 ---

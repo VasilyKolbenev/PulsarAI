@@ -4,542 +4,761 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LLM Forge — Full-Cycle LLM Platform</title>
-  <meta name="description" content="Self-hosted, open-source platform for the full LLM lifecycle: from raw data to deployed agent. One platform replaces 5-7 separate tools." />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwindcss.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand: { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81' },
-            surface: { 50:'#f8fafc',100:'#f1f5f9',800:'#1e293b',900:'#0f172a',950:'#020617' }
-          }
-        }
-      }
-    }
-  </script>
+  <meta name="description" content="Self-hosted, open-source platform for the full LLM lifecycle: from raw data to deployed agent." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='fg' x1='16' y1='56' x2='48' y2='8' gradientUnits='userSpaceOnUse'><stop stop-color='%23f97316'/><stop offset='.5' stop-color='%23ef4444'/><stop offset='1' stop-color='%238b5cf6'/></linearGradient></defs><path d='M32 4C32 4 20 18 20 30c0 4.5 2 8.5 5 11.5C22 38 20 33 24 28c2-2.5 4.5-4 8-8 3.5 4 6 5.5 8 8 4 5 2 10-1 13.5 3-3 5-7 5-11.5C44 18 32 4 32 4z' fill='url(%23fg)'/></svg>" />
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-    body { font-family: 'Inter', system-ui, sans-serif; }
-    .gradient-text { background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .hero-glow { background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,102,241,0.15), transparent); }
-    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
-    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
-    .node-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid; }
-    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-    .float-anim { animation: float 6s ease-in-out infinite; }
-    .float-anim-delay { animation: float 6s ease-in-out 2s infinite; }
-    pre code { font-size: 13px; line-height: 1.6; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #09090b;
+      --surface: #18181b;
+      --border: #27272a;
+      --text: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+    /* --- NAV --- */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 50;
+      background: rgba(9,9,11,0.8); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      max-width: 1120px; margin: 0 auto; padding: 0 24px; height: 64px;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; }
+    .nav-links { display: flex; gap: 32px; }
+    .nav-links a { font-size: 14px; color: var(--text-secondary); transition: color 0.15s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: 8px;
+      border: 1px solid var(--border); background: transparent; color: var(--text);
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .btn:hover { background: var(--surface); border-color: #3f3f46; }
+    .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .btn-primary:hover { background: #e4e4e7; border-color: #e4e4e7; }
+    .btn-accent { background: var(--accent); color: white; border-color: var(--accent); }
+    .btn-accent:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+    .btn-lg { padding: 12px 24px; font-size: 15px; border-radius: 10px; }
+    .btn-sm { padding: 6px 12px; font-size: 13px; }
+
+    /* --- HERO --- */
+    .hero { padding: 160px 0 100px; text-align: center; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--text-secondary); border: 1px solid var(--border);
+      padding: 6px 16px; border-radius: 100px; margin-bottom: 32px;
+    }
+    .hero-badge .dot { width: 6px; height: 6px; background: #22c55e; border-radius: 50%; }
+    .hero h1 { font-size: clamp(36px, 6vw, 64px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 20px; }
+    .hero p { font-size: 18px; color: var(--text-secondary); max-width: 560px; margin: 0 auto 40px; line-height: 1.7; }
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    .code-block {
+      max-width: 600px; margin: 64px auto 0;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden; text-align: left;
+    }
+    .code-header { display: flex; align-items: center; gap: 6px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .code-dot.r { background: #ef4444; opacity: 0.6; }
+    .code-dot.y { background: #eab308; opacity: 0.6; }
+    .code-dot.g { background: #22c55e; opacity: 0.6; }
+    .code-block pre { padding: 20px; font-size: 13px; line-height: 1.8; overflow-x: auto; font-family: 'SF Mono', 'Fira Code', monospace; }
+    .code-block .cmd { color: #22c55e; }
+    .code-block .out { color: var(--text-muted); }
+    .code-block .hl { color: var(--accent); }
+
+    /* --- STATS --- */
+    .stats {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 40px 0;
+    }
+    .stat { text-align: center; }
+    .stat-value { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+    .stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+    /* --- SECTIONS --- */
+    section { padding: 100px 0; }
+    .section-header { text-align: center; margin-bottom: 64px; }
+    .section-header h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+    .section-header p { font-size: 16px; color: var(--text-secondary); max-width: 480px; margin: 0 auto; }
+
+    /* --- FEATURES GRID --- */
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .feature-card { background: var(--bg); padding: 32px; }
+    .feature-card:hover { background: var(--surface); }
+    .feature-icon { font-size: 24px; margin-bottom: 16px; }
+    .feature-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .feature-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+    /* --- NODES --- */
+    .nodes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
+    .node-group h4 { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 12px; }
+    .node-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; font-weight: 500; padding: 4px 10px; margin: 2px;
+      border-radius: 6px; border: 1px solid var(--border); background: var(--surface);
+    }
+
+    /* --- FLYWHEEL --- */
+    .flywheel {
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      max-width: 700px; margin: 0 auto; flex-wrap: wrap;
+    }
+    .flywheel-step {
+      text-align: center; padding: 24px 20px; border: 1px solid var(--border);
+      border-radius: 12px; background: var(--surface); min-width: 130px;
+    }
+    .flywheel-step .icon { font-size: 28px; margin-bottom: 8px; }
+    .flywheel-step .label { font-size: 13px; font-weight: 600; }
+    .flywheel-arrow { color: var(--text-muted); font-size: 20px; }
+
+    /* --- ARCH --- */
+    .arch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+    .arch-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px; border: 1px solid var(--border); border-radius: 10px;
+    }
+    .arch-item .icon { font-size: 24px; flex-shrink: 0; }
+    .arch-item .title { font-size: 14px; font-weight: 600; }
+    .arch-item .desc { font-size: 13px; color: var(--text-secondary); }
+    .check-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px;
+      font-size: 14px;
+    }
+    .check-item .check { color: #22c55e; font-weight: 700; }
+
+    /* --- PRICING --- */
+    .pricing-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    .price-card { border: 1px solid var(--border); border-radius: 16px; padding: 32px 24px; }
+    .price-card.featured { border-color: var(--accent); position: relative; }
+    .price-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 100px; }
+    .price-tier { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+    .price-value { font-size: 36px; font-weight: 700; margin-bottom: 4px; }
+    .price-value span { font-size: 14px; font-weight: 400; color: var(--text-muted); }
+    .price-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; }
+    .price-list { list-style: none; }
+    .price-list li { font-size: 13px; color: var(--text-secondary); padding: 6px 0; display: flex; gap: 8px; }
+    .price-list .icon { flex-shrink: 0; }
+
+    /* --- CONSULTATION --- */
+    .consultation-wrap { max-width: 768px; margin: 0 auto; }
+    .consultation-frame { border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .consultation-email { text-align: center; margin-top: 16px; font-size: 14px; color: var(--text-muted); }
+    .consultation-email a { color: var(--accent); }
+    .consultation-email a:hover { text-decoration: underline; }
+
+    /* --- DEPLOY --- */
+    .deploy-options { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .deploy-option { border: 1px solid var(--border); border-radius: 16px; padding: 40px 32px; display: flex; flex-direction: column; }
+    .deploy-option.featured { border-color: var(--accent); position: relative; }
+    .deploy-option .option-icon { font-size: 36px; margin-bottom: 20px; }
+    .deploy-option h3 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .deploy-option .option-subtitle { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6; }
+    .deploy-option .option-features { list-style: none; margin-bottom: 32px; flex: 1; }
+    .deploy-option .option-features li { font-size: 14px; color: var(--text-secondary); padding: 8px 0; display: flex; align-items: flex-start; gap: 10px; border-bottom: 1px solid var(--border); }
+    .deploy-option .option-features li:last-child { border-bottom: none; }
+    .deploy-option .option-features .icon { color: #22c55e; flex-shrink: 0; font-weight: 700; }
+    .deploy-option .option-cta { margin-top: auto; }
+
+    /* --- CTA --- */
+    .cta { text-align: center; padding: 120px 0; }
+    .cta h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 16px; }
+    .cta p { font-size: 16px; color: var(--text-secondary); margin-bottom: 32px; }
+    .cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    /* --- FOOTER --- */
+    footer { border-top: 1px solid var(--border); padding: 24px 0; }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+    .footer-inner a { font-size: 13px; color: var(--text-muted); }
+    .footer-inner a:hover { color: var(--text); }
+    .footer-links { display: flex; gap: 24px; }
+
+    /* --- CHAT WIDGET --- */
+    .chat-btn {
+      position: fixed; bottom: 24px; right: 24px; z-index: 90;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--accent); border: none; color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 24px rgba(59,130,246,0.3); transition: transform 0.15s;
+    }
+    .chat-btn:hover { transform: scale(1.05); }
+    .chat-btn svg { width: 22px; height: 22px; }
+    .chat-panel {
+      position: fixed; bottom: 88px; right: 24px; z-index: 90;
+      width: 380px; max-width: calc(100vw - 48px); height: 480px;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 16px;
+      display: flex; flex-direction: column; overflow: hidden;
+      box-shadow: 0 16px 64px rgba(0,0,0,0.5);
+      transition: transform 0.2s ease, opacity 0.2s; transform-origin: bottom right;
+    }
+    .chat-panel.closed { transform: scale(0.95) translateY(8px); opacity: 0; pointer-events: none; }
+    .chat-head { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    .chat-head .name { font-size: 14px; font-weight: 600; }
+    .chat-head .sub { font-size: 12px; color: var(--text-muted); }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .chat-msg { max-width: 85%; font-size: 13px; line-height: 1.6; padding: 10px 14px; border-radius: 12px; }
+    .chat-msg.bot { background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .chat-msg.user { background: var(--accent); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .chat-input-wrap { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+    .chat-input-wrap input {
+      flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 14px; font-size: 13px; color: var(--text); outline: none;
+      font-family: inherit;
+    }
+    .chat-input-wrap input::placeholder { color: var(--text-muted); }
+    .chat-input-wrap input:focus { border-color: var(--accent); }
+    .chat-input-wrap button {
+      background: var(--accent); border: none; color: white; padding: 0 14px;
+      border-radius: 8px; cursor: pointer; display: flex; align-items: center;
+    }
+    .chat-input-wrap button:hover { background: var(--accent-hover); }
+    .typing { display: flex; gap: 4px; align-items: center; padding: 10px 14px; }
+    .typing span { width: 5px; height: 5px; background: var(--text-muted); border-radius: 50%; animation: bounce 1.4s ease-in-out infinite; }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
+
+    /* --- AUTH MODAL --- */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 32px; width: 100%; max-width: 400px; margin: 16px; position: relative;
+    }
+    .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; }
+    .modal-close:hover { color: var(--text); }
+    .modal-tabs { display: flex; gap: 0; background: var(--bg); border-radius: 8px; padding: 3px; margin-bottom: 24px; }
+    .modal-tab { flex: 1; text-align: center; padding: 8px; font-size: 13px; font-weight: 500; border-radius: 6px; cursor: pointer; color: var(--text-muted); border: none; background: none; }
+    .modal-tab.active { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+    .modal-error { display: none; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #f87171; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+    .modal-error.show { display: block; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+    .form-group input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 14px; font-size: 14px; color: var(--text); outline: none; font-family: inherit;
+    }
+    .form-group input:focus { border-color: var(--accent); }
+    .google-btn {
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 10px; border: 1px solid var(--border); border-radius: 8px;
+      background: none; color: var(--text); font-size: 14px; cursor: pointer;
+      font-family: inherit;
+    }
+    .google-btn:hover { background: var(--bg); }
+    .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+    .divider span { font-size: 12px; color: var(--text-muted); }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .forgot-link { display: block; text-align: center; margin-top: 12px; font-size: 12px; color: var(--accent); cursor: pointer; background: none; border: none; font-family: inherit; }
+    .forgot-link:hover { text-decoration: underline; }
+
+    /* --- MOBILE MENU --- */
+    .mobile-toggle { display: none; background: none; border: none; color: var(--text); cursor: pointer; padding: 8px; }
+    .mobile-menu { display: none; }
+
+    /* --- RESPONSIVE --- */
+    @media (max-width: 1024px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+      .nodes-grid { grid-template-columns: repeat(2, 1fr); }
+      .arch-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .mobile-toggle { display: block; }
+      .mobile-menu.open {
+        display: flex; flex-direction: column; gap: 0;
+        position: absolute; top: 64px; left: 0; right: 0;
+        background: var(--bg); border-bottom: 1px solid var(--border);
+        padding: 8px 24px 16px;
+      }
+      .mobile-menu a { display: block; padding: 10px 0; font-size: 14px; color: var(--text-secondary); }
+
+      .hero { padding: 120px 0 60px; }
+      .hero h1 { font-size: 32px; }
+      .hero p { font-size: 16px; }
+
+      .stats { grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 32px 0; }
+      .stats .stat:nth-child(4), .stats .stat:nth-child(5) { display: none; }
+
+      .features-grid { grid-template-columns: 1fr; }
+      .nodes-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .deploy-options { grid-template-columns: 1fr; }
+
+      .flywheel { flex-direction: column; }
+      .flywheel-arrow { transform: rotate(90deg); }
+
+      section { padding: 64px 0; }
+      .section-header { margin-bottom: 40px; }
+
+      .chat-panel { width: calc(100vw - 32px); right: 16px; bottom: 80px; height: 420px; }
+      .chat-btn { bottom: 16px; right: 16px; }
+    }
+
+    @media (max-width: 480px) {
+      .hero-actions { flex-direction: column; align-items: stretch; }
+      .hero-actions .btn-lg { justify-content: center; }
+      .stats { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* --- ANIMATIONS --- */
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
   </style>
 </head>
-<body class="bg-surface-950 text-white antialiased">
+<body>
 
-  <!-- Nav -->
-  <nav class="fixed top-0 w-full z-50 bg-surface-950/80 backdrop-blur-xl border-b border-white/5">
-    <div class="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-      <a href="#" class="flex items-center gap-2 text-xl font-bold">
-        <span class="text-2xl">🔥</span>
-        <span>LLM <span class="gradient-text">Forge</span></span>
-      </a>
-      <div class="hidden md:flex items-center gap-8 text-sm text-gray-400">
-        <a href="#features" class="hover:text-white transition">Features</a>
-        <a href="#workflow" class="hover:text-white transition">Workflow</a>
-        <a href="#architecture" class="hover:text-white transition">Architecture</a>
-        <a href="#pricing" class="hover:text-white transition">Pricing</a>
-        <a href="#deploy" class="hover:text-white transition">Deploy</a>
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-logo"><svg width="24" height="24" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="logo-nav" x1="16" y1="56" x2="48" y2="8" gradientUnits="userSpaceOnUse"><stop stop-color="#f97316"/><stop offset=".5" stop-color="#ef4444"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><path d="M32 4C32 4 20 18 20 30c0 4.5 2 8.5 5 11.5C22 38 20 33 24 28c2-2.5 4.5-4 8-8 3.5 4 6 5.5 8 8 4 5 2 10-1 13.5 3-3 5-7 5-11.5C44 18 32 4 32 4z" fill="url(#logo-nav)"/><circle cx="32" cy="36" r="3.5" fill="#09090b" opacity="0.5"/><circle cx="25" cy="43" r="2" fill="#09090b" opacity="0.35"/><circle cx="39" cy="43" r="2" fill="#09090b" opacity="0.35"/><line x1="32" y1="36" x2="25" y2="43" stroke="#09090b" stroke-width="1.2" opacity="0.25"/><line x1="32" y1="36" x2="39" y2="43" stroke="#09090b" stroke-width="1.2" opacity="0.25"/></svg> LLM Forge</a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#workflow">Workflow</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#consultation">Contact</a>
       </div>
-      <div class="flex items-center gap-3">
-        <a href="https://github.com/VasilyKolbenev/LLM-forge_v1" target="_blank" class="text-sm text-gray-400 hover:text-white transition flex items-center gap-1.5">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+      <div class="nav-right">
+        <a href="https://github.com/VasilyKolbenev/LLM-forge_v1" target="_blank" class="btn btn-sm" style="display:none" id="gh-btn">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
           GitHub
         </a>
-        <a href="#deploy" class="bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
-          Get Started
-        </a>
+        <div id="auth-area">
+          <button onclick="openAuthModal()" class="btn btn-sm">Sign In</button>
+        </div>
+        <a href="#deploy" class="btn btn-primary btn-sm">Get Started</a>
+        <button class="mobile-toggle" onclick="toggleMobile()">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
       </div>
+    </div>
+    <div id="mobile-menu" class="mobile-menu">
+      <a href="#features" onclick="toggleMobile()">Features</a>
+      <a href="#workflow" onclick="toggleMobile()">Workflow</a>
+      <a href="#architecture" onclick="toggleMobile()">Architecture</a>
+      <a href="#pricing" onclick="toggleMobile()">Pricing</a>
+      <a href="#consultation" onclick="toggleMobile()">Contact</a>
     </div>
   </nav>
 
-  <!-- Hero -->
-  <section class="relative pt-32 pb-20 hero-glow">
-    <div class="max-w-7xl mx-auto px-6 text-center">
-      <div class="inline-flex items-center gap-2 bg-brand-600/10 border border-brand-500/20 rounded-full px-4 py-1.5 text-sm text-brand-300 mb-8">
-        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-        Open Source &middot; 809 Tests &middot; 26 Node Types
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge reveal"><span class="dot"></span> Open Source &middot; 809 Tests &middot; 26 Node Types</div>
+      <h1 class="reveal">From Raw Data to<br>Deployed Agent</h1>
+      <p class="reveal">Self-hosted LLM platform that replaces 5-7 separate tools. Fine-tune, evaluate, guard, serve, and orchestrate — all in one visual pipeline.</p>
+      <div class="hero-actions reveal">
+        <a href="#deploy" class="btn btn-primary btn-lg">Deploy Now &rarr;</a>
+        <a href="#features" class="btn btn-lg">Explore Features</a>
       </div>
-      <h1 class="text-5xl md:text-7xl font-black tracking-tight leading-[1.1] mb-6">
-        From Raw Data to<br/>
-        <span class="gradient-text">Deployed Agent</span>
-      </h1>
-      <p class="text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-        Self-hosted LLM platform that replaces 5-7 separate tools.
-        Fine-tune, evaluate, guard, serve, and orchestrate — all in one visual pipeline.
-      </p>
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-        <a href="#deploy" class="bg-brand-600 hover:bg-brand-500 text-white font-semibold px-8 py-3.5 rounded-xl text-lg transition shadow-lg shadow-brand-600/25">
-          Deploy Now &rarr;
-        </a>
-        <a href="#features" class="border border-white/10 hover:border-white/20 text-white font-medium px-8 py-3.5 rounded-xl text-lg transition">
-          Explore Features
-        </a>
-      </div>
-
-      <!-- Terminal preview -->
-      <div class="max-w-3xl mx-auto bg-surface-900 rounded-2xl border border-white/5 overflow-hidden shadow-2xl">
-        <div class="flex items-center gap-2 px-4 py-3 border-b border-white/5">
-          <span class="w-3 h-3 rounded-full bg-red-500/60"></span>
-          <span class="w-3 h-3 rounded-full bg-yellow-500/60"></span>
-          <span class="w-3 h-3 rounded-full bg-green-500/60"></span>
-          <span class="ml-4 text-xs text-gray-500">Terminal</span>
-        </div>
-        <pre class="px-6 py-5 text-left overflow-x-auto"><code class="text-green-400">$ pip install llm-forge[ui]
-$ forge ui</code>
-<code class="text-gray-400">
-  INFO     Starting llm-forge UI on http://localhost:8888
-  INFO     26 workflow node types loaded
-  INFO     Guardrails engine: PII + injection + toxicity
-  INFO     Protocol adapters: MCP, A2A, Gateway
-  INFO     809 tests passing ✓
-</code>
-<code class="text-brand-400">  🔥 LLM Forge ready at </code><code class="text-white underline">http://localhost:8888</code></pre>
+      <div class="code-block reveal">
+        <div class="code-header"><span class="code-dot r"></span><span class="code-dot y"></span><span class="code-dot g"></span></div>
+        <pre><span class="cmd">$ pip install llm-forge[ui]</span>
+<span class="cmd">$ forge ui</span>
+<span class="out">  INFO  Starting llm-forge UI on http://localhost:8888</span>
+<span class="out">  INFO  26 workflow node types loaded</span>
+<span class="out">  INFO  Guardrails engine: PII + injection + toxicity</span>
+<span class="out">  INFO  Protocol adapters: MCP, A2A, Gateway</span>
+<span class="out">  INFO  809 tests passing</span>
+<span class="hl">  🔥 LLM Forge ready at http://localhost:8888</span></pre>
       </div>
     </div>
   </section>
 
-  <!-- Stats bar -->
-  <section class="border-y border-white/5 bg-surface-900/50">
-    <div class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-5 gap-6 text-center">
-      <div><div class="text-3xl font-bold gradient-text">26</div><div class="text-sm text-gray-500 mt-1">Node Types</div></div>
-      <div><div class="text-3xl font-bold gradient-text">809</div><div class="text-sm text-gray-500 mt-1">Tests</div></div>
-      <div><div class="text-3xl font-bold gradient-text">50+</div><div class="text-sm text-gray-500 mt-1">API Endpoints</div></div>
-      <div><div class="text-3xl font-bold gradient-text">5</div><div class="text-sm text-gray-500 mt-1">Agent Frameworks</div></div>
-      <div><div class="text-3xl font-bold gradient-text">3</div><div class="text-sm text-gray-500 mt-1">Protocols</div></div>
-    </div>
-  </section>
-
-  <!-- Features -->
-  <section id="features" class="py-24">
-    <div class="max-w-7xl mx-auto px-6">
-      <div class="text-center mb-16">
-        <h2 class="text-4xl font-bold mb-4">Everything You Need</h2>
-        <p class="text-gray-400 text-lg max-w-2xl mx-auto">One platform for the entire LLM lifecycle. No more duct-taping 7 different tools.</p>
-      </div>
-
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Card -->
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6 card-hover">
-          <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 text-xl mb-4">🎯</div>
-          <h3 class="font-semibold text-lg mb-2">Fine-Tuning</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">SFT + DPO with LoRA/QLoRA, Unsloth 2x acceleration, 4/8-bit quantization. Consumer to enterprise GPUs.</p>
-        </div>
-
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6 card-hover">
-          <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 text-xl mb-4">🔀</div>
-          <h3 class="font-semibold text-lg mb-2">Visual Workflow Builder</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">26 node types in a drag-and-drop DAG. Data, training, agents, safety, deployment — all connected visually.</p>
-        </div>
-
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6 card-hover">
-          <div class="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 text-xl mb-4">🤖</div>
-          <h3 class="font-semibold text-lg mb-2">Agent Framework</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">Built-in ReAct agent + LangGraph, CrewAI, AutoGen. Choose your framework per node in the same pipeline.</p>
-        </div>
-
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6 card-hover">
-          <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400 text-xl mb-4">🛡️</div>
-          <h3 class="font-semibold text-lg mb-2">Guardrails</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">PII detection/masking, prompt injection defense, toxicity filtering, JSON schema validation. Block, warn, or mask.</p>
-        </div>
-
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6 card-hover">
-          <div class="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 text-xl mb-4">🔌</div>
-          <h3 class="font-semibold text-lg mb-2">MCP + A2A Protocols</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">Expose tools via MCP (Claude, Cursor compatible). Delegate tasks to remote agents via Google's A2A protocol.</p>
-        </div>
-
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6 card-hover">
-          <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 text-xl mb-4">📊</div>
-          <h3 class="font-semibold text-lg mb-2">Experiment Tracking</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">Local, ClearML, or W&B backends. Dataset fingerprinting, environment capture, HPO sweeps with Optuna.</p>
-        </div>
-
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6 card-hover">
-          <div class="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center text-violet-400 text-xl mb-4">⚖️</div>
-          <h3 class="font-semibold text-lg mb-2">LLM-as-Judge + A/B Testing</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">Automated evaluation with customizable criteria. Traffic splitting, statistical winner detection, canary deployment.</p>
-        </div>
-
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6 card-hover">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-xl mb-4">🐤</div>
-          <h3 class="font-semibold text-lg mb-2">Canary Deploy</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">Gradual rollout with auto-rollback on error thresholds. A/B traffic splitting between model versions.</p>
-        </div>
-
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6 card-hover">
-          <div class="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-400 text-xl mb-4">👍</div>
-          <h3 class="font-semibold text-lg mb-2">Human Feedback Loop</h3>
-          <p class="text-gray-400 text-sm leading-relaxed">Collect thumbs, ratings, preferences from production. Auto-export as DPO training pairs. Closed-loop flywheel.</p>
-        </div>
+  <!-- STATS -->
+  <section style="padding:0">
+    <div class="container">
+      <div class="stats reveal">
+        <div class="stat"><div class="stat-value">26</div><div class="stat-label">Node Types</div></div>
+        <div class="stat"><div class="stat-value">809</div><div class="stat-label">Tests</div></div>
+        <div class="stat"><div class="stat-value">50+</div><div class="stat-label">API Endpoints</div></div>
+        <div class="stat"><div class="stat-value">5</div><div class="stat-label">Agent Frameworks</div></div>
+        <div class="stat"><div class="stat-value">3</div><div class="stat-label">Protocols</div></div>
       </div>
     </div>
   </section>
 
-  <!-- Workflow Node Types -->
-  <section id="workflow" class="py-24 bg-surface-900/30">
-    <div class="max-w-7xl mx-auto px-6">
-      <div class="text-center mb-16">
-        <h2 class="text-4xl font-bold mb-4">26 Node Types, 7 Categories</h2>
-        <p class="text-gray-400 text-lg">Visual DAG pipeline with C4-style grouping. From data to production.</p>
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2>Everything You Need</h2>
+        <p>One platform for the entire LLM lifecycle. No more duct-taping 7 different tools.</p>
       </div>
-
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="space-y-3">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Data</h4>
-          <div class="node-badge bg-blue-500/10 text-blue-300 border-blue-500/20">📦 Data Source</div>
-          <div class="node-badge bg-blue-500/10 text-blue-300 border-blue-500/20">✂️ Splitter</div>
-          <div class="node-badge bg-blue-500/10 text-blue-300 border-blue-500/20">📝 Prompt</div>
-        </div>
-        <div class="space-y-3">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Training</h4>
-          <div class="node-badge bg-orange-500/10 text-orange-300 border-orange-500/20">🧠 Model</div>
-          <div class="node-badge bg-orange-500/10 text-orange-300 border-orange-500/20">🔥 Training</div>
-          <div class="node-badge bg-orange-500/10 text-orange-300 border-orange-500/20">📈 Evaluation</div>
-          <div class="node-badge bg-orange-500/10 text-orange-300 border-orange-500/20">🔀 Condition</div>
-          <div class="node-badge bg-orange-500/10 text-orange-300 border-orange-500/20">📦 Export</div>
-        </div>
-        <div class="space-y-3">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Agent</h4>
-          <div class="node-badge bg-green-500/10 text-green-300 border-green-500/20">🤖 Agent</div>
-          <div class="node-badge bg-green-500/10 text-green-300 border-green-500/20">🔍 RAG</div>
-          <div class="node-badge bg-green-500/10 text-green-300 border-green-500/20">🚀 Inference</div>
-          <div class="node-badge bg-green-500/10 text-green-300 border-green-500/20">🔀 Router</div>
-          <div class="node-badge bg-green-500/10 text-green-300 border-green-500/20">✨ Data Gen</div>
-          <div class="node-badge bg-green-500/10 text-green-300 border-green-500/20">🌐 Serve</div>
-        </div>
-        <div class="space-y-3">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Protocols</h4>
-          <div class="node-badge bg-purple-500/10 text-purple-300 border-purple-500/20">🔌 MCP</div>
-          <div class="node-badge bg-purple-500/10 text-purple-300 border-purple-500/20">↔️ A2A</div>
-          <div class="node-badge bg-purple-500/10 text-purple-300 border-purple-500/20">🌐 Gateway</div>
-        </div>
-      </div>
-
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
-        <div class="space-y-3">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Safety</h4>
-          <div class="node-badge bg-red-500/10 text-red-300 border-red-500/20">🛡 Input Guard</div>
-          <div class="node-badge bg-red-500/10 text-red-300 border-red-500/20">🔒 Output Guard</div>
-        </div>
-        <div class="space-y-3">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Evaluation</h4>
-          <div class="node-badge bg-violet-500/10 text-violet-300 border-violet-500/20">⚖️ LLM Judge</div>
-          <div class="node-badge bg-violet-500/10 text-violet-300 border-violet-500/20">🧪 A/B Test</div>
-        </div>
-        <div class="space-y-3">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Ops</h4>
-          <div class="node-badge bg-amber-500/10 text-amber-300 border-amber-500/20">⚡ Cache</div>
-          <div class="node-badge bg-amber-500/10 text-amber-300 border-amber-500/20">🐤 Canary</div>
-          <div class="node-badge bg-amber-500/10 text-amber-300 border-amber-500/20">👍 Feedback</div>
-          <div class="node-badge bg-amber-500/10 text-amber-300 border-amber-500/20">📊 Tracer</div>
-        </div>
-        <div class="space-y-3">
-          <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Structure</h4>
-          <div class="node-badge bg-slate-500/10 text-slate-300 border-slate-500/20">{ } Group (C4)</div>
-        </div>
+      <div class="features-grid reveal">
+        <div class="feature-card"><div class="feature-icon">🎯</div><h3>Fine-Tuning</h3><p>SFT + DPO with LoRA/QLoRA, Unsloth 2x speedup, 4/8-bit quantization.</p></div>
+        <div class="feature-card"><div class="feature-icon">🔀</div><h3>Visual Workflow Builder</h3><p>26 node types in a drag-and-drop DAG with C4-style grouping.</p></div>
+        <div class="feature-card"><div class="feature-icon">🤖</div><h3>Agent Framework</h3><p>Built-in ReAct + LangGraph, CrewAI, AutoGen. Mix per node.</p></div>
+        <div class="feature-card"><div class="feature-icon">🛡️</div><h3>Guardrails</h3><p>PII detection, prompt injection defense, toxicity filter, JSON validation.</p></div>
+        <div class="feature-card"><div class="feature-icon">🔌</div><h3>MCP + A2A Protocols</h3><p>Expose tools via MCP. Delegate tasks via Google A2A protocol.</p></div>
+        <div class="feature-card"><div class="feature-icon">📊</div><h3>Experiment Tracking</h3><p>Local, ClearML, or W&B. Dataset fingerprinting, HPO with Optuna.</p></div>
+        <div class="feature-card"><div class="feature-icon">⚖️</div><h3>LLM-as-Judge + A/B</h3><p>Automated eval with custom criteria. Traffic splitting, canary deploys.</p></div>
+        <div class="feature-card"><div class="feature-icon">🐤</div><h3>Canary Deploy</h3><p>Gradual rollout with auto-rollback on error thresholds.</p></div>
+        <div class="feature-card"><div class="feature-icon">👍</div><h3>Human Feedback Loop</h3><p>Collect thumbs/ratings from production. Auto-export as DPO pairs.</p></div>
       </div>
     </div>
   </section>
 
-  <!-- Flywheel -->
-  <section class="py-24">
-    <div class="max-w-7xl mx-auto px-6">
-      <div class="text-center mb-16">
-        <h2 class="text-4xl font-bold mb-4">Closed-Loop Training Flywheel</h2>
-        <p class="text-gray-400 text-lg">No other platform offers this integrated feedback cycle.</p>
+  <!-- WORKFLOW NODES -->
+  <section id="workflow" style="border-top: 1px solid var(--border);">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2>26 Node Types, 7 Categories</h2>
+        <p>Visual DAG pipeline with C4-style grouping.</p>
       </div>
-
-      <div class="max-w-3xl mx-auto bg-surface-900 border border-white/5 rounded-2xl p-8">
-        <div class="flex flex-col md:flex-row items-center justify-between gap-4 text-center">
-          <div class="bg-brand-600/10 border border-brand-500/20 rounded-xl px-6 py-4 float-anim">
-            <div class="text-2xl mb-1">🤖</div>
-            <div class="text-sm font-semibold">Agent Runs</div>
-          </div>
-          <div class="text-brand-400 text-2xl">&rarr;</div>
-          <div class="bg-green-600/10 border border-green-500/20 rounded-xl px-6 py-4 float-anim-delay">
-            <div class="text-2xl mb-1">📊</div>
-            <div class="text-sm font-semibold">Traces + Feedback</div>
-          </div>
-          <div class="text-brand-400 text-2xl">&rarr;</div>
-          <div class="bg-amber-600/10 border border-amber-500/20 rounded-xl px-6 py-4 float-anim">
-            <div class="text-2xl mb-1">✨</div>
-            <div class="text-sm font-semibold">DataGen (DPO)</div>
-          </div>
-          <div class="text-brand-400 text-2xl">&rarr;</div>
-          <div class="bg-purple-600/10 border border-purple-500/20 rounded-xl px-6 py-4 float-anim-delay">
-            <div class="text-2xl mb-1">🔥</div>
-            <div class="text-sm font-semibold">Fine-Tune</div>
-          </div>
-        </div>
-        <div class="text-center mt-6 text-brand-400 text-sm font-medium">
-          ↻ Each iteration compounds model quality
-        </div>
+      <div class="nodes-grid reveal">
+        <div class="node-group"><h4>Data</h4><span class="node-tag">📦 Data Source</span><span class="node-tag">✂️ Splitter</span><span class="node-tag">📝 Prompt</span></div>
+        <div class="node-group"><h4>Training</h4><span class="node-tag">🧠 Model</span><span class="node-tag">🔥 Training</span><span class="node-tag">📈 Evaluation</span><span class="node-tag">🔀 Condition</span><span class="node-tag">📦 Export</span></div>
+        <div class="node-group"><h4>Agent</h4><span class="node-tag">🤖 Agent</span><span class="node-tag">🔍 RAG</span><span class="node-tag">🚀 Inference</span><span class="node-tag">🔀 Router</span><span class="node-tag">✨ Data Gen</span><span class="node-tag">🌐 Serve</span></div>
+        <div class="node-group"><h4>Protocols</h4><span class="node-tag">🔌 MCP</span><span class="node-tag">↔️ A2A</span><span class="node-tag">🌐 Gateway</span></div>
+        <div class="node-group"><h4>Safety</h4><span class="node-tag">🛡 Input Guard</span><span class="node-tag">🔒 Output Guard</span></div>
+        <div class="node-group"><h4>Evaluation</h4><span class="node-tag">⚖️ LLM Judge</span><span class="node-tag">🧪 A/B Test</span></div>
+        <div class="node-group"><h4>Ops</h4><span class="node-tag">⚡ Cache</span><span class="node-tag">🐤 Canary</span><span class="node-tag">👍 Feedback</span><span class="node-tag">📊 Tracer</span></div>
+        <div class="node-group"><h4>Structure</h4><span class="node-tag">{ } Group (C4)</span></div>
       </div>
     </div>
   </section>
 
-  <!-- Architecture -->
-  <section id="architecture" class="py-24 bg-surface-900/30">
-    <div class="max-w-7xl mx-auto px-6">
-      <div class="text-center mb-16">
-        <h2 class="text-4xl font-bold mb-4">Architecture</h2>
-        <p class="text-gray-400 text-lg">Modern stack, zero vendor lock-in.</p>
+  <!-- FLYWHEEL -->
+  <section style="border-top: 1px solid var(--border);">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2>Closed-Loop Training Flywheel</h2>
+        <p>No other platform offers this integrated feedback cycle.</p>
       </div>
+      <div class="flywheel reveal">
+        <div class="flywheel-step"><div class="icon">🤖</div><div class="label">Agent Runs</div></div>
+        <div class="flywheel-arrow">&rarr;</div>
+        <div class="flywheel-step"><div class="icon">📊</div><div class="label">Traces + Feedback</div></div>
+        <div class="flywheel-arrow">&rarr;</div>
+        <div class="flywheel-step"><div class="icon">✨</div><div class="label">DataGen (DPO)</div></div>
+        <div class="flywheel-arrow">&rarr;</div>
+        <div class="flywheel-step"><div class="icon">🔥</div><div class="label">Fine-Tune</div></div>
+      </div>
+      <p style="text-align:center; color:var(--text-muted); font-size:14px; margin-top:24px;" class="reveal">↻ Each iteration compounds model quality</p>
+    </div>
+  </section>
 
-      <div class="grid md:grid-cols-2 gap-8">
-        <div class="space-y-4">
-          <h3 class="text-xl font-semibold mb-4">Tech Stack</h3>
-          <div class="space-y-3">
-            <div class="flex items-center gap-3 bg-surface-900 border border-white/5 rounded-xl p-4">
-              <span class="text-2xl">⚛️</span>
-              <div><div class="font-medium text-sm">Frontend</div><div class="text-gray-400 text-xs">React 19 + TypeScript + Tailwind + React Flow + Recharts</div></div>
-            </div>
-            <div class="flex items-center gap-3 bg-surface-900 border border-white/5 rounded-xl p-4">
-              <span class="text-2xl">⚡</span>
-              <div><div class="font-medium text-sm">Backend</div><div class="text-gray-400 text-xs">FastAPI + Uvicorn + SSE + WebSocket</div></div>
-            </div>
-            <div class="flex items-center gap-3 bg-surface-900 border border-white/5 rounded-xl p-4">
-              <span class="text-2xl">🧠</span>
-              <div><div class="font-medium text-sm">ML</div><div class="text-gray-400 text-xs">PyTorch + Transformers + PEFT + TRL + Accelerate + Optuna</div></div>
-            </div>
-            <div class="flex items-center gap-3 bg-surface-900 border border-white/5 rounded-xl p-4">
-              <span class="text-2xl">🔌</span>
-              <div><div class="font-medium text-sm">Protocols</div><div class="text-gray-400 text-xs">MCP (stdio/SSE/HTTP) + A2A (JSON-RPC) + API Gateway</div></div>
-            </div>
-            <div class="flex items-center gap-3 bg-surface-900 border border-white/5 rounded-xl p-4">
-              <span class="text-2xl">🚀</span>
-              <div><div class="font-medium text-sm">Serving</div><div class="text-gray-400 text-xs">vLLM + llama.cpp + TGI + Ollama</div></div>
-            </div>
-            <div class="flex items-center gap-3 bg-surface-900 border border-white/5 rounded-xl p-4">
-              <span class="text-2xl">🐳</span>
-              <div><div class="font-medium text-sm">Infra</div><div class="text-gray-400 text-xs">Docker + SSH (Paramiko) + psutil + nvidia-ml-py</div></div>
-            </div>
+  <!-- ARCHITECTURE -->
+  <section id="architecture" style="border-top: 1px solid var(--border);">
+    <div class="container">
+      <div class="section-header reveal"><h2>Architecture</h2><p>Modern stack, zero vendor lock-in.</p></div>
+      <div class="arch-grid">
+        <div class="reveal">
+          <h3 style="font-size:18px; font-weight:600; margin-bottom:16px;">Tech Stack</h3>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="arch-item"><span class="icon">⚛️</span><div><div class="title">Frontend</div><div class="desc">React 19 + TypeScript + Tailwind + React Flow</div></div></div>
+            <div class="arch-item"><span class="icon">⚡</span><div><div class="title">Backend</div><div class="desc">FastAPI + Uvicorn + SSE + WebSocket</div></div></div>
+            <div class="arch-item"><span class="icon">🧠</span><div><div class="title">ML</div><div class="desc">PyTorch + Transformers + PEFT + TRL</div></div></div>
+            <div class="arch-item"><span class="icon">🔌</span><div><div class="title">Protocols</div><div class="desc">MCP + A2A + API Gateway</div></div></div>
+            <div class="arch-item"><span class="icon">🚀</span><div><div class="title">Serving</div><div class="desc">vLLM + llama.cpp + TGI + Ollama</div></div></div>
+            <div class="arch-item"><span class="icon">🐳</span><div><div class="title">Infra</div><div class="desc">Docker + SSH + psutil + nvidia-ml-py</div></div></div>
           </div>
         </div>
-
-        <div class="space-y-4">
-          <h3 class="text-xl font-semibold mb-4">Security</h3>
-          <div class="space-y-3">
-            <div class="flex items-center gap-3 bg-surface-900 border border-white/5 rounded-xl p-4">
-              <span class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-400">✓</span>
-              <div class="text-sm">API key auth (SHA-256 hashed, Bearer tokens)</div>
-            </div>
-            <div class="flex items-center gap-3 bg-surface-900 border border-white/5 rounded-xl p-4">
-              <span class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-400">✓</span>
-              <div class="text-sm">Rate limiting (60/min general, 5/min training)</div>
-            </div>
-            <div class="flex items-center gap-3 bg-surface-900 border border-white/5 rounded-xl p-4">
-              <span class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-400">✓</span>
-              <div class="text-sm">CORS hardening (configurable, no wildcards)</div>
-            </div>
-            <div class="flex items-center gap-3 bg-surface-900 border border-white/5 rounded-xl p-4">
-              <span class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-400">✓</span>
-              <div class="text-sm">AST-based safe eval (no eval/exec)</div>
-            </div>
-            <div class="flex items-center gap-3 bg-surface-900 border border-white/5 rounded-xl p-4">
-              <span class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-400">✓</span>
-              <div class="text-sm">PII guard, injection defense, toxicity filter</div>
-            </div>
-            <div class="flex items-center gap-3 bg-surface-900 border border-white/5 rounded-xl p-4">
-              <span class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-400">✓</span>
-              <div class="text-sm">SSH host key verification, SFTP-only transfers</div>
-            </div>
+        <div class="reveal">
+          <h3 style="font-size:18px; font-weight:600; margin-bottom:16px;">Security</h3>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="check-item"><span class="check">✓</span> API key auth (SHA-256 hashed)</div>
+            <div class="check-item"><span class="check">✓</span> Rate limiting (60/min, 5/min training)</div>
+            <div class="check-item"><span class="check">✓</span> CORS hardening (no wildcards)</div>
+            <div class="check-item"><span class="check">✓</span> AST-based safe eval (no eval/exec)</div>
+            <div class="check-item"><span class="check">✓</span> PII guard, injection defense</div>
+            <div class="check-item"><span class="check">✓</span> SSH host key verification</div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Pricing -->
-  <section id="pricing" class="py-24">
-    <div class="max-w-7xl mx-auto px-6">
-      <div class="text-center mb-16">
-        <h2 class="text-4xl font-bold mb-4">Pricing</h2>
-        <p class="text-gray-400 text-lg">Open source core. Premium for teams and enterprises.</p>
-      </div>
-
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6">
-          <div class="text-sm text-gray-500 font-medium mb-2">Community</div>
-          <div class="text-3xl font-bold mb-1">Free</div>
-          <div class="text-sm text-gray-400 mb-6">Open Source (MIT)</div>
-          <ul class="space-y-2 text-sm text-gray-300">
-            <li class="flex items-start gap-2"><span class="text-green-400 mt-0.5">✓</span> Full platform, 26 nodes</li>
-            <li class="flex items-start gap-2"><span class="text-green-400 mt-0.5">✓</span> MCP + A2A protocols</li>
-            <li class="flex items-start gap-2"><span class="text-green-400 mt-0.5">✓</span> Guardrails engine</li>
-            <li class="flex items-start gap-2"><span class="text-green-400 mt-0.5">✓</span> Unlimited training</li>
-            <li class="flex items-start gap-2"><span class="text-green-400 mt-0.5">✓</span> Self-hosted</li>
+  <!-- PRICING -->
+  <section id="pricing" style="border-top: 1px solid var(--border);">
+    <div class="container">
+      <div class="section-header reveal"><h2>Pricing</h2><p>Open source core. Premium for teams.</p></div>
+      <div class="pricing-grid reveal">
+        <div class="price-card featured">
+          <div class="price-badge">Quick Start</div>
+          <div class="price-tier">☁️ Cloud (SaaS)</div>
+          <div class="price-value">From $49<span>/user/mo</span></div>
+          <div class="price-desc">Managed platform with API access to top models. Free tier available.</div>
+          <ul class="price-list">
+            <li><span class="icon" style="color:#22c55e">✓</span> API access: GPT-4o, Claude, Llama, Mistral</li>
+            <li><span class="icon" style="color:#22c55e">✓</span> Visual workflow builder + 26 node types</li>
+            <li><span class="icon" style="color:#22c55e">✓</span> Managed GPU compute with auto-scaling</li>
+            <li><span class="icon" style="color:#22c55e">✓</span> Fine-tuning as a service</li>
+            <li><span class="icon" style="color:#22c55e">✓</span> Observability, tracing, cost tracking</li>
+            <li><span class="icon" style="color:#22c55e">✓</span> Team collaboration + RBAC</li>
+            <li><span class="icon" style="color:#22c55e">✓</span> Free tier: 2 GPU-hours/month</li>
           </ul>
+          <a href="#consultation" class="btn btn-accent" style="width:100%; justify-content:center; margin-top:24px;">Start Free &rarr;</a>
         </div>
-
-        <div class="bg-surface-900 border-2 border-brand-500 rounded-2xl p-6 relative">
-          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Popular</div>
-          <div class="text-sm text-gray-500 font-medium mb-2">Team</div>
-          <div class="text-3xl font-bold mb-1">$49<span class="text-lg text-gray-400">/user/mo</span></div>
-          <div class="text-sm text-gray-400 mb-6">Startups (5-20 people)</div>
-          <ul class="space-y-2 text-sm text-gray-300">
-            <li class="flex items-start gap-2"><span class="text-green-400 mt-0.5">✓</span> Everything in Community</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">+</span> Team collaboration</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">+</span> Shared workflows</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">+</span> RBAC + Audit log</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">+</span> Priority support</li>
+        <div class="price-card">
+          <div class="price-tier">🏢 Self-Hosted</div>
+          <div class="price-value">Custom</div>
+          <div class="price-desc">Turnkey deployment on your servers. Full data isolation.</div>
+          <ul class="price-list">
+            <li><span class="icon" style="color:#22c55e">✓</span> Your infrastructure, your data perimeter</li>
+            <li><span class="icon" style="color:#22c55e">✓</span> Air-gapped / closed network supported</li>
+            <li><span class="icon" style="color:#22c55e">✓</span> Run any open-weight model locally</li>
+            <li><span class="icon" style="color:#22c55e">✓</span> Docker / Kubernetes + GPU passthrough</li>
+            <li><span class="icon" style="color:#22c55e">✓</span> SSO/SAML, audit log, SOC2/HIPAA</li>
+            <li><span class="icon" style="color:#22c55e">✓</span> Dedicated onboarding + support</li>
+            <li><span class="icon" style="color:#22c55e">✓</span> SLA + custom integrations</li>
           </ul>
-        </div>
-
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6">
-          <div class="text-sm text-gray-500 font-medium mb-2">Enterprise</div>
-          <div class="text-3xl font-bold mb-1">$199<span class="text-lg text-gray-400">/user/mo</span></div>
-          <div class="text-sm text-gray-400 mb-6">50+ users</div>
-          <ul class="space-y-2 text-sm text-gray-300">
-            <li class="flex items-start gap-2"><span class="text-green-400 mt-0.5">✓</span> Everything in Team</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">+</span> SSO / SAML</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">+</span> Multi-cluster compute</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">+</span> SOC2, HIPAA ready</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">+</span> Dedicated support</li>
-          </ul>
-        </div>
-
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6">
-          <div class="text-sm text-gray-500 font-medium mb-2">Cloud</div>
-          <div class="text-3xl font-bold mb-1">Usage</div>
-          <div class="text-sm text-gray-400 mb-6">Pay per GPU-hour</div>
-          <ul class="space-y-2 text-sm text-gray-300">
-            <li class="flex items-start gap-2"><span class="text-green-400 mt-0.5">✓</span> Managed hosting</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">+</span> GPU marketplace</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">+</span> Auto-scaling</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">+</span> Zero config</li>
-            <li class="flex items-start gap-2"><span class="text-brand-400 mt-0.5">+</span> Free tier: 2h/month</li>
-          </ul>
+          <a href="#consultation" class="btn" style="width:100%; justify-content:center; margin-top:24px;">Request Demo</a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Deploy -->
-  <section id="deploy" class="py-24 bg-surface-900/30">
-    <div class="max-w-7xl mx-auto px-6">
-      <div class="text-center mb-16">
-        <h2 class="text-4xl font-bold mb-4">Deploy in 60 Seconds</h2>
-        <p class="text-gray-400 text-lg">Three ways to get started.</p>
+  <!-- CONSULTATION -->
+  <section id="consultation" style="border-top: 1px solid var(--border);">
+    <div class="container">
+      <div class="section-header reveal"><h2>Request a Consultation</h2><p>Interested in LLM Forge for your team? Our team will get back to you within 24 hours.</p></div>
+      <div class="consultation-wrap reveal">
+        <div class="consultation-frame">
+          <!-- Replace YOUR_FORM_ID with your actual Google Forms embed ID -->
+          <iframe src="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform?embedded=true" width="100%" height="560" frameborder="0" marginheight="0" marginwidth="0" loading="lazy" title="Consultation Request Form">Loading form...</iframe>
+        </div>
+        <div class="consultation-email">Or email us at <a href="mailto:hello@llmforge.dev">hello@llmforge.dev</a></div>
       </div>
+    </div>
+  </section>
 
-      <div class="grid md:grid-cols-3 gap-6">
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6">
-          <h3 class="font-semibold mb-4 flex items-center gap-2"><span class="text-xl">🐍</span> pip install</h3>
-          <div class="bg-surface-950 rounded-xl p-4 font-mono text-sm">
-            <div class="text-green-400">pip install llm-forge[ui]</div>
-            <div class="text-green-400">forge ui</div>
-            <div class="text-gray-500 mt-2"># &rarr; http://localhost:8888</div>
-          </div>
+  <!-- DEPLOY -->
+  <section id="deploy" style="border-top: 1px solid var(--border);">
+    <div class="container">
+      <div class="section-header reveal"><h2>Two Ways to Deploy</h2><p>Cloud API or your own infrastructure. Same platform, your choice.</p></div>
+      <div class="deploy-options reveal">
+        <div class="deploy-option featured">
+          <div class="price-badge">Quick Start</div>
+          <div class="option-icon">☁️</div>
+          <h3>Cloud (SaaS)</h3>
+          <div class="option-subtitle">Managed platform with API access to state-of-the-art models. We handle infrastructure, you focus on building.</div>
+          <ul class="option-features">
+            <li><span class="icon">✓</span> API access to GPT-4o, Claude, Llama, Mistral and more</li>
+            <li><span class="icon">✓</span> Managed GPU compute with auto-scaling</li>
+            <li><span class="icon">✓</span> Fine-tuning as a service — upload data, get a model</li>
+            <li><span class="icon">✓</span> Visual workflow builder in the browser</li>
+            <li><span class="icon">✓</span> Built-in observability, tracing, and cost tracking</li>
+            <li><span class="icon">✓</span> Free tier: 2 GPU-hours/month</li>
+          </ul>
+          <div class="option-cta"><a href="#consultation" class="btn btn-accent btn-lg" style="width:100%; justify-content:center;">Start Free &rarr;</a></div>
         </div>
-
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6">
-          <h3 class="font-semibold mb-4 flex items-center gap-2"><span class="text-xl">🐳</span> Docker</h3>
-          <div class="bg-surface-950 rounded-xl p-4 font-mono text-sm">
-            <div class="text-green-400">docker compose up -d</div>
-            <div class="text-gray-500 mt-2"># GPU passthrough included</div>
-            <div class="text-gray-500"># &rarr; http://localhost:8888</div>
-          </div>
-        </div>
-
-        <div class="bg-surface-900 border border-white/5 rounded-2xl p-6">
-          <h3 class="font-semibold mb-4 flex items-center gap-2"><span class="text-xl">👨‍💻</span> From Source</h3>
-          <div class="bg-surface-950 rounded-xl p-4 font-mono text-sm">
-            <div class="text-green-400">git clone ...llm-forge</div>
-            <div class="text-green-400">pip install -e ".[ui,dev]"</div>
-            <div class="text-green-400">cd ui && npm run build</div>
-            <div class="text-green-400">forge ui</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Server Requirements -->
-      <div class="mt-16">
-        <h3 class="text-2xl font-bold text-center mb-8">Cloud Server Requirements</h3>
-        <div class="grid md:grid-cols-3 gap-6">
-          <div class="bg-surface-900 border border-white/5 rounded-2xl p-6 text-center">
-            <div class="text-3xl mb-3">💻</div>
-            <h4 class="font-semibold text-lg mb-2">Development</h4>
-            <div class="text-sm text-gray-400 space-y-1">
-              <div>4 vCPU / 16 GB RAM</div>
-              <div>50 GB SSD</div>
-              <div>No GPU required</div>
-              <div class="pt-2 text-brand-400 font-medium">~$40/month</div>
-              <div class="text-xs text-gray-500">Hetzner CPX31 / DO s-4vcpu-16gb</div>
-            </div>
-          </div>
-
-          <div class="bg-surface-900 border-2 border-brand-500 rounded-2xl p-6 text-center relative">
-            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Recommended</div>
-            <div class="text-3xl mb-3">🚀</div>
-            <h4 class="font-semibold text-lg mb-2">Production</h4>
-            <div class="text-sm text-gray-400 space-y-1">
-              <div>8 vCPU / 32 GB RAM</div>
-              <div>200 GB NVMe SSD</div>
-              <div>1x NVIDIA A10 (24 GB) or L4</div>
-              <div class="pt-2 text-brand-400 font-medium">~$250-400/month</div>
-              <div class="text-xs text-gray-500">Lambda / RunPod / Vast.ai</div>
-            </div>
-          </div>
-
-          <div class="bg-surface-900 border border-white/5 rounded-2xl p-6 text-center">
-            <div class="text-3xl mb-3">⚡</div>
-            <h4 class="font-semibold text-lg mb-2">Enterprise</h4>
-            <div class="text-sm text-gray-400 space-y-1">
-              <div>16+ vCPU / 64+ GB RAM</div>
-              <div>1 TB NVMe SSD</div>
-              <div>2-4x A100 (80 GB) or H100</div>
-              <div class="pt-2 text-brand-400 font-medium">~$2000-5000/month</div>
-              <div class="text-xs text-gray-500">AWS p4d / GCP a2 / Azure ND</div>
-            </div>
-          </div>
+        <div class="deploy-option">
+          <div class="option-icon">🏢</div>
+          <h3>Self-Hosted</h3>
+          <div class="option-subtitle">Turnkey deployment into your private infrastructure. Full data isolation, no external dependencies.</div>
+          <ul class="option-features">
+            <li><span class="icon">✓</span> Deploy on your servers — air-gapped networks supported</li>
+            <li><span class="icon">✓</span> All data stays within your security perimeter</li>
+            <li><span class="icon">✓</span> Docker / Kubernetes deployment with GPU passthrough</li>
+            <li><span class="icon">✓</span> Run any open-weight model: Llama, Mistral, Qwen, Gemma</li>
+            <li><span class="icon">✓</span> SSO/SAML, RBAC, audit log, SOC2/HIPAA compliance</li>
+            <li><span class="icon">✓</span> Dedicated onboarding and support team</li>
+          </ul>
+          <div class="option-cta"><a href="#consultation" class="btn btn-lg" style="width:100%; justify-content:center;">Request Demo</a></div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- CTA -->
-  <section class="py-24">
-    <div class="max-w-3xl mx-auto px-6 text-center">
-      <h2 class="text-4xl font-bold mb-4">Ready to Forge?</h2>
-      <p class="text-gray-400 text-lg mb-8">
-        Join the open-source LLM platform that brings your full ML lifecycle under one roof.
-      </p>
-      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a href="https://github.com/VasilyKolbenev/LLM-forge_v1" target="_blank" class="bg-white text-surface-950 font-semibold px-8 py-3.5 rounded-xl text-lg hover:bg-gray-200 transition flex items-center gap-2">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+  <section class="cta" style="border-top: 1px solid var(--border);">
+    <div class="container">
+      <h2 class="reveal">Ready to Forge?</h2>
+      <p class="reveal">Join the open-source LLM platform that brings your full ML lifecycle under one roof.</p>
+      <div class="cta-actions reveal">
+        <a href="https://github.com/VasilyKolbenev/LLM-forge_v1" target="_blank" class="btn btn-primary btn-lg">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
           Star on GitHub
         </a>
-        <a href="#deploy" class="border border-white/10 hover:border-white/20 text-white font-medium px-8 py-3.5 rounded-xl text-lg transition">
-          Deployment Guide
-        </a>
+        <a href="#consultation" class="btn btn-lg">Request Demo</a>
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="border-t border-white/5 py-8">
-    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-2 text-sm text-gray-500">
-        <span>🔥</span> LLM Forge &middot; Open Source LLM Platform
-      </div>
-      <div class="flex items-center gap-6 text-sm text-gray-500">
-        <a href="https://github.com/VasilyKolbenev/LLM-forge_v1" target="_blank" class="hover:text-white transition">GitHub</a>
-        <a href="#features" class="hover:text-white transition">Docs</a>
-        <a href="#pricing" class="hover:text-white transition">Pricing</a>
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <span style="font-size:13px; color:var(--text-muted); display:flex; align-items:center; gap:6px;"><svg width="14" height="14" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="logo-ft" x1="16" y1="56" x2="48" y2="8" gradientUnits="userSpaceOnUse"><stop stop-color="#f97316"/><stop offset=".5" stop-color="#ef4444"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><path d="M32 4C32 4 20 18 20 30c0 4.5 2 8.5 5 11.5C22 38 20 33 24 28c2-2.5 4.5-4 8-8 3.5 4 6 5.5 8 8 4 5 2 10-1 13.5 3-3 5-7 5-11.5C44 18 32 4 32 4z" fill="url(#logo-ft)"/></svg> LLM Forge &middot; Open Source</span>
+      <div class="footer-links">
+        <a href="https://github.com/VasilyKolbenev/LLM-forge_v1" target="_blank">GitHub</a>
+        <a href="#features">Docs</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#consultation">Contact</a>
       </div>
     </div>
   </footer>
+
+  <!-- AUTH MODAL -->
+  <div id="auth-modal" class="modal-overlay" onclick="if(event.target===this)closeAuthModal()">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+      <div class="modal-tabs">
+        <button id="tab-signin" class="modal-tab active" onclick="switchTab('signin')">Sign In</button>
+        <button id="tab-signup" class="modal-tab" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+      <div id="auth-error" class="modal-error"></div>
+      <form id="auth-form" onsubmit="handleAuth(event)">
+        <div class="form-group" id="name-field" style="display:none"><label>Name</label><input id="auth-name" type="text" placeholder="Your name" /></div>
+        <div class="form-group"><label>Email</label><input id="auth-email" type="email" placeholder="you@company.com" required /></div>
+        <div class="form-group"><label>Password</label><input id="auth-password" type="password" placeholder="Min 6 characters" required minlength="6" /></div>
+        <button type="submit" class="btn btn-accent" style="width:100%" id="auth-submit">Sign In</button>
+      </form>
+      <div class="divider"><span>or</span></div>
+      <button onclick="googleSignIn()" class="google-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+      <button id="forgot-link" class="forgot-link" onclick="forgotPassword()">Forgot password?</button>
+    </div>
+  </div>
+
+  <!-- CHAT WIDGET -->
+  <button id="chat-toggle" class="chat-btn" onclick="toggleChat()">
+    <svg id="chat-ico-msg" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+    <svg id="chat-ico-x" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+  </button>
+  <div id="chat-panel" class="chat-panel closed">
+    <div class="chat-head"><svg width="22" height="22" viewBox="0 0 64 64" fill="none"><defs><linearGradient id="logo-ch" x1="16" y1="56" x2="48" y2="8" gradientUnits="userSpaceOnUse"><stop stop-color="#f97316"/><stop offset=".5" stop-color="#ef4444"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><path d="M32 4C32 4 20 18 20 30c0 4.5 2 8.5 5 11.5C22 38 20 33 24 28c2-2.5 4.5-4 8-8 3.5 4 6 5.5 8 8 4 5 2 10-1 13.5 3-3 5-7 5-11.5C44 18 32 4 32 4z" fill="url(#logo-ch)"/><circle cx="32" cy="36" r="3.5" fill="#09090b" opacity="0.5"/><circle cx="25" cy="43" r="2" fill="#09090b" opacity="0.35"/><circle cx="39" cy="43" r="2" fill="#09090b" opacity="0.35"/></svg><div><div class="name">LLM Forge AI</div><div class="sub">Ask about the platform</div></div></div>
+    <div id="chat-messages" class="chat-messages">
+      <div class="chat-msg bot">Hi! I'm the LLM Forge assistant. Ask me about features, pricing, deployment, or anything else.</div>
+    </div>
+    <div class="chat-input-wrap">
+      <form onsubmit="sendMsg(event)" style="display:contents">
+        <input id="chat-input" type="text" placeholder="Type your question..." />
+        <button type="submit"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg></button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // === Firebase Config (replace with your project) ===
+    const firebaseConfig = { apiKey:"YOUR_API_KEY", authDomain:"YOUR_PROJECT.firebaseapp.com", projectId:"YOUR_PROJECT_ID", storageBucket:"YOUR_PROJECT.appspot.com", messagingSenderId:"YOUR_SENDER_ID", appId:"YOUR_APP_ID" };
+    let fbAuth = null;
+    try { firebase.initializeApp(firebaseConfig); fbAuth = firebase.auth(); } catch(e) { console.warn("Firebase not configured:", e.message); }
+
+    let currentUser = null, authMode = 'signin';
+    if (fbAuth) fbAuth.onAuthStateChanged(u => { currentUser = u; updateAuth(); });
+
+    function updateAuth() {
+      const a = document.getElementById('auth-area');
+      if (currentUser) {
+        const n = currentUser.displayName || currentUser.email.split('@')[0];
+        const p = currentUser.photoURL;
+        a.innerHTML = `<div style="display:flex;align-items:center;gap:8px">${p?`<img src="${p}" style="width:28px;height:28px;border-radius:50%" referrerpolicy="no-referrer"/>`:`<div style="width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${n[0].toUpperCase()}</div>`}<span style="font-size:13px;color:var(--text-secondary)">${n}</span><button onclick="signOut()" class="btn btn-sm" style="font-size:12px;padding:4px 8px">Sign Out</button></div>`;
+      } else {
+        a.innerHTML = '<button onclick="openAuthModal()" class="btn btn-sm">Sign In</button>';
+      }
+    }
+
+    function openAuthModal() { document.getElementById('auth-modal').classList.add('open'); switchTab('signin'); }
+    function closeAuthModal() { document.getElementById('auth-modal').classList.remove('open'); document.getElementById('auth-error').classList.remove('show'); }
+    function switchTab(m) {
+      authMode = m;
+      document.getElementById('tab-signin').classList.toggle('active', m==='signin');
+      document.getElementById('tab-signup').classList.toggle('active', m==='signup');
+      document.getElementById('name-field').style.display = m==='signup'?'block':'none';
+      document.getElementById('auth-submit').textContent = m==='signin'?'Sign In':'Create Account';
+      document.getElementById('forgot-link').style.display = m==='signin'?'block':'none';
+      document.getElementById('auth-error').classList.remove('show');
+    }
+    function showError(msg) { const e=document.getElementById('auth-error'); e.textContent=msg; e.classList.add('show'); e.style.color='#f87171'; e.style.borderColor='rgba(239,68,68,0.2)'; e.style.background='rgba(239,68,68,0.1)'; }
+
+    async function handleAuth(e) {
+      e.preventDefault();
+      if (!fbAuth) { showError('Firebase not configured.'); return; }
+      const email=document.getElementById('auth-email').value, pass=document.getElementById('auth-password').value;
+      try {
+        if (authMode==='signup') { const c=await fbAuth.createUserWithEmailAndPassword(email,pass); const n=document.getElementById('auth-name').value; if(n) await c.user.updateProfile({displayName:n}); }
+        else { await fbAuth.signInWithEmailAndPassword(email,pass); }
+        closeAuthModal();
+      } catch(err) {
+        const msgs={'auth/email-already-in-use':'Email already registered.','auth/invalid-email':'Invalid email.','auth/weak-password':'Password too weak (min 6 chars).','auth/user-not-found':'No account found.','auth/wrong-password':'Wrong password.','auth/invalid-credential':'Invalid credentials.','auth/too-many-requests':'Too many attempts. Try later.'};
+        showError(msgs[err.code]||err.message);
+      }
+    }
+    async function googleSignIn() { if(!fbAuth){showError('Firebase not configured.');return;} try{await fbAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider());closeAuthModal();}catch(e){if(e.code!=='auth/popup-closed-by-user')showError(e.message);} }
+    async function signOut() { if(fbAuth) await fbAuth.signOut(); currentUser=null; updateAuth(); }
+    async function forgotPassword() { if(!fbAuth){showError('Firebase not configured.');return;} const e=document.getElementById('auth-email').value; if(!e){showError('Enter your email first.');return;} try{await fbAuth.sendPasswordResetEmail(e);const el=document.getElementById('auth-error');el.textContent='Reset email sent!';el.classList.add('show');el.style.color='#4ade80';el.style.borderColor='rgba(34,197,94,0.2)';el.style.background='rgba(34,197,94,0.1)';}catch(err){showError(err.message);} }
+
+    // === Mobile Menu ===
+    function toggleMobile() { document.getElementById('mobile-menu').classList.toggle('open'); }
+
+    // === GitHub button visibility ===
+    if (window.innerWidth >= 640) document.getElementById('gh-btn').style.display = 'inline-flex';
+
+    // === Chat Widget ===
+    let chatOpen=false, chatSession=sessionStorage.getItem('forge_chat')||null;
+    function toggleChat() {
+      chatOpen=!chatOpen;
+      document.getElementById('chat-panel').classList.toggle('closed',!chatOpen);
+      document.getElementById('chat-ico-msg').style.display=chatOpen?'none':'block';
+      document.getElementById('chat-ico-x').style.display=chatOpen?'block':'none';
+      if(chatOpen) document.getElementById('chat-input').focus();
+    }
+    function addMsg(role,text) {
+      const c=document.getElementById('chat-messages'), d=document.createElement('div');
+      d.className='chat-msg '+(role==='user'?'user':'bot');
+      d.textContent=text; c.appendChild(d); c.scrollTop=c.scrollHeight;
+    }
+    function showTyping() { const c=document.getElementById('chat-messages'),d=document.createElement('div');d.id='typing';d.className='chat-msg bot';d.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';c.appendChild(d);c.scrollTop=c.scrollHeight; }
+    function hideTyping() { const t=document.getElementById('typing');if(t)t.remove(); }
+    async function sendMsg(e) {
+      e.preventDefault(); const i=document.getElementById('chat-input'),m=i.value.trim(); if(!m)return;
+      i.value=''; addMsg('user',m); showTyping();
+      try {
+        const r=await fetch('/api/v1/site/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:m,session_id:chatSession})});
+        hideTyping();
+        if(!r.ok) throw new Error((await r.json().catch(()=>({}))).detail||'Error');
+        const d=await r.json(); chatSession=d.session_id; sessionStorage.setItem('forge_chat',chatSession); addMsg('bot',d.reply);
+      } catch(err) { hideTyping(); addMsg('bot','Our AI is temporarily unavailable. Please use the contact form or email hello@llmforge.dev.'); }
+    }
+
+    // === Scroll Reveal ===
+    const obs = new IntersectionObserver(entries => { entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  </script>
 
 </body>
 </html>
