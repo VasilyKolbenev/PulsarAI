@@ -16,6 +16,15 @@ import {
   Plug,
   ArrowLeftRight,
   Network,
+  ShieldCheck,
+  ShieldAlert,
+  Scale,
+  Split,
+  Bolt,
+  Bird,
+  ThumbsUp,
+  Activity,
+  SquareDashedBottom,
 } from "lucide-react"
 import type { DragEvent } from "react"
 
@@ -45,6 +54,15 @@ const PALETTE_ITEMS: PaletteItem[] = [
   { type: "mcp", label: "MCP", icon: Plug, color: "#7c3aed", group: "Protocols" },
   { type: "a2a", label: "A2A", icon: ArrowLeftRight, color: "#0891b2", group: "Protocols" },
   { type: "gateway", label: "Gateway", icon: Network, color: "#d97706", group: "Protocols" },
+  { type: "inputGuard", label: "Input Guard", icon: ShieldCheck, color: "#ef4444", group: "Safety" },
+  { type: "outputGuard", label: "Output Guard", icon: ShieldAlert, color: "#f97316", group: "Safety" },
+  { type: "llmJudge", label: "LLM Judge", icon: Scale, color: "#8b5cf6", group: "Evaluation" },
+  { type: "abTest", label: "A/B Test", icon: Split, color: "#ec4899", group: "Evaluation" },
+  { type: "cache", label: "Cache", icon: Bolt, color: "#f59e0b", group: "Ops" },
+  { type: "canary", label: "Canary", icon: Bird, color: "#10b981", group: "Ops" },
+  { type: "feedback", label: "Feedback", icon: ThumbsUp, color: "#0ea5e9", group: "Ops" },
+  { type: "tracer", label: "Tracer", icon: Activity, color: "#6366f1", group: "Ops" },
+  { type: "group", label: "Group", icon: SquareDashedBottom, color: "#94a3b8", group: "Structure" },
 ]
 
 function onDragStart(e: DragEvent, nodeType: string, label: string) {

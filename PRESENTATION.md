@@ -27,7 +27,7 @@ Teams building LLM-powered products today juggle:
 | Capability | Description |
 |-----------|-------------|
 | **Fine-Tuning** | SFT + DPO with LoRA/QLoRA, Unsloth acceleration, 4/8-bit quantization |
-| **Visual Workflow Builder** | Drag-and-drop DAG pipeline: 17 node types, from data to deployment |
+| **Visual Workflow Builder** | Drag-and-drop DAG pipeline: 26 node types, C4-style groups, one-click run |
 | **Agent Framework** | Built-in ReAct agent + LangGraph/CrewAI/AutoGen selector |
 | **RAG Pipeline** | Vector store integration (Chroma, FAISS, Qdrant, Pinecone) |
 | **Model Serving** | One-click deploy via vLLM, llama.cpp, TGI, Ollama |
@@ -43,6 +43,17 @@ Teams building LLM-powered products today juggle:
 | **HuggingFace Hub** | Direct dataset loading from HF Hub with dedup and column filtering |
 | **Pipeline Conditionals** | Conditional step execution based on metric thresholds |
 | **Protocols** | MCP tool exposure, A2A agent delegation, API Gateway routing |
+| **Guardrails** | Input/output guards: PII masking, injection detection, toxicity filter, JSON schema |
+| **LLM-as-Judge** | Automated evaluation with customizable criteria and pairwise comparison |
+| **A/B Testing** | Traffic splitting, metric collection, statistical winner detection |
+| **Canary Deploy** | Gradual rollout with auto-rollback on error thresholds |
+| **Observability** | OpenTelemetry-style tracing, per-span token/cost tracking |
+| **Semantic Cache** | LLM response caching with TTL, LRU eviction, hit rate stats |
+| **Cost Tracking** | Per-model/operation token cost estimation with budget alerts |
+| **Human Feedback** | Thumbs/rating/preference collection → auto DPO pair export |
+| **Dataset Versioning** | DVC-like version tracking with fingerprints, diffs, lineage |
+| **Model Cards** | Auto-generated documentation from training config and metrics |
+| **One-Click Run** | WebSocket pipeline execution with live per-node progress |
 | **Self-Hosted** | Docker one-liner deployment, no cloud dependency |
 
 ---
@@ -67,7 +78,7 @@ Teams building LLM-powered products today juggle:
 │  │ Upload  │ │ SSH Pool │ │ Version  │ │ Store          │  │
 │  │ Preview │ │ Remote   │ │ Diff     │ │ JSON → DAG     │  │
 │  │ JSONL/  │ │ GPU      │ │ Template │ │ Export config  │  │
-│  │ CSV/    │ │ Detect   │ │ Test     │ │ 17 node types  │  │
+│  │ CSV/    │ │ Detect   │ │ Test     │ │ 26 node types  │  │
 │  │ Parquet │ │          │ │          │ │                │  │
 │  └─────────┘ └──────────┘ └──────────┘ └────────────────┘  │
 │  ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌────────────────┐  │
@@ -75,6 +86,12 @@ Teams building LLM-powered products today juggle:
 │  │ Local   │ │ Optuna   │ │ Version  │ │ MCP Server     │  │
 │  │ ClearML │ │ Sweeps   │ │ Stage    │ │ A2A Protocol   │  │
 │  │ W&B     │ │ YAML     │ │ Compare  │ │ API Gateway    │  │
+│  └─────────┘ └──────────┘ └──────────┘ └────────────────┘  │
+│  ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌────────────────┐  │
+│  │Guard-   │ │ Eval     │ │ Deploy   │ │ Observability  │  │
+│  │ rails   │ │ LLM Judge│ │ Canary   │ │ Tracer         │  │
+│  │ PII     │ │ A/B Test │ │ A/B      │ │ Cost Tracker   │  │
+│  │ Inject  │ │ Compare  │ │ Rollback │ │ Cache          │  │
 │  └─────────┘ └──────────┘ └──────────┘ └────────────────┘  │
 ├─────────────────────────────────────────────────────────────┤
 │        PyTorch + Transformers + PEFT + TRL + Accelerate      │
@@ -102,7 +119,7 @@ Independent branches (no shared edges) are resolved correctly but execute one at
 
 ---
 
-## Workflow Builder — 17 Node Types
+## Workflow Builder — 26 Node Types
 
 ### Data Layer
 | Node | Purpose | Key Config |
@@ -140,6 +157,31 @@ Independent branches (no shared edges) are resolved correctly but execute one at
 | **MCP** | Model Context Protocol server/client | role, transport (stdio/SSE/HTTP), tools, endpoint |
 | **A2A** | Agent-to-Agent delegation (Google protocol) | protocol, delegation mode, agent card URL, timeout |
 | **Gateway** | API gateway with multi-protocol routing | protocols (REST/gRPC/GraphQL), auth, rate limit, load balancer |
+
+### Safety Layer
+| Node | Purpose | Key Config |
+|------|---------|-----------|
+| **Input Guard** | Filter inputs: PII, injection, toxicity | rules, action (block/warn/mask), sensitivity |
+| **Output Guard** | Validate outputs: JSON schema, PII leaks, length | validators, required_keys, max_length |
+
+### Evaluation Layer
+| Node | Purpose | Key Config |
+|------|---------|-----------|
+| **LLM Judge** | LLM-as-judge with criteria rubrics | criteria, judge_model, scale, comparison_mode |
+| **A/B Test** | Compare models with traffic splitting | metric, traffic_split, min_samples, confidence |
+
+### Ops Layer
+| Node | Purpose | Key Config |
+|------|---------|-----------|
+| **Cache** | Semantic LLM response caching | strategy (exact/semantic), TTL, max_entries |
+| **Canary** | Gradual model rollout with rollback | canary_weight, error_threshold, auto_rollback |
+| **Feedback** | Human feedback → DPO training data | type (thumbs/rating/preference), export_format |
+| **Tracer** | Observability spans with cost tracking | backend, cost_tracking, sample_rate |
+
+### Structure
+| Node | Purpose | Key Config |
+|------|---------|-----------|
+| **Group** | C4-level container for sub-workflows | c4_level (Context/Container/Component), collapsed |
 
 ---
 
@@ -256,7 +298,14 @@ Unified access point for all your agents:
 | **Tracking** | Local + ClearML + Weights & Biases (pluggable) |
 | **HPO** | Optuna-based hyperparameter sweeps |
 | **Protocols** | MCP (server/client), A2A (Google Agent-to-Agent), API Gateway |
-| **Testing** | pytest (530+ tests), >85% coverage |
+| **Guardrails** | PII detection, injection defense, toxicity filtering, JSON schema validation |
+| **Evaluation** | LLM-as-Judge, A/B testing with statistical comparison |
+| **Deployment** | Canary rollout, auto-rollback, A/B traffic splitting |
+| **Caching** | Semantic LLM response cache with LRU eviction |
+| **Cost** | Per-model token cost tracking with budget alerts |
+| **Feedback** | Human-in-the-loop → DPO pair export |
+| **Dataset Versioning** | Fingerprint-based version tracking with diffs and lineage |
+| **Testing** | pytest (809 tests), >85% coverage |
 
 ---
 
@@ -279,9 +328,10 @@ Plus: **Forge Co-pilot** (floating assistant widget on every page)
 
 ## Test Coverage
 
-- **530+ automated tests** covering all modules
+- **809 automated tests** covering all modules
 - Training (SFT/DPO), Pipeline, Agent, Compute, UI routes, Auth, Security
 - Protocols (MCP, A2A, Gateway), Tracking, HPO, Registry
+- Guardrails, LLM Judge, A/B Testing, Canary, Cache, Cost, Feedback, Dataset Versioning
 - CI-ready: `pytest tests/ -x -q`
 
 ---
@@ -309,11 +359,11 @@ Environment variables:
 
 | Metric | Value |
 |--------|-------|
-| Python modules | ~55 files, ~9000 LOC |
-| React components | ~35 files, ~5000 LOC |
-| Test count | 530+ |
-| API endpoints | ~45 |
-| Node types | 17 |
+| Python modules | ~65 files, ~12000 LOC |
+| React components | ~45 files, ~6000 LOC |
+| Test count | 809 |
+| API endpoints | ~50 |
+| Node types | 26 |
 | Supported frameworks | 5 (Forge, LangGraph, CrewAI, AutoGen, Custom) |
 | Supported protocols | 3 (MCP, A2A, API Gateway) |
 | Supported model formats | 5 (GGUF, merged, LoRA, HF, custom) |
@@ -328,7 +378,7 @@ Environment variables:
 
 | Tier | Price | Target | Features |
 |------|-------|--------|----------|
-| **Community** | Free / OSS | Individual devs, researchers | Full local platform, 17 nodes, MCP/A2A, unlimited training, self-hosted |
+| **Community** | Free / OSS | Individual devs, researchers | Full local platform, 26 nodes, MCP/A2A, guardrails, unlimited training, self-hosted |
 | **Team** | $49/user/month | Startups (5-20 people) | + Team collaboration, shared workflows, RBAC, audit log |
 | **Enterprise** | $199/user/month | Enterprise (50+) | + SSO/SAML, multi-cluster compute, priority support, SLA |
 | **Cloud** | Usage-based | Anyone | Managed hosting, GPU marketplace, pay-per-training-hour |

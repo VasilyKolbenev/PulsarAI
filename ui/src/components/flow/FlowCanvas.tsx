@@ -26,6 +26,15 @@ import { SplitterNode } from "./nodes/SplitterNode"
 import { MCPNode } from "./nodes/MCPNode"
 import { A2ANode } from "./nodes/A2ANode"
 import { GatewayNode } from "./nodes/GatewayNode"
+import { InputGuardNode } from "./nodes/InputGuardNode"
+import { OutputGuardNode } from "./nodes/OutputGuardNode"
+import { LLMJudgeNode } from "./nodes/LLMJudgeNode"
+import { ABTestNode } from "./nodes/ABTestNode"
+import { CacheNode } from "./nodes/CacheNode"
+import { CanaryNode } from "./nodes/CanaryNode"
+import { FeedbackNode } from "./nodes/FeedbackNode"
+import { TracerNode } from "./nodes/TracerNode"
+import { GroupNode } from "./nodes/GroupNode"
 import type { useWorkflow } from "@/hooks/useWorkflow"
 
 const nodeTypes = {
@@ -46,6 +55,15 @@ const nodeTypes = {
   mcp: MCPNode,
   a2a: A2ANode,
   gateway: GatewayNode,
+  inputGuard: InputGuardNode,
+  outputGuard: OutputGuardNode,
+  llmJudge: LLMJudgeNode,
+  abTest: ABTestNode,
+  cache: CacheNode,
+  canary: CanaryNode,
+  feedback: FeedbackNode,
+  tracer: TracerNode,
+  group: GroupNode,
 }
 
 type WorkflowHook = ReturnType<typeof useWorkflow>
@@ -132,6 +150,15 @@ export function FlowCanvas({ workflow }: FlowCanvasProps) {
               mcp: "#7c3aed",
               a2a: "#0891b2",
               gateway: "#d97706",
+              inputGuard: "#ef4444",
+              outputGuard: "#f97316",
+              llmJudge: "#8b5cf6",
+              abTest: "#ec4899",
+              cache: "#f59e0b",
+              canary: "#10b981",
+              feedback: "#0ea5e9",
+              tracer: "#6366f1",
+              group: "#94a3b8",
             }
             return colors[n.type || ""] || "#6d5dfc"
           }}

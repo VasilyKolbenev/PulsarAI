@@ -28,6 +28,7 @@ from llm_forge.ui.routes.runs import router as runs_router
 from llm_forge.ui.routes.registry import router as registry_router
 from llm_forge.ui.routes.serving import router as serving_router
 from llm_forge.ui.routes.protocols import router as protocols_router
+from llm_forge.ui.routes.pipeline_run import router as pipeline_run_router
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +96,7 @@ def create_app() -> FastAPI:
     app.include_router(registry_router, prefix="/api/v1")
     app.include_router(serving_router, prefix="/api/v1")
     app.include_router(protocols_router)
+    app.include_router(pipeline_run_router)
 
     @app.get("/api/v1/health")
     async def health() -> dict:

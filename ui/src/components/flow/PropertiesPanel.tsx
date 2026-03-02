@@ -176,6 +176,67 @@ const FLAT_FIELDS: Record<string, FieldDef[]> = {
     { key: "load_balancer", label: "Load Balancer", type: "select", options: ["round_robin", "least_connections", "weighted"] },
     { key: "ssl_enabled", label: "SSL/TLS", type: "boolean" },
   ],
+  inputGuard: [
+    { key: "rules", label: "Rules", type: "text", placeholder: "pii,injection,toxicity" },
+    { key: "action", label: "Default Action", type: "select", options: ["block", "warn", "mask", "log"] },
+    { key: "pii_types", label: "PII Types", type: "text", placeholder: "email,phone,ssn,credit_card" },
+    { key: "custom_blocklist", label: "Blocklist (comma-sep)", type: "text", placeholder: "word1,word2" },
+    { key: "sensitivity", label: "Sensitivity", type: "select", options: ["low", "medium", "high"] },
+  ],
+  outputGuard: [
+    { key: "pii_check", label: "PII Leak Detection", type: "boolean" },
+    { key: "json_schema", label: "JSON Validation", type: "boolean" },
+    { key: "required_keys", label: "Required JSON Keys", type: "text", placeholder: "answer,sources" },
+    { key: "max_length", label: "Max Output Length", type: "number", placeholder: "4096" },
+    { key: "regex_pattern", label: "Must Match Regex", type: "text", placeholder: "" },
+    { key: "action", label: "Action on Fail", type: "select", options: ["block", "warn", "mask"] },
+  ],
+  llmJudge: [
+    { key: "criteria", label: "Criteria (comma-sep)", type: "text", placeholder: "helpfulness,accuracy,safety" },
+    { key: "judge_model", label: "Judge Model", type: "text", placeholder: "claude-sonnet-4-6" },
+    { key: "scale_min", label: "Scale Min", type: "number", placeholder: "1" },
+    { key: "scale_max", label: "Scale Max", type: "number", placeholder: "5" },
+    { key: "comparison_mode", label: "Comparison Mode", type: "boolean" },
+  ],
+  abTest: [
+    { key: "metric", label: "Metric", type: "text", placeholder: "latency_ms" },
+    { key: "traffic_split", label: "Traffic Split", type: "text", placeholder: "50/50" },
+    { key: "min_samples", label: "Min Samples", type: "number", placeholder: "100" },
+    { key: "confidence_level", label: "Confidence Level", type: "number", placeholder: "0.95" },
+    { key: "lower_is_better", label: "Lower is Better", type: "boolean" },
+  ],
+  cache: [
+    { key: "strategy", label: "Strategy", type: "select", options: ["exact", "semantic"] },
+    { key: "ttl", label: "TTL (seconds)", type: "number", placeholder: "3600" },
+    { key: "max_entries", label: "Max Entries", type: "number", placeholder: "10000" },
+    { key: "model_partitioned", label: "Partition by Model", type: "boolean" },
+  ],
+  canary: [
+    { key: "canary_weight", label: "Canary Weight (%)", type: "number", placeholder: "10" },
+    { key: "error_threshold", label: "Error Threshold (%)", type: "number", placeholder: "5" },
+    { key: "min_requests", label: "Min Requests", type: "number", placeholder: "100" },
+    { key: "auto_rollback", label: "Auto Rollback", type: "boolean" },
+    { key: "auto_promote", label: "Auto Promote", type: "boolean" },
+    { key: "promote_after", label: "Promote After (requests)", type: "number", placeholder: "1000" },
+  ],
+  feedback: [
+    { key: "feedback_type", label: "Type", type: "select", options: ["thumbs", "rating", "preference", "text"] },
+    { key: "export_format", label: "Export Format", type: "select", options: ["dpo", "sft", "rlhf", "jsonl"] },
+    { key: "min_rating", label: "Min Rating for Chosen", type: "number", placeholder: "3" },
+    { key: "auto_export", label: "Auto Export", type: "boolean" },
+  ],
+  tracer: [
+    { key: "backend", label: "Backend", type: "select", options: ["local", "opentelemetry", "jaeger"] },
+    { key: "cost_tracking", label: "Cost Tracking", type: "boolean" },
+    { key: "max_traces", label: "Max Traces", type: "number", placeholder: "1000" },
+    { key: "sample_rate", label: "Sample Rate", type: "number", placeholder: "1.0" },
+  ],
+  group: [
+    { key: "c4_level", label: "C4 Level", type: "select", options: ["Context", "Container", "Component"] },
+    { key: "description", label: "Description", type: "textarea", placeholder: "Group description..." },
+    { key: "collapsed", label: "Collapsed", type: "boolean" },
+    { key: "color", label: "Color", type: "text", placeholder: "#94a3b8" },
+  ],
 }
 
 export function PropertiesPanel({ node, onClose, onUpdate }: PropertiesPanelProps) {
