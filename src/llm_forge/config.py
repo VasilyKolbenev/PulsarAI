@@ -63,8 +63,8 @@ def resolve_config_path(name: str, config_dir: Optional[Path] = None) -> Path:
     Supports:
         - Full path: /absolute/path/to/config.yaml
         - Relative path: ./my_config.yaml
-        - Short name: base → configs/base.yaml
-        - Nested name: models/qwen2.5-3b → configs/models/qwen2.5-3b.yaml
+        - Short name: base -> configs/base.yaml
+        - Nested name: models/qwen2.5-3b -> configs/models/qwen2.5-3b.yaml
 
     Args:
         name: Config name or path.
@@ -106,7 +106,7 @@ def load_config(
 
     Pipeline:
         1. Load experiment config
-        2. Resolve `inherit:` list (base → model → strategy → task)
+        2. Resolve `inherit:` list (base -> model -> strategy -> task)
         3. Merge inherited configs (left to right, experiment wins)
         4. If strategy=auto, detect hardware and apply strategy overrides
         5. Apply CLI overrides (highest priority)
@@ -160,7 +160,7 @@ def load_config(
             )
         merged["training"] = training
         logger.info(
-            "Auto-detected strategy: %s (%d × %s, %.1f GB)",
+            "Auto-detected strategy: %s (%d x %s, %.1f GB)",
             hw.strategy,
             hw.num_gpus,
             hw.gpu_name,
@@ -181,7 +181,7 @@ def _set_nested(d: dict, key: str, value: Any) -> None:
 
     Example:
         _set_nested(d, "training.learning_rate", 1e-4)
-        → d["training"]["learning_rate"] = 1e-4
+        -> d["training"]["learning_rate"] = 1e-4
 
     Args:
         d: Target dict.

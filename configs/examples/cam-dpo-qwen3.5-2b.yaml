@@ -1,4 +1,4 @@
-# CAM Intent Classifier — Qwen 3.5 2B DPO
+# CAM Intent Classifier вЂ” Qwen 3.5 2B DPO
 # Preference tuning on top of SFT adapter
 # Run after cam-sft-qwen3.5-2b completes
 
@@ -20,7 +20,7 @@ dpo:
 
 training:
   epochs: 2
-  learning_rate: 5e-5
+  learning_rate: 0.00005
 
 output:
   dir: ./outputs/cam-dpo-qwen3.5-2b

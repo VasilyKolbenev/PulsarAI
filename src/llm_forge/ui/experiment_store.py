@@ -1,15 +1,22 @@
-"""JSON-based experiment tracker for Web UI."""
+﻿"""JSON-based experiment tracker for Web UI."""
 
 import json
 import logging
+import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_STORE_PATH = Path("./data/experiments.json")
+try:
+    DEFAULT_STALE_RUNNING_MINUTES = int(
+        os.environ.get("FORGE_STALE_RUNNING_MINUTES", "90")
+    )
+except ValueError:
+    DEFAULT_STALE_RUNNING_MINUTES = 90
 
 
 class ExperimentStore:
@@ -38,22 +45,26 @@ class ExperimentStore:
         """
         exp_id = str(uuid.uuid4())[:8]
         experiments = self._load()
+        now_iso = datetime.now().isoformat()
 
-        experiments.append({
-            "id": exp_id,
-            "name": name,
-            "status": "queued",
-            "task": task,
-            "model": config.get("model", {}).get("name", "unknown"),
-            "dataset_id": config.get("_dataset_id", ""),
-            "config": config,
-            "created_at": datetime.now().isoformat(),
-            "completed_at": None,
-            "final_loss": None,
-            "training_history": [],
-            "eval_results": None,
-            "artifacts": {},
-        })
+        experiments.append(
+            {
+                "id": exp_id,
+                "name": name,
+                "status": "queued",
+                "task": task,
+                "model": config.get("model", {}).get("name", "unknown"),
+                "dataset_id": config.get("_dataset_id", ""),
+                "config": config,
+                "created_at": now_iso,
+                "last_update_at": now_iso,
+                "completed_at": None,
+                "final_loss": None,
+                "training_history": [],
+                "eval_results": None,
+                "artifacts": {},
+            }
+        )
 
         self._save(experiments)
         logger.info("Created experiment %s: %s", exp_id, name)
@@ -67,11 +78,13 @@ class ExperimentStore:
             status: New status (queued/running/completed/failed).
         """
         experiments = self._load()
+        now_iso = datetime.now().isoformat()
         for exp in experiments:
             if exp["id"] == exp_id:
                 exp["status"] = status
-                if status == "completed":
-                    exp["completed_at"] = datetime.now().isoformat()
+                exp["last_update_at"] = now_iso
+                if status in {"completed", "failed"}:
+                    exp["completed_at"] = now_iso
                 break
         self._save(experiments)
 
@@ -85,9 +98,14 @@ class ExperimentStore:
         experiments = self._load()
         for exp in experiments:
             if exp["id"] == exp_id:
-                exp["training_history"].append(metrics)
-                if "loss" in metrics:
+                exp.setdefault("training_history", []).append(metrics)
+                if "loss" in metrics and metrics["loss"] is not None:
                     exp["final_loss"] = metrics["loss"]
+                exp["last_update_at"] = (
+                    metrics.get("time")
+                    if isinstance(metrics.get("time"), str)
+                    else datetime.now().isoformat()
+                )
                 break
         self._save(experiments)
 
@@ -102,6 +120,7 @@ class ExperimentStore:
         for exp in experiments:
             if exp["id"] == exp_id:
                 exp["artifacts"] = artifacts
+                exp["last_update_at"] = datetime.now().isoformat()
                 break
         self._save(experiments)
 
@@ -116,8 +135,62 @@ class ExperimentStore:
         for exp in experiments:
             if exp["id"] == exp_id:
                 exp["eval_results"] = results
+                exp["last_update_at"] = datetime.now().isoformat()
                 break
         self._save(experiments)
+
+    def reconcile_stale_running(self, stale_after_minutes: int | None = None) -> int:
+        """Mark stale running experiments as failed.
+
+        A stale experiment is one with status=running and no updates for more than
+        `stale_after_minutes` minutes.
+
+        Args:
+            stale_after_minutes: Override threshold; defaults to env setting.
+
+        Returns:
+            Number of reconciled experiments.
+        """
+        threshold_min = (
+            DEFAULT_STALE_RUNNING_MINUTES
+            if stale_after_minutes is None
+            else stale_after_minutes
+        )
+        if threshold_min <= 0:
+            return 0
+
+        now = datetime.now()
+        experiments = self._load()
+        updated = 0
+
+        for exp in experiments:
+            if exp.get("status") != "running":
+                continue
+
+            last_seen = self._get_last_seen(exp)
+            if last_seen is None:
+                continue
+
+            if now - last_seen <= timedelta(minutes=threshold_min):
+                continue
+
+            exp["status"] = "failed"
+            exp["completed_at"] = now.isoformat()
+            exp["last_update_at"] = now.isoformat()
+            artifacts = exp.get("artifacts") or {}
+            if "error" not in artifacts:
+                artifacts["error"] = (
+                    "Marked failed automatically: no progress updates "
+                    f"for more than {threshold_min} minutes"
+                )
+            exp["artifacts"] = artifacts
+            updated += 1
+
+        if updated:
+            self._save(experiments)
+            logger.warning("Reconciled %d stale running experiments", updated)
+
+        return updated
 
     def get(self, exp_id: str) -> dict | None:
         """Get a single experiment by ID.
@@ -142,6 +215,7 @@ class ExperimentStore:
         Returns:
             List of experiment dicts (newest first).
         """
+        self.reconcile_stale_running()
         experiments = self._load()
         if status:
             experiments = [e for e in experiments if e["status"] == status]
@@ -163,6 +237,38 @@ class ExperimentStore:
             self._save(experiments)
             return True
         return False
+
+    @staticmethod
+    def _parse_dt(value: Any) -> datetime | None:
+        if not isinstance(value, str) or not value:
+            return None
+        raw = value.strip()
+        if raw.endswith("Z"):
+            raw = raw[:-1] + "+00:00"
+        try:
+            parsed = datetime.fromisoformat(raw)
+        except ValueError:
+            return None
+        if parsed.tzinfo is not None:
+            parsed = parsed.astimezone(timezone.utc).replace(tzinfo=None)
+        return parsed
+
+    def _get_last_seen(self, exp: dict) -> datetime | None:
+        candidates: list[Any] = [exp.get("last_update_at")]
+
+        history = exp.get("training_history")
+        if isinstance(history, list) and history:
+            last = history[-1]
+            if isinstance(last, dict):
+                candidates.append(last.get("time"))
+
+        candidates.append(exp.get("created_at"))
+
+        for item in candidates:
+            parsed = self._parse_dt(item)
+            if parsed is not None:
+                return parsed
+        return None
 
     def _load(self) -> list[dict]:
         with open(self.store_path, encoding="utf-8") as f:

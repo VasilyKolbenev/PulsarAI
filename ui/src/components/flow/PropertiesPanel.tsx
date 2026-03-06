@@ -77,6 +77,11 @@ const DPO_GROUP: FieldGroup = {
   collapsed: true,
 }
 
+const AGENT_GOV_FIELDS: FieldDef[] = [
+  { key: "agent_role", label: "Agent Role", type: "select", options: ["intake", "kyc_aml", "risk_scoring", "decision", "compliance", "collections", "support"] },
+  { key: "risk_level", label: "Risk Level", type: "select", options: ["low", "medium", "high", "critical"] },
+  { key: "requires_approval", label: "Requires Approval", type: "boolean" },
+]
 const FLAT_FIELDS: Record<string, FieldDef[]> = {
   dataSource: [
     { key: "path", label: "File Path", type: "text", placeholder: "/data/train.jsonl" },
@@ -101,6 +106,7 @@ const FLAT_FIELDS: Record<string, FieldDef[]> = {
     { key: "tools", label: "Tools (comma-separated)", type: "text", placeholder: "search,calculator,code" },
     { key: "max_iterations", label: "Max Iterations", type: "number", placeholder: "10" },
     { key: "memory_type", label: "Memory", type: "select", options: ["none", "short_term", "long_term", "both"] },
+    ...AGENT_GOV_FIELDS,
   ],
   prompt: [
     { key: "template", label: "Template", type: "textarea", placeholder: "{{input}}\n\nRespond as..." },
@@ -132,6 +138,7 @@ const FLAT_FIELDS: Record<string, FieldDef[]> = {
     { key: "routes", label: "Routes (comma-separated)", type: "text", placeholder: "code,research,chat" },
     { key: "classifier_prompt", label: "Classifier Prompt", type: "textarea", placeholder: "Classify the query into..." },
     { key: "fallback_route", label: "Fallback Route", type: "text", placeholder: "fallback" },
+    ...AGENT_GOV_FIELDS,
   ],
   dataGen: [
     { key: "output_format", label: "Output Format", type: "select", options: ["sft", "dpo", "rlhf", "raw_traces"] },
@@ -167,6 +174,7 @@ const FLAT_FIELDS: Record<string, FieldDef[]> = {
     { key: "task_timeout", label: "Task Timeout (s)", type: "number", placeholder: "300" },
     { key: "retry_count", label: "Retry Count", type: "number", placeholder: "3" },
     { key: "agent_card_url", label: "Agent Card URL", type: "text", placeholder: "https://agent.example/.well-known/agent.json" },
+    ...AGENT_GOV_FIELDS,
   ],
   gateway: [
     { key: "protocols", label: "Protocols", type: "text", placeholder: "REST,GraphQL,gRPC" },
@@ -175,6 +183,7 @@ const FLAT_FIELDS: Record<string, FieldDef[]> = {
     { key: "cors_origins", label: "CORS Origins", type: "text", placeholder: "http://localhost:3000" },
     { key: "load_balancer", label: "Load Balancer", type: "select", options: ["round_robin", "least_connections", "weighted"] },
     { key: "ssl_enabled", label: "SSL/TLS", type: "boolean" },
+    ...AGENT_GOV_FIELDS,
   ],
   inputGuard: [
     { key: "rules", label: "Rules", type: "text", placeholder: "pii,injection,toxicity" },
@@ -426,3 +435,4 @@ function FieldInput({
     </div>
   )
 }
+

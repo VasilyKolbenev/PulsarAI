@@ -1,7 +1,8 @@
-"""CLI entrypoint for llm-forge: forge train/eval/export/serve."""
+﻿"""CLI entrypoint for llm-forge: forge train/eval/export/serve."""
 
 import logging
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -124,19 +125,82 @@ def train(
 
     _show_config_summary(config, task)
 
-    if task == "sft":
-        from llm_forge.training.sft import train_sft
+    ui_store = None
+    ui_experiment_id = None
+    progress = None
 
-        results = train_sft(config)
-    elif task == "dpo":
-        from llm_forge.training.dpo import train_dpo
+    # Mirror CLI runs to UI ExperimentStore so active training is visible in Web UI.
+    try:
+        from llm_forge.ui.experiment_store import ExperimentStore
 
-        results = train_dpo(config)
-    else:
-        console.print(f"[red]Unknown task: {task}[/red]")
-        sys.exit(1)
+        ui_store = ExperimentStore()
+        run_name = config.get("name") or Path(config_path).stem
+        run_name = f"[CLI] {run_name}"
+        ui_experiment_id = ui_store.create(name=run_name, config=config, task=task)
+        ui_store.update_status(ui_experiment_id, "running")
+        ui_store.add_metrics(
+            ui_experiment_id,
+            {
+                "step": 0,
+                "epoch": 0.0,
+                "event": "started",
+                "time": datetime.now().isoformat(),
+            },
+        )
 
-    _show_training_results(results)
+        from llm_forge.ui.progress import ProgressCallback
+
+        progress = ProgressCallback(
+            job_id=f"cli-{ui_experiment_id}",
+            experiment_id=ui_experiment_id,
+        )
+        logger.info("CLI run synced to UI ExperimentStore: %s", ui_experiment_id)
+    except Exception:
+        logger.debug("UI ExperimentStore sync unavailable for CLI run", exc_info=True)
+
+    try:
+        if task == "sft":
+            from llm_forge.training.sft import train_sft
+
+            results = train_sft(config, progress=progress)
+        elif task == "dpo":
+            from llm_forge.training.dpo import train_dpo
+
+            results = train_dpo(config, progress=progress)
+        else:
+            console.print(f"[red]Unknown task: {task}[/red]")
+            sys.exit(1)
+
+        if ui_store and ui_experiment_id:
+            ui_store.update_status(ui_experiment_id, "completed")
+            artifacts = {k: v for k, v in results.items() if isinstance(v, str)}
+            if artifacts:
+                ui_store.set_artifacts(ui_experiment_id, artifacts)
+            if "training_loss" in results:
+                ui_store.add_metrics(
+                    ui_experiment_id,
+                    {
+                        "step": results.get("global_steps", 0),
+                        "loss": results["training_loss"],
+                        "event": "metric",
+                    },
+                )
+            if "eval_results" in results:
+                ui_store.set_eval_results(ui_experiment_id, results["eval_results"])
+
+        _show_training_results(results)
+    except Exception:
+        if ui_store and ui_experiment_id:
+            ui_store.update_status(ui_experiment_id, "failed")
+        raise
+    finally:
+        if progress is not None:
+            try:
+                from llm_forge.ui.progress import cleanup_queue
+
+                cleanup_queue(progress.job_id)
+            except Exception:
+                logger.debug("Failed to cleanup CLI progress queue", exc_info=True)
 
 
 @main.command(name="eval")
@@ -424,9 +488,9 @@ def info() -> None:
     console.print(table)
 
 
-# ──────────────────────────────────────────────────────────
+# РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 # Agent subgroup
-# ──────────────────────────────────────────────────────────
+# РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 
 @main.group()
 def agent() -> None:
@@ -597,9 +661,9 @@ def agent_serve(config_path: str, host: str, port: int) -> None:
     start_agent_server(config, host=host, port=port)
 
 
-# ──────────────────────────────────────────────────────────
+# РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 # Web UI command
-# ──────────────────────────────────────────────────────────
+# РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 
 @main.command(name="ui")
 @click.option("--host", default="0.0.0.0", help="Server host.")
@@ -624,9 +688,9 @@ def ui(host: str, port: int) -> None:
     start_ui_server(host=host, port=port)
 
 
-# ──────────────────────────────────────────────────────────
+# РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 # Pipeline subgroup
-# ──────────────────────────────────────────────────────────
+# РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 
 @main.group()
 def pipeline() -> None:
@@ -674,7 +738,7 @@ def pipeline_run(config_path: str) -> None:
                 f"{k}={v}" for k, v in result.items()
                 if isinstance(v, (str, int, float)) and k != "output_dir"
             )[:80]
-            table.add_row(step_name, "completed", keys or "—")
+            table.add_row(step_name, "completed", keys or "-")
 
         console.print(table)
     except RuntimeError as e:
@@ -724,9 +788,9 @@ def pipeline_list(name: str | None) -> None:
     console.print(table)
 
 
-# ──────────────────────────────────────────────────────────
+# РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 # Experiment tracking & comparison
-# ──────────────────────────────────────────────────────────
+# РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 
 @main.group()
 def runs() -> None:
@@ -764,9 +828,9 @@ def runs_list(project: str | None, status: str | None, limit: int) -> None:
         status_val = run.get("status", "?")
         style = "green" if status_val == "completed" else "red" if status_val == "failed" else "yellow"
         loss = run.get("results", {}).get("training_loss")
-        loss_str = f"{loss:.4f}" if isinstance(loss, (int, float)) else "—"
+        loss_str = f"{loss:.4f}" if isinstance(loss, (int, float)) else "-"
         duration = run.get("duration_s")
-        dur_str = f"{duration:.0f}s" if duration else "—"
+        dur_str = f"{duration:.0f}s" if duration else "-"
 
         table.add_row(
             run.get("run_id", "?")[:12],
@@ -876,9 +940,9 @@ def runs_compare(run_ids: tuple[str, ...]) -> None:
         console.print(table)
 
 
-# ──────────────────────────────────────────────────────────
+# РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 # HPO sweep
-# ──────────────────────────────────────────────────────────
+# РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 
 @main.command()
 @click.argument("config_path", type=click.Path(exists=True))
@@ -933,9 +997,9 @@ def sweep(
     console.print(table)
 
 
-# ──────────────────────────────────────────────────────────
+# РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 # Model registry
-# ──────────────────────────────────────────────────────────
+# РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 
 @main.group()
 def registry() -> None:
@@ -1043,7 +1107,7 @@ def registry_promote(model_id: str, status: str) -> None:
     reg = ModelRegistry()
     entry = reg.update_status(model_id, status)
     if entry:
-        console.print(f"[green]{model_id}[/green] → {status}")
+        console.print(f"[green]{model_id}[/green] РІвЂ вЂ™ {status}")
     else:
         console.print(f"[red]Model not found: {model_id}[/red]")
 
@@ -1055,7 +1119,7 @@ def _show_config_summary(config: dict, task: str) -> None:
         config: Resolved config dict.
         task: Training task name.
     """
-    table = Table(title=f"Training Config — {task.upper()}")
+    table = Table(title=f"Training Config - {task.upper()}")
     table.add_column("Setting", style="cyan")
     table.add_column("Value", style="green")
 
@@ -1065,23 +1129,23 @@ def _show_config_summary(config: dict, task: str) -> None:
 
     table.add_row("Model", model_name)
     table.add_row("Strategy", strategy)
-    table.add_row("Learning Rate", str(training.get("learning_rate", "—")))
-    table.add_row("Epochs", str(training.get("epochs", "—")))
-    table.add_row("Batch Size", str(training.get("batch_size", "—")))
+    table.add_row("Learning Rate", str(training.get("learning_rate", "-")))
+    table.add_row("Epochs", str(training.get("epochs", "-")))
+    table.add_row("Batch Size", str(training.get("batch_size", "-")))
     table.add_row(
         "Gradient Accum",
-        str(training.get("gradient_accumulation", "—")),
+        str(training.get("gradient_accumulation", "-")),
     )
     table.add_row(
         "Max Seq Length",
-        str(training.get("max_seq_length", "—")),
+        str(training.get("max_seq_length", "-")),
     )
 
     hw = config.get("_hardware", {})
     if hw:
         table.add_row(
             "GPU",
-            f"{hw.get('num_gpus', '?')}× {hw.get('gpu_name', '?')} "
+            f"{hw.get('num_gpus', '?')}x {hw.get('gpu_name', '?')} "
             f"({hw.get('vram_per_gpu_gb', '?')} GB)",
         )
 
@@ -1142,3 +1206,7 @@ def _show_eval_results(results: dict) -> None:
                 cls_table.add_row(cls_name, f"{acc:.2%}", str(count))
 
         console.print(cls_table)
+
+
+
+

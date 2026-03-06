@@ -40,12 +40,41 @@ class TestWorkflowStore:
     def test_save_creates_workflow(self, store: WorkflowStore) -> None:
         wf = store.save("Test WF", SAMPLE_NODES, SAMPLE_EDGES)
         assert wf["name"] == "Test WF"
-        assert wf["nodes"] == SAMPLE_NODES
         assert wf["edges"] == SAMPLE_EDGES
         assert "id" in wf
         assert "created_at" in wf
         assert wf["run_count"] == 0
         assert wf["last_run"] is None
+
+    def test_workflow_schema_version_saved(self, store: WorkflowStore) -> None:
+        wf = store.save("Schema WF", SAMPLE_NODES, SAMPLE_EDGES)
+        assert wf["schema_version"] == 2
+
+    def test_governance_defaults_added_for_agent_nodes(self, store: WorkflowStore) -> None:
+        nodes = [
+            {"id": "agent_1", "type": "agent", "data": {"label": "Agent", "config": {"framework": "forge-react"}}},
+        ]
+        wf = store.save("Gov Defaults", nodes, [])
+        saved_cfg = wf["nodes"][0]["data"]["config"]
+        assert saved_cfg["agent_role"] == ""
+        assert saved_cfg["risk_level"] == "medium"
+        assert saved_cfg["requires_approval"] is False
+
+    def test_governance_risk_level_normalized(self, store: WorkflowStore) -> None:
+        nodes = [
+            {
+                "id": "agent_1",
+                "type": "agent",
+                "data": {
+                    "label": "Agent",
+                    "config": {"risk_level": "SEVERE", "requires_approval": 1},
+                },
+            },
+        ]
+        wf = store.save("Gov Normalize", nodes, [])
+        saved_cfg = wf["nodes"][0]["data"]["config"]
+        assert saved_cfg["risk_level"] == "medium"
+        assert saved_cfg["requires_approval"] is True
 
     def test_save_generates_unique_ids(self, store: WorkflowStore) -> None:
         wf1 = store.save("WF1", [], [])
@@ -188,6 +217,31 @@ def client(tmp_path: Path):
 
 
 class TestWorkflowAPI:
+    def test_list_templates(self, client) -> None:
+        resp = client.get("/api/v1/workflows/templates")
+        assert resp.status_code == 200
+        templates = resp.json()
+        assert isinstance(templates, list)
+        assert any(t["id"] == "banking_agentoffice" for t in templates)
+
+    def test_create_from_template(self, client) -> None:
+        resp = client.post(
+            "/api/v1/workflows/templates/banking_agentoffice/create",
+            json={"name": "Banking Template Instance"},
+        )
+        assert resp.status_code == 200
+        wf = resp.json()
+        assert wf["name"] == "Banking Template Instance"
+        assert len(wf["nodes"]) > 0
+        assert len(wf["edges"]) > 0
+
+    def test_create_from_unknown_template(self, client) -> None:
+        resp = client.post(
+            "/api/v1/workflows/templates/unknown/create",
+            json={"name": "Nope"},
+        )
+        assert resp.status_code == 404
+
     def test_list_empty(self, client) -> None:
         resp = client.get("/api/v1/workflows")
         assert resp.status_code == 200
@@ -262,6 +316,53 @@ class TestWorkflowAPI:
         assert "pipeline_config" in data
         assert data["pipeline_config"]["pipeline"]["name"] == "Run Me"
 
+    def test_run_workflow_blocked_by_governance(self, client) -> None:
+        risky_nodes = [
+            {
+                "id": "agent_1",
+                "type": "agent",
+                "data": {
+                    "label": "Risky Decision Agent",
+                    "config": {
+                        "agent_role": "decision",
+                        "risk_level": "critical",
+                        "requires_approval": False,
+                    },
+                },
+            }
+        ]
+        resp = client.post("/api/v1/workflows", json={
+            "name": "Risky",
+            "nodes": risky_nodes,
+            "edges": [],
+        })
+        wf_id = resp.json()["id"]
+
+        resp2 = client.post(f"/api/v1/workflows/{wf_id}/run")
+        assert resp2.status_code == 400
+        assert "requires_approval=true" in resp2.json()["detail"]
+
+    def test_pipeline_sync_blocked_by_governance(self, client) -> None:
+        resp = client.post("/api/v1/pipeline/run/sync", json={
+            "pipeline_config": {
+                "pipeline": {"name": "Risk Sync"},
+                "steps": [
+                    {
+                        "name": "decision_agent",
+                        "type": "agent",
+                        "config": {
+                            "risk_level": "high",
+                            "requires_approval": False,
+                        },
+                    }
+                ],
+            }
+        })
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["status"] == "blocked"
+        assert "requires_approval=true" in body["error"]
+
     def test_run_nonexistent(self, client) -> None:
         resp = client.post("/api/v1/workflows/nope/run")
         assert resp.status_code == 404
@@ -285,3 +386,6 @@ class TestWorkflowAPI:
         resp = client.get("/api/v1/workflows")
         names = [w["name"] for w in resp.json()]
         assert names == ["C", "B", "A"]
+
+
+

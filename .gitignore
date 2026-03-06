@@ -1,4 +1,4 @@
-# Python
+﻿# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -52,3 +52,7 @@ runs/
 
 # Claude Code
 .claude/
+.env.*.local
+.env.demo
+.env.prod-ready
+

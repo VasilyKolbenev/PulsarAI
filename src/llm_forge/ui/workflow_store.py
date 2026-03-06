@@ -10,6 +10,9 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 DEFAULT_STORE_PATH = Path("./data/workflows.json")
+SCHEMA_VERSION = 2
+_GOV_NODE_TYPES = {"agent", "a2a", "router", "gateway"}
+_GOV_RISK_LEVELS = {"low", "medium", "high", "critical"}
 
 
 class WorkflowStore:
@@ -44,13 +47,15 @@ class WorkflowStore:
             Saved workflow dict.
         """
         workflows = self._load()
+        normalized_nodes = [self._normalize_node(node) for node in nodes]
 
         if workflow_id:
             for wf in workflows:
                 if wf["id"] == workflow_id:
                     wf["name"] = name
-                    wf["nodes"] = nodes
+                    wf["nodes"] = normalized_nodes
                     wf["edges"] = edges
+                    wf["schema_version"] = SCHEMA_VERSION
                     wf["updated_at"] = datetime.now().isoformat()
                     self._save(workflows)
                     return wf
@@ -60,8 +65,9 @@ class WorkflowStore:
         workflow = {
             "id": workflow_id or str(uuid.uuid4())[:8],
             "name": name,
-            "nodes": nodes,
+            "nodes": normalized_nodes,
             "edges": edges,
+            "schema_version": SCHEMA_VERSION,
             "created_at": datetime.now().isoformat(),
             "updated_at": datetime.now().isoformat(),
             "last_run": None,
@@ -83,7 +89,7 @@ class WorkflowStore:
         """
         for wf in self._load():
             if wf["id"] == workflow_id:
-                return wf
+                return self._normalize_workflow(wf)
         return None
 
     def list_all(self) -> list[dict]:
@@ -92,7 +98,7 @@ class WorkflowStore:
         Returns:
             List of workflow summary dicts.
         """
-        workflows = self._load()
+        workflows = [self._normalize_workflow(w) for w in self._load()]
         return sorted(
             workflows, key=lambda w: w.get("updated_at", ""), reverse=True
         )
@@ -147,14 +153,14 @@ class WorkflowStore:
         nodes = wf["nodes"]
         edges = wf["edges"]
 
-        # Build dependency map: target_node_id → [source_node_ids]
+        # Build dependency map: target_node_id -> [source_node_ids]
         deps: dict[str, list[str]] = {}
         for edge in edges:
             target = edge["target"]
             source = edge["source"]
             deps.setdefault(target, []).append(source)
 
-        # Node ID → step name mapping
+        # Node ID -> step name mapping
         node_names: dict[str, str] = {}
         for node in nodes:
             node_names[node["id"]] = node.get("data", {}).get(
@@ -205,6 +211,31 @@ class WorkflowStore:
             "splitter": "splitter",
         }
         return mapping.get(node_type, node_type)
+
+    def _normalize_workflow(self, workflow: dict[str, Any]) -> dict[str, Any]:
+        normalized = dict(workflow)
+        normalized["schema_version"] = normalized.get("schema_version", 1)
+        nodes = normalized.get("nodes", [])
+        normalized["nodes"] = [self._normalize_node(node) for node in nodes]
+        return normalized
+
+    def _normalize_node(self, node: dict[str, Any]) -> dict[str, Any]:
+        normalized_node = dict(node)
+        data = dict(normalized_node.get("data", {}))
+        config = dict(data.get("config", {}))
+
+        if normalized_node.get("type") in _GOV_NODE_TYPES:
+            if "agent_role" not in config:
+                config["agent_role"] = ""
+            risk_level = str(config.get("risk_level", "medium")).lower()
+            if risk_level not in _GOV_RISK_LEVELS:
+                risk_level = "medium"
+            config["risk_level"] = risk_level
+            config["requires_approval"] = bool(config.get("requires_approval", False))
+
+        data["config"] = config
+        normalized_node["data"] = data
+        return normalized_node
 
     def _load(self) -> list[dict]:
         with open(self.store_path, encoding="utf-8") as f:

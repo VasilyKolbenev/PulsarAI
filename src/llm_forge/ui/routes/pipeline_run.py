@@ -5,7 +5,6 @@ real-time step status updates.
 """
 
 import asyncio
-import json
 import logging
 import time
 from typing import Any
@@ -14,6 +13,10 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from llm_forge.pipeline.executor import PipelineExecutor
 from llm_forge.pipeline.tracker import PipelineTracker
+from llm_forge.ui.workflow_policy import (
+    format_governance_error,
+    validate_pipeline_config,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +45,14 @@ async def pipeline_run_ws(websocket: WebSocket) -> None:
 
         if not pipeline_config.get("steps"):
             await websocket.send_json({"type": "error", "error": "No steps in pipeline config"})
+            return
+
+        violations = validate_pipeline_config(pipeline_config)
+        if violations:
+            await websocket.send_json({
+                "type": "error",
+                "error": format_governance_error(violations),
+            })
             return
 
         tracker = PipelineTracker(
@@ -162,6 +173,13 @@ async def pipeline_run_sync(body: dict) -> dict:
     pipeline_config = body.get("pipeline_config", {})
     if not pipeline_config.get("steps"):
         return {"error": "No steps in pipeline config"}
+
+    violations = validate_pipeline_config(pipeline_config)
+    if violations:
+        return {
+            "status": "blocked",
+            "error": format_governance_error(violations),
+        }
 
     executor = PipelineExecutor(pipeline_config)
     try:

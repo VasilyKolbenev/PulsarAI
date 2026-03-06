@@ -1,6 +1,19 @@
-const BASE = "/api/v1"
+﻿const BASE = "/api/v1"
 
-let _apiKey: string | null = localStorage.getItem("forge_api_key")
+function bootstrapApiKeyFromUrl(): string | null {
+  const params = new URLSearchParams(window.location.search)
+  const key = params.get("api_key")
+  if (!key) return null
+
+  localStorage.setItem("forge_api_key", key)
+  params.delete("api_key")
+
+  const next = `${window.location.pathname}${params.toString() ? `?${params}` : ""}${window.location.hash}`
+  window.history.replaceState({}, "", next)
+  return key
+}
+
+let _apiKey: string | null = bootstrapApiKeyFromUrl() || localStorage.getItem("forge_api_key")
 
 export function setApiKey(key: string | null) {
   _apiKey = key
@@ -43,7 +56,11 @@ export const api = {
   uploadDataset: async (file: File) => {
     const form = new FormData()
     form.append("file", file)
-    const res = await fetch(`${BASE}/datasets/upload`, { method: "POST", body: form })
+    const headers: Record<string, string> = {}
+    if (_apiKey) {
+      headers["Authorization"] = `Bearer ${_apiKey}`
+    }
+    const res = await fetch(`${BASE}/datasets/upload`, { method: "POST", body: form, headers })
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))
       throw new Error(body.detail || `HTTP ${res.status}`)
@@ -97,7 +114,15 @@ export const api = {
   getWorkflow: (id: string) => request<Record<string, unknown>>(`/workflows/${id}`),
   deleteWorkflow: (id: string) => request<Record<string, unknown>>(`/workflows/${id}`, { method: "DELETE" }),
   runWorkflow: (id: string) => request<Record<string, unknown>>(`/workflows/${id}/run`, { method: "POST" }),
+  runPipelineSync: (pipelineConfig: Record<string, unknown>) =>
+    request<Record<string, unknown>>("/pipeline/run/sync", {
+      method: "POST",
+      body: JSON.stringify({ pipeline_config: pipelineConfig }),
+    }),
   getWorkflowConfig: (id: string) => request<Record<string, unknown>>(`/workflows/${id}/config`),
+  listWorkflowTemplates: () => request<Array<Record<string, unknown>>>("/workflows/templates"),
+  createWorkflowFromTemplate: (templateId: string, data?: { name?: string }) =>
+    request<Record<string, unknown>>(`/workflows/templates/${templateId}/create`, { method: "POST", body: JSON.stringify(data || {}) }),
 
   // Prompts
   listPrompts: (tag?: string) =>
@@ -119,7 +144,14 @@ export const api = {
 
   // Settings
   getSettings: () =>
-    request<{ version: string; auth_enabled: boolean; cors_origins: string[]; data_dir: string }>("/settings"),
+    request<{
+      version: string
+      auth_enabled: boolean
+      stand_mode: string
+      env_profile: string
+      cors_origins: string[]
+      data_dir: string
+    }>("/settings"),
   listApiKeys: () => request<Array<{ name: string }>>("/settings/keys"),
   generateApiKey: (name: string) =>
     request<{ key: string; name: string }>("/settings/keys", {

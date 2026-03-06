@@ -1,4 +1,4 @@
-"""Experiment management routes: list, detail, compare, delete."""
+﻿"""Experiment management routes: list, detail, compare, delete."""
 
 import logging
 
@@ -28,6 +28,7 @@ async def list_experiments(status: str | None = None) -> list[dict]:
 @router.get("/experiments/{exp_id}")
 async def get_experiment(exp_id: str) -> dict:
     """Get a single experiment with full details."""
+    _store.reconcile_stale_running()
     exp = _store.get(exp_id)
     if not exp:
         raise HTTPException(status_code=404, detail=f"Experiment {exp_id} not found")
@@ -40,6 +41,7 @@ async def compare_experiments(req: CompareRequest) -> dict:
 
     Returns aligned metric histories for chart overlay.
     """
+    _store.reconcile_stale_running()
     results = {}
     for exp_id in req.experiment_ids:
         exp = _store.get(exp_id)

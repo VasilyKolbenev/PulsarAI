@@ -4,7 +4,7 @@ import { LossChart } from "@/components/training/LossChart"
 import type { SSEMetrics } from "@/hooks/useSSE"
 import {
   Trash2, GitCompare, Target, Percent, BarChart3,
-  Clock, Cpu, Database, Settings, Layers, HardDrive, Timer, ChevronDown, ChevronUp,
+  Cpu, Settings, Layers, HardDrive, Timer, ChevronDown, ChevronUp,
 } from "lucide-react"
 
 export function Experiments() {
@@ -540,3 +540,4 @@ function StatusBadge({ status }: { status: string }) {
     </span>
   )
 }
+

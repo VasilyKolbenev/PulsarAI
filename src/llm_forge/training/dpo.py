@@ -1,4 +1,4 @@
-"""DPO (Direct Preference Optimization) trainer."""
+﻿"""DPO (Direct Preference Optimization) trainer."""
 
 import logging
 from pathlib import Path
@@ -7,13 +7,14 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
-def train_dpo(config: dict) -> dict:
+def train_dpo(config: dict, progress: Any = None) -> dict:
     """Run DPO training on top of an SFT model.
 
     Automatically tracks experiment if logging.tracker is set.
 
     Args:
         config: Fully resolved config dict with DPO settings.
+        progress: Optional ProgressCallback for real-time metrics.
 
     Returns:
         Dict with training results.
@@ -42,6 +43,11 @@ def train_dpo(config: dict) -> dict:
             "DPO requires base_model_path or sft_adapter_path in config"
         )
 
+    hf_callbacks = []
+    if progress is not None:
+        from llm_forge.ui.progress import make_hf_callback
+        hf_callbacks.append(make_hf_callback(progress))
+
     with track_experiment(config, task="dpo") as tracker:
         # Load model with SFT adapter
         from llm_forge.model_loader import load_model
@@ -56,6 +62,7 @@ def train_dpo(config: dict) -> dict:
             ref_model=None,
             train_dataset=dpo_dataset,
             processing_class=tokenizer,
+            callbacks=hf_callbacks,
             args=DPOConfig(
                 per_device_train_batch_size=training_config.get("batch_size", 1),
                 gradient_accumulation_steps=training_config.get(
@@ -121,6 +128,7 @@ def _load_dpo_dataset(config: dict, tokenizer: Any) -> Any:
 
     if pairs_path:
         import pandas as pd
+
         df = pd.read_json(pairs_path, lines=True)
         pairs = df.to_dict("records")
     else:
@@ -130,6 +138,7 @@ def _load_dpo_dataset(config: dict, tokenizer: Any) -> Any:
     system_prompt = ds_config.get("system_prompt", "")
     if ds_config.get("system_prompt_file"):
         from llm_forge.data.formatter import load_system_prompt
+
         system_prompt = load_system_prompt(ds_config["system_prompt_file"])
 
     def format_pair(example: dict) -> dict:

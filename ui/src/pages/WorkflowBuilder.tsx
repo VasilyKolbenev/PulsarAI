@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react"
-import {
-  ReactFlowProvider,
-} from "@xyflow/react"
+import { ReactFlowProvider } from "@xyflow/react"
 import {
   Play,
   Save,
@@ -10,6 +8,7 @@ import {
   Plus,
   Loader2,
   X,
+  Landmark,
 } from "lucide-react"
 import { NodePalette } from "@/components/flow/NodePalette"
 import { FlowCanvas } from "@/components/flow/FlowCanvas"
@@ -33,6 +32,14 @@ function WorkflowToolbar({
         placeholder="Workflow name..."
       />
       <div className="flex-1" />
+      <button
+        onClick={() => workflow.loadBankingTemplate()}
+        disabled={workflow.templateLoading}
+        className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded bg-secondary hover:bg-secondary/80 transition-colors disabled:opacity-50"
+      >
+        {workflow.templateLoading ? <Loader2 size={14} className="animate-spin" /> : <Landmark size={14} />}
+        Banking Template
+      </button>
       <button
         onClick={onOpenLoad}
         className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded bg-secondary hover:bg-secondary/80 transition-colors"
@@ -90,16 +97,17 @@ function LoadModal({
         </div>
         <div className="flex-1 overflow-y-auto p-2">
           {workflows.length === 0 ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">
-              No saved workflows yet
-            </div>
+            <div className="text-center py-8 text-sm text-muted-foreground">No saved workflows yet</div>
           ) : (
             <div className="space-y-1">
               {workflows.map((wf) => (
                 <div
                   key={wf.id}
                   className="flex items-center gap-2 px-3 py-2 rounded hover:bg-secondary group cursor-pointer"
-                  onClick={() => { onLoad(wf.id); onClose() }}
+                  onClick={() => {
+                    onLoad(wf.id)
+                    onClose()
+                  }}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">{wf.name}</div>
@@ -109,7 +117,10 @@ function LoadModal({
                     </div>
                   </div>
                   <button
-                    onClick={(e) => { e.stopPropagation(); onDelete(wf.id) }}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDelete(wf.id)
+                    }}
                     className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive/80 transition-opacity"
                   >
                     <Trash2 size={14} />
@@ -121,7 +132,10 @@ function LoadModal({
         </div>
         <div className="border-t border-border px-4 py-3">
           <button
-            onClick={() => { onNew(); onClose() }}
+            onClick={() => {
+              onNew()
+              onClose()
+            }}
             className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80"
           >
             <Plus size={14} />
@@ -154,6 +168,11 @@ export function WorkflowBuilder() {
   return (
     <div className="h-[calc(100vh-1rem)] flex flex-col -m-6">
       <WorkflowToolbar workflow={workflow} onOpenLoad={handleOpenLoad} />
+      {workflow.runError && (
+        <div className="mx-4 mt-3 px-3 py-2 rounded border border-destructive/30 bg-destructive/10 text-destructive text-xs">
+          {workflow.runError}
+        </div>
+      )}
       <div className="flex flex-1 min-h-0">
         <NodePalette />
         <ReactFlowProvider>

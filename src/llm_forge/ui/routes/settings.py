@@ -1,4 +1,4 @@
-"""Settings API routes — server info, API key management."""
+﻿"""Settings API routes: server info and API key management."""
 
 import os
 from pathlib import Path
@@ -27,6 +27,8 @@ async def get_settings(request: Request) -> dict:
     return {
         "version": "0.1.0",
         "auth_enabled": getattr(request.app.state, "auth_enabled", False),
+        "stand_mode": getattr(request.app.state, "stand_mode", "dev"),
+        "env_profile": os.environ.get("FORGE_ENV_FILE", ".env"),
         "cors_origins": cors_origins,
         "data_dir": str(Path("./data").resolve()),
     }

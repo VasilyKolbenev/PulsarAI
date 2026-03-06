@@ -82,7 +82,7 @@ def detect_hardware() -> HardwareInfo:
     )
 
     logger.info(
-        "Detected: %d × %s (%.1f GB VRAM), strategy=%s",
+        "Detected: %d x %s (%.1f GB VRAM), strategy=%s",
         num_gpus,
         gpu_name,
         vram_gb,
@@ -101,13 +101,13 @@ def _select_strategy(
     """
     if num_gpus == 1:
         if vram_per_gpu_gb < 12:
-            # RTX 3060/4060/5070 Laptop — tight VRAM
+            # RTX 3060/4060/5070 Laptop - tight VRAM
             return "qlora", 1, 16
         elif vram_per_gpu_gb < 24:
-            # RTX 3090/4090 — comfortable LoRA
+            # RTX 3090/4090 - comfortable LoRA
             return "lora", 2, 8
         elif vram_per_gpu_gb < 48:
-            # A6000/L40 — full finetune possible for small models
+            # A6000/L40 - full finetune possible for small models
             return "full", 4, 4
         else:
             # A100 80GB / H100
@@ -129,13 +129,21 @@ def get_strategy_config(strategy: str) -> dict:
     """Return default config overrides for a given strategy.
 
     Args:
-        strategy: One of qlora, lora, full, fsdp_qlora, fsdp_lora,
+        strategy: One of cpu, qlora, lora, full, fsdp_qlora, fsdp_lora,
                   fsdp_full, deepspeed_zero3.
 
     Returns:
         Dict of config overrides to merge into base config.
     """
     configs = {
+        "cpu": {
+            "load_in_4bit": False,
+            "use_lora": True,
+            "lora_r": 8,
+            "lora_alpha": 16,
+            "lora_dropout": 0.0,
+            "gradient_checkpointing": False,
+        },
         "qlora": {
             "load_in_4bit": True,
             "bnb_4bit_quant_type": "nf4",

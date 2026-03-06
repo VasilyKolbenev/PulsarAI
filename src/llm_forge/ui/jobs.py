@@ -1,4 +1,4 @@
-"""Background job manager for training jobs."""
+﻿"""Background job manager for training jobs."""
 
 import gc
 import logging
@@ -12,7 +12,7 @@ from llm_forge.ui.progress import ProgressCallback, cleanup_queue
 
 logger = logging.getLogger(__name__)
 
-# Single worker — training is GPU-bound, one job at a time
+# Single worker вЂ” training is GPU-bound, one job at a time
 _executor = ThreadPoolExecutor(max_workers=1)
 _jobs: dict[str, dict[str, Any]] = {}
 _store = ExperimentStore()
@@ -152,7 +152,7 @@ def _run_training(
             results = train_sft(config, progress=progress)
         elif task == "dpo":
             from llm_forge.training.dpo import train_dpo
-            results = train_dpo(config)
+            results = train_dpo(config, progress=progress)
         else:
             raise ValueError(f"Unknown task: {task}")
 
@@ -245,3 +245,4 @@ def cancel_job(job_id: str) -> bool:
             store.update_status(job["experiment_id"], "cancelled")
         return cancelled
     return False
+

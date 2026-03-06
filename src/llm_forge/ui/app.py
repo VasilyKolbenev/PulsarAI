@@ -1,18 +1,17 @@
-"""Unified FastAPI application for llm-forge Web UI.
+﻿"""Unified FastAPI application for llm-forge Web UI.
 
 Serves both the REST API and static React frontend.
 """
-
-from dotenv import load_dotenv
-load_dotenv()  # Load .env before anything reads env vars
 
 import logging
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from slowapi import Limiter
@@ -35,6 +34,12 @@ from llm_forge.ui.routes.protocols import router as protocols_router
 from llm_forge.ui.routes.pipeline_run import router as pipeline_run_router
 from llm_forge.ui.routes.site_chat import router as site_chat_router
 
+_env_file = os.environ.get("FORGE_ENV_FILE", "").strip()
+if _env_file:
+    load_dotenv(_env_file)  # Load explicit env profile when provided
+else:
+    load_dotenv()  # Fallback to default .env
+
 logger = logging.getLogger(__name__)
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -47,6 +52,7 @@ async def _lifespan(app: FastAPI):  # noqa: ARG001
     yield
     logger.info("llm-forge backend shutting down, cleaning up...")
     from llm_forge.ui.jobs import shutdown_executor
+
     shutdown_executor()
 
 
@@ -62,6 +68,8 @@ def create_app() -> FastAPI:
         version="0.1.0",
         lifespan=_lifespan,
     )
+
+    stand_mode = os.environ.get("FORGE_STAND_MODE", "dev").strip() or "dev"
 
     # CORS: configurable via FORGE_CORS_ORIGINS env var (comma-separated)
     cors_env = os.environ.get("FORGE_CORS_ORIGINS", "")
@@ -85,10 +93,14 @@ def create_app() -> FastAPI:
         app.add_middleware(ApiKeyMiddleware, key_store=key_store, enabled=True)
         if not key_store.list_keys():
             initial_key = key_store.generate_key("default")
-            logger.warning("Auth enabled but no keys found. Generated default key: %s", initial_key)
-    # Store key_store on app state for use by settings routes
+            logger.warning(
+                "Auth enabled but no keys found. Generated default key: %s",
+                initial_key,
+            )
+    # Store app config on state for settings routes
     app.state.key_store = key_store
     app.state.auth_enabled = auth_enabled
+    app.state.stand_mode = stand_mode
 
     # Rate limiting
     limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
@@ -119,9 +131,22 @@ def create_app() -> FastAPI:
     async def health() -> dict:
         return {"status": "ok"}
 
-    # Serve React static build if available
+    # Serve React static build if available (supports deep links like /experiments)
     if STATIC_DIR.exists():
-        app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True))
+        assets_dir = STATIC_DIR / "assets"
+        if assets_dir.exists():
+            app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+        @app.get("/{full_path:path}")
+        async def spa(full_path: str):  # noqa: ANN202
+            if full_path.startswith("api/"):
+                raise HTTPException(status_code=404, detail="Not Found")
+
+            requested = STATIC_DIR / full_path
+            if full_path and requested.is_file():
+                return FileResponse(requested)
+
+            return FileResponse(STATIC_DIR / "index.html")
 
     return app
 

@@ -156,6 +156,86 @@ def _run_fingerprint_step(config: dict) -> dict[str, Any]:
     return {"fingerprint": fp, "dataset_path": path}
 
 
+
+
+def _simulated_step(step_type: str, config: dict) -> dict[str, Any]:
+    """Return a lightweight result for visual/orchestration-only steps.
+
+    These step types come from the Workflow UI and are used to model
+    AgentOffice flows. They intentionally do not invoke heavy training/export
+    logic, but still produce deterministic outputs for pipeline chaining.
+    """
+    return {
+        "status": "simulated",
+        "step_type": step_type,
+        "config": config,
+    }
+
+
+@register_step("data")
+def _run_data_step(config: dict) -> dict[str, Any]:
+    return _simulated_step("data", config)
+
+
+@register_step("model")
+def _run_model_step(config: dict) -> dict[str, Any]:
+    return _simulated_step("model", config)
+
+
+@register_step("prompt")
+def _run_prompt_step(config: dict) -> dict[str, Any]:
+    return _simulated_step("prompt", config)
+
+
+@register_step("agent")
+def _run_agent_step(config: dict) -> dict[str, Any]:
+    return _simulated_step("agent", config)
+
+
+@register_step("router")
+def _run_router_step(config: dict) -> dict[str, Any]:
+    return _simulated_step("router", config)
+
+
+@register_step("a2a")
+def _run_a2a_step(config: dict) -> dict[str, Any]:
+    return _simulated_step("a2a", config)
+
+
+@register_step("gateway")
+def _run_gateway_step(config: dict) -> dict[str, Any]:
+    return _simulated_step("gateway", config)
+
+
+@register_step("splitter")
+def _run_splitter_step(config: dict) -> dict[str, Any]:
+    return _simulated_step("splitter", config)
+
+
+@register_step("rag")
+def _run_rag_step(config: dict) -> dict[str, Any]:
+    return _simulated_step("rag", config)
+
+
+@register_step("inference")
+def _run_inference_step(config: dict) -> dict[str, Any]:
+    return _simulated_step("inference", config)
+
+
+@register_step("serve")
+def _run_serve_step(config: dict) -> dict[str, Any]:
+    return _simulated_step("serve", config)
+
+
+@register_step("data_generation")
+def _run_data_generation_step(config: dict) -> dict[str, Any]:
+    return _simulated_step("data_generation", config)
+
+
+@register_step("conditional")
+def _run_conditional_step(config: dict) -> dict[str, Any]:
+    return _simulated_step("conditional", config)
+
 def check_condition(condition: dict, step_outputs: dict) -> bool:
     """Evaluate a conditional expression against step outputs.
 
@@ -163,7 +243,7 @@ def check_condition(condition: dict, step_outputs: dict) -> bool:
 
     Args:
         condition: Dict with 'metric' (${step.key}), 'operator', 'value'.
-        step_outputs: Dict of step_name → output_dict.
+        step_outputs: Dict of step_name -> output_dict.
 
     Returns:
         True if condition is met.
@@ -213,7 +293,7 @@ def check_condition(condition: dict, step_outputs: dict) -> bool:
 
     result = op_func(float(actual), float(threshold))
     logger.info(
-        "Condition: %s.%s (%s) %s %s → %s",
+        "Condition: %s.%s (%s) %s %s -> %s",
         step_name, key, actual, operator, threshold, result,
     )
     return result
