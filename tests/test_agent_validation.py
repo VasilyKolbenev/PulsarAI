@@ -1,7 +1,5 @@
 """Tests for agent config validation."""
 
-import pytest
-
 from pulsar_ai.validation import validate_agent_config
 
 

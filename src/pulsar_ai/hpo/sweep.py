@@ -4,7 +4,6 @@ Supports YAML-based sweep configs with search spaces for
 learning_rate, lora_r, lora_alpha, epochs, batch_size, etc.
 """
 
-import copy
 import json
 import logging
 import time

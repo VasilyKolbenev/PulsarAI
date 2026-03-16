@@ -1,10 +1,8 @@
 """Tests for config loading, merging, and resolution."""
 
-import tempfile
 from pathlib import Path
 
 import pytest
-import yaml
 
 from pulsar_ai.config import deep_merge, load_yaml, load_config, _set_nested, _parse_value
 

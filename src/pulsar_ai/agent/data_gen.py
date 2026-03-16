@@ -61,7 +61,7 @@ def trace_to_sft(
             result = entry.get("result", "")
             response_parts.append(f"Observation: {result}")
         elif entry["type"] == "answer":
-            response_parts.append(f"Thought: I have the information needed.")
+            response_parts.append("Thought: I have the information needed.")
             response_parts.append(f"Final Answer: {entry['content']}")
 
     if response_parts:

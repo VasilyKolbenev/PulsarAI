@@ -48,7 +48,7 @@ def test_list_all(registry):
 
 def test_list_by_status(registry):
     j1 = registry.create(job_type="sft")
-    j2 = registry.create(job_type="eval")
+    registry.create(job_type="eval")
     registry.update_status(j1["id"], "running")
     assert len(registry.list_all(status="running")) == 1
     assert len(registry.list_all(status="queued")) == 1

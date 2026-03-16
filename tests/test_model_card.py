@@ -4,8 +4,6 @@ Tests generate_model_card() with various field combinations,
 required sections, custom extra_sections, and minimal inputs.
 """
 
-import pytest
-
 from pulsar_ai.model_card import generate_model_card
 
 

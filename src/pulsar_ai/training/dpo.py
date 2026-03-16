@@ -31,7 +31,6 @@ def train_dpo(config: dict, progress: Any = None) -> dict:
 
     import torch
     from trl import DPOTrainer, DPOConfig
-    from datasets import Dataset
 
     dpo_config = config.get("dpo", {})
     training_config = config.get("training", {})
@@ -120,7 +119,6 @@ def _load_dpo_dataset(config: dict, tokenizer: Any) -> Any:
         HuggingFace Dataset with prompt, chosen, rejected fields.
     """
     from datasets import Dataset
-    import json
 
     dpo_config = config.get("dpo", {})
     pairs_path = dpo_config.get("pairs_path")

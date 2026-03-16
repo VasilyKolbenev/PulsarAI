@@ -1,7 +1,6 @@
 """Tests for compute target management and remote runner."""
 
 import pytest
-from pathlib import Path
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -120,7 +119,7 @@ class TestSSHConnection:
             patch.object(SSHConnection, "connect") as mock_connect,
             patch.object(SSHConnection, "close") as mock_close,
         ):
-            with SSHConnection(host="x", user="y") as conn:
+            with SSHConnection(host="x", user="y") as _conn:
                 mock_connect.assert_called_once()
             mock_close.assert_called_once()
 

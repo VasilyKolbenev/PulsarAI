@@ -1009,7 +1009,7 @@ def sweep(
 
     results = runner.run(n_trials=n_trials)
 
-    console.print(f"\n[green]Sweep completed![/green]")
+    console.print("\n[green]Sweep completed![/green]")
     console.print(f"Best trial: #{results['best_trial']}")
     console.print(f"Best value: {results['best_value']:.6f}")
 

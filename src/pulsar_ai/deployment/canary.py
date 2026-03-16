@@ -6,7 +6,6 @@ model versions, with automatic rollback on error thresholds.
 
 import logging
 import random
-import time
 from dataclasses import dataclass, field
 from typing import Any
 

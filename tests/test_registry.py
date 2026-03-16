@@ -1,8 +1,6 @@
 """Tests for model registry."""
 
 import pytest
-from pathlib import Path
-from unittest.mock import patch
 
 from pulsar_ai.registry import ModelRegistry
 

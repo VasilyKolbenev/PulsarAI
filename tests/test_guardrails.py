@@ -1,7 +1,5 @@
 """Tests for agent GuardrailsConfig."""
 
-import pytest
-
 from pulsar_ai.agent.guardrails import GuardrailsConfig
 
 

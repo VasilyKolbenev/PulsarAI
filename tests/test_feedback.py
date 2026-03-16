@@ -277,5 +277,5 @@ class TestPersistence:
     def test_storage_dir_created_automatically(self, tmp_path: Path) -> None:
         """storage_dir is created if it doesn't exist."""
         dir_path = tmp_path / "deep" / "nested" / "feedback"
-        collector = FeedbackCollector(storage_dir=str(dir_path))
+        FeedbackCollector(storage_dir=str(dir_path))
         assert dir_path.exists()

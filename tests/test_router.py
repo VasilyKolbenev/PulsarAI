@@ -2,7 +2,6 @@
 
 from unittest.mock import MagicMock
 
-import pytest
 
 from pulsar_ai.agent.base import BaseAgent
 from pulsar_ai.agent.client import ModelClient

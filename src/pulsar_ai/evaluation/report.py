@@ -1,10 +1,8 @@
 """Evaluation report generation (Markdown + CSV)."""
 
 import csv
-import json
 import logging
 from pathlib import Path
-from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -141,7 +139,7 @@ def _generate_markdown(results: dict, path: Path) -> None:
         if labels and matrix:
             lines.append("## Confusion Matrix")
             lines.append("")
-            header = "| |" + "|".join(f" {l} " for l in labels) + "|"
+            header = "| |" + "|".join(f" {lbl} " for lbl in labels) + "|"
             lines.append(header)
             separator = "|---|" + "|".join("---" for _ in labels) + "|"
             lines.append(separator)

@@ -4,8 +4,8 @@ import logging
 
 from fastapi import APIRouter
 
-from pulsar_ai.protocols.mcp import MCPServer, MCPServerConfig, MCPClient, MCPClientConfig
-from pulsar_ai.protocols.a2a import A2AServer, AgentCard, A2AClient, A2AClientConfig
+from pulsar_ai.protocols.mcp import MCPServer, MCPServerConfig
+from pulsar_ai.protocols.a2a import A2AServer, AgentCard
 from pulsar_ai.protocols.gateway import APIGateway, GatewayConfig
 
 logger = logging.getLogger(__name__)

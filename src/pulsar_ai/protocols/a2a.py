@@ -4,7 +4,6 @@ Implements Google's Agent-to-Agent protocol for inter-agent communication,
 task delegation, and result streaming.
 """
 
-import json
 import logging
 import uuid
 from dataclasses import dataclass, field

@@ -5,7 +5,6 @@ import logging
 from pathlib import Path
 from typing import Any
 
-import yaml
 
 from pulsar_ai.config import deep_merge, load_yaml, resolve_config_path, CONFIGS_DIR
 

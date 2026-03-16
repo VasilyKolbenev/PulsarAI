@@ -4,9 +4,7 @@ import logging
 import os
 import shutil
 import subprocess
-import sys
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +103,7 @@ def _run_llama_server(
     logger.info("Running: %s", " ".join(cmd))
 
     try:
-        process = subprocess.run(cmd, check=True)
+        subprocess.run(cmd, check=True)
     except KeyboardInterrupt:
         logger.info("Server stopped")
 

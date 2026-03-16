@@ -265,7 +265,7 @@ class GuardrailEngine:
                     rule_name=rule.name,
                     result=GuardResult.FAIL,
                     action=rule.action,
-                    details=f"Toxic content detected",
+                    details="Toxic content detected",
                 )
 
         custom_blocklist = rule.config.get("blocklist", [])
@@ -275,7 +275,7 @@ class GuardrailEngine:
                     rule_name=rule.name,
                     result=GuardResult.FAIL,
                     action=rule.action,
-                    details=f"Blocked term detected",
+                    details="Blocked term detected",
                 )
 
         return GuardCheckResult(

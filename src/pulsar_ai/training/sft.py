@@ -7,7 +7,7 @@ Supports two backends:
 
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +116,6 @@ def _train_sft_unsloth(config: dict, callbacks: list | None = None) -> dict:
     from unsloth import FastLanguageModel
     from trl import SFTTrainer
     from transformers import TrainingArguments
-    from datasets import Dataset
 
     model_config = config.get("model", {})
     training_config = config.get("training", {})
@@ -228,7 +227,6 @@ def _train_sft_hf(config: dict, callbacks: list | None = None) -> dict:
         AutoModelForCausalLM,
         AutoTokenizer,
         BitsAndBytesConfig,
-        TrainingArguments,
     )
     from peft import LoraConfig, get_peft_model
     from trl import SFTTrainer

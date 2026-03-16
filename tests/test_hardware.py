@@ -1,7 +1,5 @@
 """Tests for hardware detection and strategy selection."""
 
-from unittest.mock import patch, MagicMock
-
 import pytest
 
 from pulsar_ai.hardware import (

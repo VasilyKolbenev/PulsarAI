@@ -1,7 +1,5 @@
 """Tests for LoRA parameter resolution."""
 
-import pytest
-
 from pulsar_ai.training.sft import _get_lora_params
 
 

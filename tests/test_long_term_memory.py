@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-import pytest
 
 from pulsar_ai.agent.memory import LongTermMemory
 

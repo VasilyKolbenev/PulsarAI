@@ -1,7 +1,5 @@
 """Tests for evaluation metrics."""
 
-import pytest
-
 from pulsar_ai.evaluation.metrics import compute_metrics, _build_confusion_matrix
 
 

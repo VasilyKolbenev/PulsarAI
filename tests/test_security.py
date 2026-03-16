@@ -1,6 +1,5 @@
 """Tests for security hardening: CORS, calculator, SSH, remote runner."""
 
-import ast
 import os
 from unittest.mock import patch, MagicMock
 

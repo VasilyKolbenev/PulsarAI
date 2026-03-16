@@ -6,7 +6,7 @@ get_summary() breakdowns, add_pricing(), and reset().
 
 import pytest
 
-from pulsar_ai.cost import CostTracker, MODEL_PRICING
+from pulsar_ai.cost import CostTracker
 
 
 class TestEstimateCost:

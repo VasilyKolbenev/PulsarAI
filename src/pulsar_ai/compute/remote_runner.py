@@ -6,7 +6,7 @@ import re
 import shlex
 import tempfile
 import uuid
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Generator

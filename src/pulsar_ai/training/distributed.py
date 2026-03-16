@@ -1,12 +1,11 @@
 """FSDP and DeepSpeed distributed training launcher."""
 
-import json
 import logging
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +77,7 @@ def launch_distributed(
     )
     logger.debug("Command: %s", " ".join(cmd))
 
-    result = subprocess.run(cmd, check=True)
+    subprocess.run(cmd, check=True)
 
     # Clean up temp files
     Path(accel_config_path).unlink(missing_ok=True)

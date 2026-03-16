@@ -9,16 +9,15 @@ import json
 import logging
 import re
 import uuid
-from dataclasses import dataclass
 from typing import Any
 
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from pulsar_ai.agent.tool import Tool, ToolRegistry, tool
+from pulsar_ai.agent.tool import ToolRegistry, tool
 from pulsar_ai.storage.session_store import SessionStore
 from pulsar_ai.ui.experiment_store import ExperimentStore
-from pulsar_ai.ui.jobs import submit_training_job, get_job, list_jobs, cancel_job
+from pulsar_ai.ui.jobs import submit_training_job, list_jobs, cancel_job
 
 logger = logging.getLogger(__name__)
 

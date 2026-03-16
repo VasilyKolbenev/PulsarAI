@@ -1,7 +1,6 @@
 """Tool registry and @tool decorator for agent tool calling."""
 
 import inspect
-import json
 import logging
 from dataclasses import dataclass, field
 from typing import Any, Callable

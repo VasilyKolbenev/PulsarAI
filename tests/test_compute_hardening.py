@@ -1,12 +1,11 @@
 """Tests for remote compute security hardening (shlex, retry, validation)."""
 
-import shlex
 from pathlib import Path
 
 import pytest
 from unittest.mock import patch, MagicMock
 
-from pulsar_ai.compute.ssh import SSHConnection, MAX_RETRIES, RETRY_BASE_DELAY
+from pulsar_ai.compute.ssh import SSHConnection
 from pulsar_ai.compute.remote_runner import RemoteJobRunner, _SAFE_TASK_RE, _SAFE_ID_RE
 from pulsar_ai.compute.manager import ComputeTarget
 

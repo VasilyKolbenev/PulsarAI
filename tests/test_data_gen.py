@@ -3,7 +3,6 @@
 import json
 from pathlib import Path
 
-import pytest
 
 from pulsar_ai.agent.data_gen import (
     trace_to_sft,

@@ -5,7 +5,6 @@ cleanup_expired, LRU eviction, stats, and model-partitioned caching.
 """
 
 import time
-from unittest.mock import patch
 
 import pytest
 

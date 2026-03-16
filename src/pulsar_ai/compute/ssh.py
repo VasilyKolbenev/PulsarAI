@@ -103,7 +103,6 @@ class SSHConnection:
             Tuple of (stdout, stderr, exit_code).
         """
         if self._client is not None:
-            import paramiko
 
             stdin, stdout, stderr = self._client.exec_command(cmd, timeout=timeout)
             exit_code = stdout.channel.recv_exit_status()

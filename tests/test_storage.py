@@ -1,7 +1,6 @@
 """Tests for SQLite persistence layer: bootstrap, queries, migration."""
 
 import json
-import sqlite3
 import threading
 from pathlib import Path
 

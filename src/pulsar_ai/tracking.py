@@ -13,7 +13,7 @@ import time
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Generator, Optional
+from typing import Any, Generator
 
 logger = logging.getLogger(__name__)
 

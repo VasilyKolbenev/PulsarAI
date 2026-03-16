@@ -115,8 +115,6 @@ def load_config(
         Fully resolved config dict.
     """
     experiment = load_yaml(config_path)
-    config_dir = Path(config_path).parent
-
     # Resolve inheritance chain
     inherit_list = experiment.pop("inherit", [])
     merged = {}

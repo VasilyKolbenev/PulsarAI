@@ -3,7 +3,6 @@
 import ast
 import logging
 import operator
-import os
 from pathlib import Path
 
 from pulsar_ai.agent.tool import Tool, ToolRegistry

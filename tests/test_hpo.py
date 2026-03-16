@@ -2,7 +2,6 @@
 
 import pytest
 import yaml
-from pathlib import Path
 from unittest.mock import patch, MagicMock
 
 from pulsar_ai.hpo.sweep import SweepRunner, load_sweep_config

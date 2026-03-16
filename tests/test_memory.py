@@ -1,7 +1,5 @@
 """Tests for agent ShortTermMemory."""
 
-import pytest
-
 from pulsar_ai.agent.memory import ShortTermMemory
 
 

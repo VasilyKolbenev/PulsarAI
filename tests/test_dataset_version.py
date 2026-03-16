@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from pulsar_ai.dataset_version import DatasetVersion, DatasetVersionStore
+from pulsar_ai.dataset_version import DatasetVersionStore
 
 
 @pytest.fixture

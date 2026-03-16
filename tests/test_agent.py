@@ -1,13 +1,11 @@
 """Tests for BaseAgent ReAct loop."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-import pytest
 
 from pulsar_ai.agent.base import BaseAgent
 from pulsar_ai.agent.client import ModelClient
 from pulsar_ai.agent.guardrails import GuardrailsConfig
-from pulsar_ai.agent.memory import ShortTermMemory
 from pulsar_ai.agent.tool import Tool, ToolRegistry
 
 

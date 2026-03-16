@@ -292,7 +292,6 @@ def test_migrate_from_json(tmp_path: Path) -> None:
 
 def test_auto_migrate_from_json(tmp_path: Path) -> None:
     """Auto-migration triggers when using the default singleton and JSON exists."""
-    import pulsar_ai.ui.experiment_store as mod
 
     # Write a JSON file at the default path.
     json_path = tmp_path / "data" / "experiments.json"

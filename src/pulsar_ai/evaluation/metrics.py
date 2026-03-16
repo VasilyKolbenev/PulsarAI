@@ -1,8 +1,7 @@
 """Evaluation metrics: accuracy, F1, confusion matrix."""
 
 import logging
-from collections import Counter, defaultdict
-from typing import Any, Optional
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 

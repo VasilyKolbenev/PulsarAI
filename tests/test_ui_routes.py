@@ -1,9 +1,7 @@
 """Tests for Web UI API routes."""
 
-import json
 import pytest
-from unittest.mock import patch, MagicMock
-from pathlib import Path
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 

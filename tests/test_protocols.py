@@ -1,7 +1,6 @@
 """Tests for MCP, A2A, and Gateway protocol modules."""
 
 import pytest
-import time
 from unittest.mock import MagicMock
 
 from pulsar_ai.protocols.mcp import (

@@ -67,8 +67,6 @@ def create_agent_app(config: dict) -> Any:
 
     from pulsar_ai.agent.base import BaseAgent
     from pulsar_ai.agent.builtin_tools import get_default_registry
-    from pulsar_ai.agent.guardrails import GuardrailsConfig
-    from pulsar_ai.agent.memory import ShortTermMemory
 
     app = FastAPI(
         title="Pulsar AI Agent Server",

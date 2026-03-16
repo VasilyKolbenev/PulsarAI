@@ -1,10 +1,8 @@
 """Tests for experiment tracking, fingerprinting, and run comparison."""
 
 import json
-import os
 import pytest
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from pulsar_ai.tracking import (
     RunTracker,
@@ -241,7 +239,7 @@ class TestTrackExperiment:
 
     def test_context_manager_failure(self, sample_config, runs_dir):
         with pytest.raises(ValueError):
-            with track_experiment(sample_config, task="sft") as tracker:
+            with track_experiment(sample_config, task="sft") as _tracker:
                 raise ValueError("Training error")
 
         runs = list_runs()

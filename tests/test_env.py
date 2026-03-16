@@ -1,6 +1,5 @@
 """Tests for environment variable helper with deprecation."""
 
-import os
 import warnings
 
 import pytest

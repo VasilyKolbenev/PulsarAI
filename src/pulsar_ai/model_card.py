@@ -53,8 +53,8 @@ def generate_model_card(
 
     # Overview
     sections.append("## Overview\n")
-    sections.append(f"| Field | Value |")
-    sections.append(f"|-------|-------|")
+    sections.append("| Field | Value |")
+    sections.append("|-------|-------|")
     sections.append(f"| **Model Name** | {name} |")
     if base_model:
         sections.append(f"| **Base Model** | {base_model} |")

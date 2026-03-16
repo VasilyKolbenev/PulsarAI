@@ -1,7 +1,7 @@
 """Tests for pipeline executor and tracker."""
 
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from pulsar_ai.pipeline.executor import PipelineExecutor
 from pulsar_ai.pipeline.tracker import PipelineTracker

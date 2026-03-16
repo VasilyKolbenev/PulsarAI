@@ -1,10 +1,8 @@
 """Tests for Forge Co-pilot assistant: tools, command parser, and API."""
 
 import json
-import os
 import pytest
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
