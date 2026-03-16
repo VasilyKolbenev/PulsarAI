@@ -18,7 +18,7 @@ from slowapi import Limiter
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 
-from pulsar_ai.ui.auth import ApiKeyMiddleware, ApiKeyStore
+from pulsar_ai.ui.auth import ApiKeyMiddleware, ApiKeyStore, DemoModeMiddleware
 from pulsar_ai.ui.routes import training, datasets, experiments, evaluation
 from pulsar_ai.ui.routes import export_routes, hardware
 from pulsar_ai.ui.assistant import router as assistant_router
@@ -97,6 +97,11 @@ def create_app() -> FastAPI:
                 "Auth enabled but no keys found. Generated default key: %s",
                 initial_key,
             )
+    # Demo mode: read-only for investor presentations
+    if stand_mode == "demo":
+        app.add_middleware(DemoModeMiddleware)
+        logger.info("Demo mode active — write operations are disabled")
+
     # Store app config on state for settings routes
     app.state.key_store = key_store
     app.state.auth_enabled = auth_enabled
