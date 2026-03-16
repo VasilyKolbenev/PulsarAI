@@ -1,18 +1,15 @@
-"""Compute target management for remote GPU resources."""
+"""SQLite-backed compute target management for remote GPU resources."""
 
-import json
 import logging
 import uuid
-from dataclasses import dataclass, asdict, field
+from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
 from typing import Any
 
 from pulsar_ai.compute.ssh import SSHConnection
+from pulsar_ai.storage.database import Database, get_database
 
 logger = logging.getLogger(__name__)
-
-DEFAULT_STORE_PATH = Path("./data/compute_targets.json")
 
 
 @dataclass
@@ -44,17 +41,14 @@ class ConnectionTestResult:
 
 
 class ComputeManager:
-    """Manages compute targets (local + remote GPU machines).
+    """Manages compute targets backed by SQLite.
 
     Args:
-        store_path: Path to JSON file storing targets.
+        db: Database instance.  Uses the module singleton when *None*.
     """
 
-    def __init__(self, store_path: Path | None = None) -> None:
-        self.store_path = store_path or DEFAULT_STORE_PATH
-        self.store_path.parent.mkdir(parents=True, exist_ok=True)
-        if not self.store_path.exists():
-            self._save([])
+    def __init__(self, db: Database | None = None) -> None:
+        self._db = db or get_database()
 
     def add_target(
         self,
@@ -76,20 +70,29 @@ class ComputeManager:
         Returns:
             Created ComputeTarget.
         """
-        target = ComputeTarget(
-            id=str(uuid.uuid4())[:8],
+        target_id = str(uuid.uuid4())[:8]
+        now_iso = datetime.now().isoformat()
+
+        self._db.execute(
+            """
+            INSERT INTO compute_targets
+                (id, name, host, user, port, key_path, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (target_id, name, host, user, port, key_path or "", now_iso),
+        )
+        self._db.commit()
+        logger.info("Added compute target: %s (%s@%s)", name, user, host)
+
+        return ComputeTarget(
+            id=target_id,
             name=name,
             host=host,
             user=user,
             port=port,
             key_path=key_path,
-            added_at=datetime.now().isoformat(),
+            added_at=now_iso,
         )
-        targets = self._load()
-        targets.append(asdict(target))
-        self._save(targets)
-        logger.info("Added compute target: %s (%s@%s)", name, user, host)
-        return target
 
     def remove_target(self, target_id: str) -> bool:
         """Remove a compute target.
@@ -100,13 +103,11 @@ class ComputeManager:
         Returns:
             True if removed, False if not found.
         """
-        targets = self._load()
-        original = len(targets)
-        targets = [t for t in targets if t["id"] != target_id]
-        if len(targets) < original:
-            self._save(targets)
-            return True
-        return False
+        cursor = self._db.execute(
+            "DELETE FROM compute_targets WHERE id = ?", (target_id,)
+        )
+        self._db.commit()
+        return cursor.rowcount > 0
 
     def get_target(self, target_id: str) -> ComputeTarget | None:
         """Get a single target by ID.
@@ -117,13 +118,12 @@ class ComputeManager:
         Returns:
             ComputeTarget or None.
         """
-        for t in self._load():
-            if t["id"] == target_id:
-                return ComputeTarget(**{
-                    k: v for k, v in t.items()
-                    if k in ComputeTarget.__dataclass_fields__
-                })
-        return None
+        row = self._db.fetch_one(
+            "SELECT * FROM compute_targets WHERE id = ?", (target_id,)
+        )
+        if row is None:
+            return None
+        return self._row_to_target(row)
 
     def list_targets(self) -> list[ComputeTarget]:
         """List all compute targets.
@@ -131,13 +131,10 @@ class ComputeManager:
         Returns:
             List of ComputeTarget instances.
         """
-        return [
-            ComputeTarget(**{
-                k: v for k, v in t.items()
-                if k in ComputeTarget.__dataclass_fields__
-            })
-            for t in self._load()
-        ]
+        rows = self._db.fetch_all(
+            "SELECT * FROM compute_targets ORDER BY created_at"
+        )
+        return [self._row_to_target(r) for r in rows]
 
     def test_connection(self, target_id: str) -> ConnectionTestResult:
         """Test SSH connection to a target.
@@ -176,8 +173,11 @@ class ComputeManager:
                     latency_ms=latency,
                 )
 
-            # Update status
-            self._update_target(target_id, status="online", last_seen=datetime.now().isoformat())
+            self._update_target(
+                target_id,
+                status="online",
+                last_heartbeat=datetime.now().isoformat(),
+            )
 
             return ConnectionTestResult(
                 success=True,
@@ -215,7 +215,6 @@ class ComputeManager:
             )
             conn.connect()
 
-            # Try nvidia-smi
             stdout, _, code = conn.exec_command(
                 "nvidia-smi --query-gpu=count,name,memory.total "
                 "--format=csv,noheader,nounits 2>/dev/null || echo 'no-gpu'",
@@ -226,7 +225,11 @@ class ComputeManager:
             if "no-gpu" in stdout or code != 0:
                 return {"gpu_count": 0, "gpu_type": "CPU only", "vram_gb": 0}
 
-            lines = [l.strip() for l in stdout.strip().splitlines() if l.strip()]
+            lines = [
+                line.strip()
+                for line in stdout.strip().splitlines()
+                if line.strip()
+            ]
             if not lines:
                 return {"gpu_count": 0, "gpu_type": "CPU only", "vram_gb": 0}
 
@@ -236,14 +239,13 @@ class ComputeManager:
             vram_mb = float(parts[2].strip()) if len(parts) > 2 else 0
             vram_gb = round(vram_mb / 1024, 1)
 
-            # Update target with detected info
             self._update_target(
                 target_id,
                 gpu_count=gpu_count,
                 gpu_type=gpu_type,
                 vram_gb=vram_gb,
                 status="online",
-                last_seen=datetime.now().isoformat(),
+                last_heartbeat=datetime.now().isoformat(),
             )
 
             return {
@@ -256,17 +258,30 @@ class ComputeManager:
 
     def _update_target(self, target_id: str, **kwargs: Any) -> None:
         """Update fields on a target."""
-        targets = self._load()
-        for t in targets:
-            if t["id"] == target_id:
-                t.update(kwargs)
-                break
-        self._save(targets)
+        if not kwargs:
+            return
+        set_clauses = ", ".join(f"{k} = ?" for k in kwargs)
+        values = list(kwargs.values()) + [target_id]
+        self._db.execute(
+            f"UPDATE compute_targets SET {set_clauses} WHERE id = ?",
+            tuple(values),
+        )
+        self._db.commit()
 
-    def _load(self) -> list[dict]:
-        with open(self.store_path, encoding="utf-8") as f:
-            return json.load(f)
-
-    def _save(self, targets: list[dict]) -> None:
-        with open(self.store_path, "w", encoding="utf-8") as f:
-            json.dump(targets, f, ensure_ascii=False, indent=2)
+    @staticmethod
+    def _row_to_target(row: dict) -> ComputeTarget:
+        """Convert a SQLite row to ComputeTarget dataclass."""
+        return ComputeTarget(
+            id=row["id"],
+            name=row["name"],
+            host=row["host"],
+            user=row["user"],
+            port=row.get("port", 22),
+            key_path=row.get("key_path") or None,
+            gpu_count=row.get("gpu_count", 0),
+            gpu_type=row.get("gpu_type", ""),
+            vram_gb=row.get("vram_gb", 0),
+            status=row.get("status", "unknown"),
+            added_at=row.get("created_at", ""),
+            last_seen=row.get("last_heartbeat"),
+        )

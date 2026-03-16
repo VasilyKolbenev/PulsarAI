@@ -1,16 +1,15 @@
 """Tests for compute target management and remote runner."""
 
-import json
 import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-from dataclasses import asdict
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
 from pulsar_ai.compute.manager import ComputeManager, ComputeTarget, ConnectionTestResult
 from pulsar_ai.compute.ssh import SSHConnection
 from pulsar_ai.compute.remote_runner import RemoteJobRunner, RemoteJobStatus
+from pulsar_ai.storage.database import Database
 from pulsar_ai.ui.app import create_app
 
 
@@ -25,7 +24,7 @@ class TestComputeManager:
     @pytest.fixture
     def manager(self, tmp_path):
         """Create manager with temp store."""
-        return ComputeManager(store_path=tmp_path / "targets.json")
+        return ComputeManager(db=Database(tmp_path / "test.db"))
 
     def test_add_target(self, manager):
         """Test adding a compute target."""
@@ -85,11 +84,11 @@ class TestComputeManager:
 
     def test_targets_persist(self, tmp_path):
         """Test targets persist across manager instances."""
-        path = tmp_path / "targets.json"
-        m1 = ComputeManager(store_path=path)
+        db = Database(tmp_path / "persist.db")
+        m1 = ComputeManager(db=db)
         m1.add_target(name="persist", host="5.5.5.5", user="x")
 
-        m2 = ComputeManager(store_path=path)
+        m2 = ComputeManager(db=db)
         targets = m2.list_targets()
         assert len(targets) == 1
         assert targets[0].name == "persist"

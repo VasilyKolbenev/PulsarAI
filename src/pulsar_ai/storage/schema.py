@@ -126,10 +126,12 @@ CREATE TABLE IF NOT EXISTS compute_targets (
     name            TEXT NOT NULL,
     host            TEXT NOT NULL,
     user            TEXT NOT NULL,
+    port            INTEGER DEFAULT 22,
     key_path        TEXT DEFAULT '',
     gpu_count       INTEGER DEFAULT 0,
     gpu_type        TEXT DEFAULT '',
     vram_gb         REAL DEFAULT 0,
+    status          TEXT DEFAULT 'unknown',
     created_at      TEXT NOT NULL,
     last_heartbeat  TEXT
 );
