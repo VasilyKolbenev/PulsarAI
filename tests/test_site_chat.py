@@ -6,16 +6,20 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
+from pulsar_ai.storage.database import Database
+from pulsar_ai.storage.session_store import SessionStore
 from pulsar_ai.ui.routes import site_chat
 
 
 @pytest.fixture(autouse=True)
-def _clear_state():
-    """Clear chat state between tests."""
-    site_chat._sessions.clear()
+def _use_temp_db(tmp_path):
+    """Swap site_chat's session store with a temp DB for test isolation."""
+    db = Database(tmp_path / "site_chat_test.db")
+    original = site_chat._session_store
+    site_chat._session_store = SessionStore(db=db)
     site_chat._rate_limits.clear()
-    yield
-    site_chat._sessions.clear()
+    yield db
+    site_chat._session_store = original
     site_chat._rate_limits.clear()
 
 
@@ -76,7 +80,7 @@ class TestSiteChatEndpoint:
         assert resp.json()["session_id"] == "my-session-123"
 
     def test_chat_session_persistence(self, client: TestClient):
-        """Messages should accumulate in session history."""
+        """Messages should accumulate in session history via SQLite."""
         with patch.dict("os.environ", {"OPENAI_API_KEY": ""}, clear=False):
             resp1 = client.post(
                 "/api/v1/site/chat",
@@ -87,8 +91,9 @@ class TestSiteChatEndpoint:
                 "/api/v1/site/chat",
                 json={"message": "Second message", "session_id": sid},
             )
-        # Should have 4 messages (2 user + 2 assistant)
-        assert len(site_chat._sessions[sid]) == 4
+        # Should have 4 messages (2 user + 2 assistant fallbacks)
+        msgs = site_chat._session_store.get_messages(sid)
+        assert len(msgs) == 4
 
     @patch("pulsar_ai.ui.routes.site_chat._call_openai", new_callable=AsyncMock)
     def test_chat_returns_reply(self, mock_openai: AsyncMock, client: TestClient):
@@ -132,21 +137,27 @@ class TestSiteChatEndpoint:
 class TestSessionManagement:
     """Tests for session history management."""
 
-    def test_max_history_trim(self, client: TestClient):
+    def test_max_history_trim(self, client: TestClient, _use_temp_db):
         """Session history should be trimmed to MAX_HISTORY."""
         sid = "trim-test"
-        # Pre-fill with many messages
-        site_chat._sessions[sid] = [
+        # Pre-fill with many messages via store
+        store = site_chat._session_store
+        store.get_or_create(sid, session_type="site_chat")
+        msgs = [
             {"role": "user" if i % 2 == 0 else "assistant", "content": f"msg-{i}"}
             for i in range(30)
         ]
+        store.set_messages(sid, msgs)
+
         with patch.dict("os.environ", {"OPENAI_API_KEY": ""}, clear=False):
             client.post(
                 "/api/v1/site/chat",
                 json={"message": "New message", "session_id": sid},
             )
-        # Should be trimmed to MAX_HISTORY (20) + new user msg + assistant reply = trimmed to 20
-        assert len(site_chat._sessions[sid]) <= site_chat.MAX_HISTORY + 2
+        # After trim + new user + assistant reply, should be <= MAX_HISTORY
+        final_msgs = store.get_messages(sid)
+        # Each append_message call trims to MAX_HISTORY (20)
+        assert len(final_msgs) <= site_chat.MAX_HISTORY + 2
 
 
 class TestRateLimiting:
@@ -212,9 +223,10 @@ class TestChatStatus:
         assert data["model"] == "gpt-4o-mini"
 
     def test_status_tracks_sessions(self, client: TestClient):
-        """Should count active sessions."""
-        site_chat._sessions["a"] = []
-        site_chat._sessions["b"] = []
+        """Should count active site_chat sessions."""
+        store = site_chat._session_store
+        store.get_or_create("a", session_type="site_chat")
+        store.get_or_create("b", session_type="site_chat")
         with patch.dict("os.environ", {"OPENAI_API_KEY": ""}, clear=False):
             resp = client.get("/api/v1/site/chat/status")
         assert resp.json()["active_sessions"] == 2

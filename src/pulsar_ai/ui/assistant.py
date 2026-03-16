@@ -16,6 +16,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from pulsar_ai.agent.tool import Tool, ToolRegistry, tool
+from pulsar_ai.storage.session_store import SessionStore
 from pulsar_ai.ui.experiment_store import ExperimentStore
 from pulsar_ai.ui.jobs import submit_training_job, get_job, list_jobs, cancel_job
 
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["assistant"])
 
 _store = ExperimentStore()
-_sessions: dict[str, dict[str, Any]] = {}
+_session_store = SessionStore()
 
 
 # ──────────────────────────────────────────────────────────
@@ -543,7 +544,7 @@ def _check_llm_available() -> bool:
 
 
 def _get_or_create_session(session_id: str | None) -> tuple[str, list[dict]]:
-    """Get or create a chat session.
+    """Get or create a chat session backed by SQLite.
 
     Args:
         session_id: Optional existing session ID.
@@ -551,12 +552,9 @@ def _get_or_create_session(session_id: str | None) -> tuple[str, list[dict]]:
     Returns:
         Tuple of (session_id, message_history).
     """
-    if session_id and session_id in _sessions:
-        return session_id, _sessions[session_id]["history"]
-
-    new_id = session_id or str(uuid.uuid4())[:12]
-    _sessions[new_id] = {"history": []}
-    return new_id, _sessions[new_id]["history"]
+    sid = session_id or str(uuid.uuid4())[:12]
+    session = _session_store.get_or_create(sid, session_type="assistant")
+    return session["id"], session["messages"]
 
 
 def _build_system_prompt(context: dict | None = None) -> str:
@@ -680,9 +678,9 @@ def _run_llm_mode(
 
     answer = agent.run(message)
 
-    # Save to session
-    history.append({"role": "user", "content": message})
-    history.append({"role": "assistant", "content": answer})
+    # Persist to SQLite
+    _session_store.append_message(sid, "user", message)
+    _session_store.append_message(sid, "assistant", answer)
 
     return {
         "answer": answer,
@@ -797,7 +795,6 @@ async def assistant_status() -> StatusResponse:
 @router.delete("/assistant/session/{session_id}")
 async def delete_session(session_id: str) -> dict:
     """Delete an assistant session."""
-    if session_id in _sessions:
-        del _sessions[session_id]
+    if _session_store.delete(session_id):
         return {"status": "deleted"}
     return {"status": "not_found"}
