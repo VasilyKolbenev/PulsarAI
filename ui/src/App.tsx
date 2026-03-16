@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { Layout } from "@/components/layout/Layout"
 import { Landing } from "@/pages/Landing"
+import { ToastContainer } from "@/components/ui/Toast"
 import { lazy, Suspense } from "react"
 
 // Lazy load heavy pages
@@ -26,6 +27,7 @@ import { Settings } from "@/pages/Settings"
 export default function App() {
   return (
     <BrowserRouter>
+      <ToastContainer />
       <Suspense
         fallback={
           <div className="flex items-center justify-center h-screen text-muted-foreground">
