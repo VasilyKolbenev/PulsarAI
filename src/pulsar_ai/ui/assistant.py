@@ -32,6 +32,7 @@ _session_store = SessionStore()
 # Pulsar Tools — call backend in-process (no HTTP)
 # ──────────────────────────────────────────────────────────
 
+
 def _get_pulsar_tools() -> ToolRegistry:
     """Create a ToolRegistry with all pulsar platform tools.
 
@@ -40,7 +41,9 @@ def _get_pulsar_tools() -> ToolRegistry:
     """
     registry = ToolRegistry()
 
-    @tool(name="list_experiments", description="List recent training experiments with status and loss")
+    @tool(
+        name="list_experiments", description="List recent training experiments with status and loss"
+    )
     def list_experiments_tool(status: str = "", limit: int = 10) -> str:
         """List experiments, optionally filtered by status."""
         exps = _store.list_all(status=status or None)[:limit]
@@ -51,6 +54,7 @@ def _get_pulsar_tools() -> ToolRegistry:
             loss = f", loss={e['final_loss']:.4f}" if e.get("final_loss") else ""
             lines.append(f"- [{e['id']}] {e['name']} ({e['status']}{loss})")
         return "\n".join(lines)
+
     registry.register(list_experiments_tool)
 
     @tool(name="get_experiment", description="Get detailed info about a specific experiment by ID")
@@ -70,6 +74,7 @@ def _get_pulsar_tools() -> ToolRegistry:
             "artifacts": exp.get("artifacts", {}),
         }
         return json.dumps(info, indent=2)
+
     registry.register(get_experiment_tool)
 
     @tool(name="start_training", description="Start a new training experiment")
@@ -101,6 +106,7 @@ def _get_pulsar_tools() -> ToolRegistry:
         exp_id = _store.create(name=name, config=config, task=task)
         job_id = submit_training_job(experiment_id=exp_id, config=config, task=task)
         return f"Training started! Job ID: {job_id}, Experiment ID: {exp_id}"
+
     registry.register(start_training_tool)
 
     @tool(name="check_training", description="Check status of running/recent training jobs")
@@ -113,6 +119,7 @@ def _get_pulsar_tools() -> ToolRegistry:
         for j in jobs:
             lines.append(f"- Job {j['job_id']}: {j['status']} (experiment: {j['experiment_id']})")
         return "\n".join(lines)
+
     registry.register(check_training_tool)
 
     @tool(name="cancel_training", description="Cancel a running training job by job ID")
@@ -121,6 +128,7 @@ def _get_pulsar_tools() -> ToolRegistry:
         if cancel_job(job_id):
             return f"Job {job_id} cancelled."
         return f"Could not cancel job {job_id}. It may have already completed or doesn't exist."
+
     registry.register(cancel_training_tool)
 
     @tool(name="list_datasets", description="List all uploaded datasets")
@@ -142,10 +150,13 @@ def _get_pulsar_tools() -> ToolRegistry:
                         rows = len(pd.read_json(p, lines=True))
                     else:
                         rows = "?"
-                    results.append(f"- [{p.stem}] {p.name} ({rows} rows, {p.stat().st_size / 1024:.1f} KB)")
+                    results.append(
+                        f"- [{p.stem}] {p.name} ({rows} rows, {p.stat().st_size / 1024:.1f} KB)"
+                    )
                 except Exception:
                     results.append(f"- [{p.stem}] {p.name} (error reading)")
         return "\n".join(results) if results else "No datasets found."
+
     registry.register(list_datasets_tool)
 
     @tool(name="preview_dataset", description="Preview first rows of a dataset")
@@ -169,9 +180,13 @@ def _get_pulsar_tools() -> ToolRegistry:
                 except Exception as e:
                     return f"Error reading dataset: {e}"
         return f"Dataset {dataset_id} not found."
+
     registry.register(preview_dataset_tool)
 
-    @tool(name="recommend_params", description="Recommend training hyperparameters based on model and dataset")
+    @tool(
+        name="recommend_params",
+        description="Recommend training hyperparameters based on model and dataset",
+    )
     def recommend_params_tool(
         model: str = "Qwen/Qwen2.5-3B-Instruct",
         dataset_rows: int = 0,
@@ -182,6 +197,7 @@ def _get_pulsar_tools() -> ToolRegistry:
         gpu_name = "CPU"
         try:
             from pulsar_ai.hardware import detect_hardware
+
             hw = detect_hardware()
             gpu_vram = hw.vram_per_gpu_gb
             gpu_name = hw.gpu_name
@@ -227,6 +243,7 @@ def _get_pulsar_tools() -> ToolRegistry:
             f"  Optimizer: adamw_8bit\n"
             f"  Strategy: {'qlora' if gpu_vram < 24 else 'lora'}"
         )
+
     registry.register(recommend_params_tool)
 
     @tool(name="get_hardware", description="Get GPU and hardware information")
@@ -234,6 +251,7 @@ def _get_pulsar_tools() -> ToolRegistry:
         """Detect hardware capabilities."""
         try:
             from pulsar_ai.hardware import detect_hardware
+
             hw = detect_hardware()
             return (
                 f"GPUs: {hw.num_gpus}x {hw.gpu_name}\n"
@@ -246,6 +264,7 @@ def _get_pulsar_tools() -> ToolRegistry:
             )
         except Exception as e:
             return f"Hardware detection failed: {e}"
+
     registry.register(get_hardware_tool)
 
     @tool(name="run_evaluation", description="Run evaluation on a trained experiment")
@@ -263,12 +282,16 @@ def _get_pulsar_tools() -> ToolRegistry:
             f"Model: {model_path}\n"
             f"Test data: {test_data_path}"
         )
+
     registry.register(run_evaluation_tool)
 
-    @tool(name="list_workflows", description="List saved visual workflows from the pipeline builder")
+    @tool(
+        name="list_workflows", description="List saved visual workflows from the pipeline builder"
+    )
     def list_workflows_tool() -> str:
         """List all saved workflows with IDs and stats."""
         from pulsar_ai.ui.workflow_store import WorkflowStore
+
         store = WorkflowStore()
         workflows = store.list_all()
         if not workflows:
@@ -279,16 +302,17 @@ def _get_pulsar_tools() -> ToolRegistry:
             edges = len(wf.get("edges", []))
             runs = wf.get("run_count", 0)
             lines.append(
-                f"  [{wf['id']}] {wf['name']} — {nodes} nodes, "
-                f"{edges} edges, {runs} runs"
+                f"  [{wf['id']}] {wf['name']} — {nodes} nodes, " f"{edges} edges, {runs} runs"
             )
         return "Saved workflows:\n" + "\n".join(lines)
+
     registry.register(list_workflows_tool)
 
     @tool(name="get_workflow", description="Get details of a saved workflow by ID")
     def get_workflow_tool(workflow_id: str) -> str:
         """Get workflow details including nodes and edges."""
         from pulsar_ai.ui.workflow_store import WorkflowStore
+
         store = WorkflowStore()
         wf = store.get(workflow_id)
         if not wf:
@@ -308,6 +332,7 @@ def _get_pulsar_tools() -> ToolRegistry:
         for e in edges:
             lines.append(f"  - {e['source']} → {e['target']}")
         return "\n".join(lines)
+
     registry.register(get_workflow_tool)
 
     @tool(
@@ -327,8 +352,11 @@ def _get_pulsar_tools() -> ToolRegistry:
             epochs: Training epochs.
         """
         size_map = {
-            "1B": (1, 0.5), "3B": (3, 1.0), "7B": (7, 2.5),
-            "13B": (13, 5.0), "70B": (70, 30.0),
+            "1B": (1, 0.5),
+            "3B": (3, 1.0),
+            "7B": (7, 2.5),
+            "13B": (13, 5.0),
+            "70B": (70, 30.0),
         }
         key = model.upper().replace("B", "") + "B"
         params_b, base_hours = size_map.get(key, (3, 1.0))
@@ -343,8 +371,11 @@ def _get_pulsar_tools() -> ToolRegistry:
         total_cost = round(total_hours * cost_per_hour, 2)
 
         vram_needed = {
-            "1B": "~4 GB", "3B": "~8 GB", "7B": "~16 GB",
-            "13B": "~32 GB", "70B": "~80 GB (multi-GPU)",
+            "1B": "~4 GB",
+            "3B": "~8 GB",
+            "7B": "~16 GB",
+            "13B": "~32 GB",
+            "70B": "~80 GB (multi-GPU)",
         }.get(key, "~8 GB")
 
         return (
@@ -355,6 +386,7 @@ def _get_pulsar_tools() -> ToolRegistry:
             f"  VRAM required: {vram_needed} (QLoRA)\n"
             f"  Strategy: {'QLoRA' if params_b <= 13 else 'QLoRA + DeepSpeed'}"
         )
+
     registry.register(estimate_training_cost_tool)
 
     @tool(
@@ -419,6 +451,7 @@ def _get_pulsar_tools() -> ToolRegistry:
             f"{budget_mod}"
             f"  Tips: {cfg['tips']}"
         )
+
     registry.register(suggest_config_tool)
 
     return registry
@@ -482,10 +515,18 @@ def parse_command(message: str) -> dict[str, Any] | None:
         model = kwargs.get("model", "Qwen/Qwen2.5-3B-Instruct")
         dataset = kwargs.get("dataset", "")
         if not dataset:
-            return {"results": ["Error: dataset is required. Usage: /train name=X model=Y dataset=path/to/data.csv"]}
-        results.append(tools.get("start_training").execute(
-            name=name, model=model, dataset_path=dataset,
-        ))
+            return {
+                "results": [
+                    "Error: dataset is required. Usage: /train name=X model=Y dataset=path/to/data.csv"
+                ]
+            }
+        results.append(
+            tools.get("start_training").execute(
+                name=name,
+                model=model,
+                dataset_path=dataset,
+            )
+        )
 
     elif cmd == "recommend":
         model = kwargs.get("model", "Qwen/Qwen2.5-3B-Instruct")
@@ -512,9 +553,13 @@ def parse_command(message: str) -> dict[str, Any] | None:
         model = kwargs.get("model", "3B")
         rows = int(kwargs.get("rows", "1000"))
         epochs = int(kwargs.get("epochs", "3"))
-        results.append(tools.get("estimate_training_cost").execute(
-            model=model, dataset_rows=rows, epochs=epochs,
-        ))
+        results.append(
+            tools.get("estimate_training_cost").execute(
+                model=model,
+                dataset_rows=rows,
+                epochs=epochs,
+            )
+        )
 
     elif cmd == "preview":
         ds_id = kwargs.get("id", args_str)
@@ -532,6 +577,7 @@ def parse_command(message: str) -> dict[str, Any] | None:
 # LLM Mode
 # ──────────────────────────────────────────────────────────
 
+
 def _check_llm_available() -> bool:
     """Check if an LLM backend is available.
 
@@ -539,6 +585,7 @@ def _check_llm_available() -> bool:
         True if OPENAI_API_KEY is configured.
     """
     import os
+
     key = os.environ.get("OPENAI_API_KEY", "").strip()
     return bool(key)
 
@@ -693,6 +740,7 @@ def _run_llm_mode(
 # FastAPI Router
 # ──────────────────────────────────────────────────────────
 
+
 class ChatRequest(BaseModel):
     """Assistant chat request."""
 
@@ -766,8 +814,7 @@ async def assistant_chat(req: ChatRequest) -> ChatResponse:
     # Fallback: no LLM, no command
     return ChatResponse(
         answer=(
-            "No LLM server connected. Use slash commands for direct access:\n\n"
-            f"{HELP_TEXT}"
+            "No LLM server connected. Use slash commands for direct access:\n\n" f"{HELP_TEXT}"
         ),
         session_id=sid,
         mode="command",
@@ -785,8 +832,7 @@ async def assistant_status() -> StatusResponse:
     return StatusResponse(
         active_jobs=active,
         recent_experiments=[
-            {"id": e["id"], "name": e["name"], "status": e["status"]}
-            for e in recent
+            {"id": e["id"], "name": e["name"], "status": e["status"]} for e in recent
         ],
         llm_available=llm_ok,
     )

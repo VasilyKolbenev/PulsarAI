@@ -91,9 +91,7 @@ def detect_hardware() -> HardwareInfo:
     return info
 
 
-def _select_strategy(
-    num_gpus: int, vram_per_gpu_gb: float
-) -> tuple[str, int, int]:
+def _select_strategy(num_gpus: int, vram_per_gpu_gb: float) -> tuple[str, int, int]:
     """Select training strategy based on hardware.
 
     Returns:
@@ -209,8 +207,5 @@ def get_strategy_config(strategy: str) -> dict:
         },
     }
     if strategy not in configs:
-        raise ValueError(
-            f"Unknown strategy '{strategy}'. "
-            f"Available: {list(configs.keys())}"
-        )
+        raise ValueError(f"Unknown strategy '{strategy}'. " f"Available: {list(configs.keys())}")
     return configs[strategy]

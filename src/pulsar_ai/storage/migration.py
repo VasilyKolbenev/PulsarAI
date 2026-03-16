@@ -67,9 +67,11 @@ def migrate_experiments(db: Database, json_path: Path) -> int:
                     exp.get("last_update_at", datetime.now().isoformat()),
                     exp.get("completed_at"),
                     exp.get("final_loss"),
-                    json.dumps(exp.get("eval_results"))
-                    if exp.get("eval_results") is not None
-                    else None,
+                    (
+                        json.dumps(exp.get("eval_results"))
+                        if exp.get("eval_results") is not None
+                        else None
+                    ),
                     json.dumps(exp.get("artifacts", {}), ensure_ascii=False),
                 ),
             )
@@ -153,12 +155,8 @@ def migrate_prompts(db: Database, json_path: Path) -> int:
                         v.get("system_prompt", ""),
                         json.dumps(v.get("variables", []), ensure_ascii=False),
                         v.get("model", ""),
-                        json.dumps(
-                            v.get("parameters", {}), ensure_ascii=False
-                        ),
-                        json.dumps(v.get("metrics"))
-                        if v.get("metrics") is not None
-                        else None,
+                        json.dumps(v.get("parameters", {}), ensure_ascii=False),
+                        json.dumps(v.get("metrics")) if v.get("metrics") is not None else None,
                         v.get("created_at", datetime.now().isoformat()),
                     ),
                 )
@@ -254,17 +252,13 @@ def migrate_runs(db: Database, runs_dir: Path) -> int:
                     run.get("status", "unknown"),
                     json.dumps(run.get("config", {}), ensure_ascii=False),
                     json.dumps(run.get("tags", []), ensure_ascii=False),
-                    json.dumps(
-                        run.get("metrics_history", []), ensure_ascii=False
-                    ),
+                    json.dumps(run.get("metrics_history", []), ensure_ascii=False),
                     json.dumps(run.get("artifacts", {}), ensure_ascii=False),
                     json.dumps(run.get("results", {}), ensure_ascii=False),
                     run.get("started_at", datetime.now().isoformat()),
                     run.get("finished_at"),
                     run.get("duration_s"),
-                    json.dumps(
-                        run.get("environment", {}), ensure_ascii=False
-                    ),
+                    json.dumps(run.get("environment", {}), ensure_ascii=False),
                 ),
             )
             migrated += 1

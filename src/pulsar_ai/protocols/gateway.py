@@ -49,10 +49,7 @@ class GatewayConfig:
         Returns:
             GatewayConfig instance.
         """
-        routes = [
-            GatewayRoute(**r) if isinstance(r, dict) else r
-            for r in data.get("routes", [])
-        ]
+        routes = [GatewayRoute(**r) if isinstance(r, dict) else r for r in data.get("routes", [])]
         protocols_raw = data.get("protocols", "REST")
         if isinstance(protocols_raw, str):
             protocols = [p.strip() for p in protocols_raw.split(",")]
@@ -129,9 +126,7 @@ class APIGateway:
 
         timestamps = self._request_counts[client_id]
         # Remove old entries outside the window
-        self._request_counts[client_id] = [
-            ts for ts in timestamps if now - ts < window
-        ]
+        self._request_counts[client_id] = [ts for ts in timestamps if now - ts < window]
 
         if len(self._request_counts[client_id]) >= self.config.rate_limit:
             return False

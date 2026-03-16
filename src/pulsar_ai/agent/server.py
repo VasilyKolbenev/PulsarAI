@@ -194,9 +194,7 @@ def create_agent_app(config: dict) -> Any:
     return app
 
 
-def start_agent_server(
-    config: dict, host: str = "0.0.0.0", port: int = 8081
-) -> None:
+def start_agent_server(config: dict, host: str = "0.0.0.0", port: int = 8081) -> None:
     """Start the agent server.
 
     Args:

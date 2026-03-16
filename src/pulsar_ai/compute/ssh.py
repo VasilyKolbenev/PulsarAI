@@ -76,10 +76,13 @@ class SSHConnection:
                 return
             except (OSError, paramiko.SSHException) as exc:
                 last_exc = exc
-                delay = RETRY_BASE_DELAY * (2 ** attempt)
+                delay = RETRY_BASE_DELAY * (2**attempt)
                 logger.warning(
                     "SSH connect attempt %d/%d failed: %s — retrying in %ds",
-                    attempt + 1, retries, exc, delay,
+                    attempt + 1,
+                    retries,
+                    exc,
+                    delay,
                 )
                 if attempt < retries - 1:
                     time.sleep(delay)
@@ -89,9 +92,7 @@ class SSHConnection:
             f"after {retries} attempts: {last_exc}"
         )
 
-    def exec_command(
-        self, cmd: str, timeout: int = 300
-    ) -> tuple[str, str, int]:
+    def exec_command(self, cmd: str, timeout: int = 300) -> tuple[str, str, int]:
         """Execute a command on the remote host.
 
         Args:
@@ -115,9 +116,7 @@ class SSHConnection:
         ssh_cmd.append(f"{self.user}@{self.host}")
         ssh_cmd.append(cmd)
 
-        result = subprocess.run(
-            ssh_cmd, capture_output=True, text=True, timeout=timeout
-        )
+        result = subprocess.run(ssh_cmd, capture_output=True, text=True, timeout=timeout)
         return result.stdout, result.stderr, result.returncode
 
     def put_file(self, local: Path, remote: str) -> None:
@@ -168,9 +167,7 @@ class SSHConnection:
         Yields:
             Lines from the remote file.
         """
-        stdout, _, _ = self.exec_command(
-            f"tail -n {int(lines)} {shlex.quote(path)}"
-        )
+        stdout, _, _ = self.exec_command(f"tail -n {int(lines)} {shlex.quote(path)}")
         for line in stdout.splitlines():
             yield line
 

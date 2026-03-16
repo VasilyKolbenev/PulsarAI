@@ -66,9 +66,7 @@ class TestModelClient:
         ]
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.json.return_value = _make_chat_response(
-            content="", tool_calls=tool_calls
-        )
+        mock_response.json.return_value = _make_chat_response(content="", tool_calls=tool_calls)
         mock_post.return_value = mock_response
 
         client = ModelClient()

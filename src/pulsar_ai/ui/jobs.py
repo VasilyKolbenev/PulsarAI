@@ -26,6 +26,7 @@ def _cleanup_cuda() -> None:
     gc.collect()
     try:
         import torch
+
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
             torch.cuda.reset_peak_memory_stats()
@@ -39,6 +40,7 @@ def _check_vram_available(min_free_gb: float = 2.0) -> None:
     """Log warning if available VRAM is dangerously low."""
     try:
         import torch
+
         if torch.cuda.is_available():
             free, total = torch.cuda.mem_get_info()
             free_gb = free / (1024**3)
@@ -46,9 +48,9 @@ def _check_vram_available(min_free_gb: float = 2.0) -> None:
             logger.info("VRAM check: %.1f GB free / %.1f GB total", free_gb, total_gb)
             if free_gb < min_free_gb:
                 logger.warning(
-                    "Low VRAM: only %.1f GB free (need %.1f GB minimum). "
-                    "Training may OOM.",
-                    free_gb, min_free_gb,
+                    "Low VRAM: only %.1f GB free (need %.1f GB minimum). " "Training may OOM.",
+                    free_gb,
+                    min_free_gb,
                 )
     except ImportError:
         pass
@@ -65,14 +67,11 @@ def _cleanup_old_jobs() -> None:
                 to_remove.append(job_id)
 
     completed = [
-        (jid, j) for jid, j in _jobs.items()
-        if j["status"] in ("completed", "failed", "cancelled")
+        (jid, j) for jid, j in _jobs.items() if j["status"] in ("completed", "failed", "cancelled")
     ]
     if len(completed) > _MAX_COMPLETED_JOBS:
         completed.sort(key=lambda x: x[1].get("finished_at", 0))
-        to_remove.extend(
-            jid for jid, _ in completed[:len(completed) - _MAX_COMPLETED_JOBS]
-        )
+        to_remove.extend(jid for jid, _ in completed[: len(completed) - _MAX_COMPLETED_JOBS])
 
     for jid in set(to_remove):
         del _jobs[jid]
@@ -102,15 +101,11 @@ def submit_training_job(
     progress = ProgressCallback(job_id, experiment_id)
 
     try:
-        future = _executor.submit(
-            _run_training, job_id, experiment_id, config, task, progress
-        )
+        future = _executor.submit(_run_training, job_id, experiment_id, config, task, progress)
     except RuntimeError:
         logger.warning("Executor dead, recreating ThreadPoolExecutor")
         _executor = ThreadPoolExecutor(max_workers=1)
-        future = _executor.submit(
-            _run_training, job_id, experiment_id, config, task, progress
-        )
+        future = _executor.submit(_run_training, job_id, experiment_id, config, task, progress)
 
     _jobs[job_id] = {
         "job_id": job_id,
@@ -149,23 +144,25 @@ def _run_training(
     try:
         if task == "sft":
             from pulsar_ai.training.sft import train_sft
+
             results = train_sft(config, progress=progress)
         elif task == "dpo":
             from pulsar_ai.training.dpo import train_dpo
+
             results = train_dpo(config, progress=progress)
         else:
             raise ValueError(f"Unknown task: {task}")
 
         store.update_status(experiment_id, "completed")
-        store.set_artifacts(experiment_id, {
-            k: v for k, v in results.items()
-            if isinstance(v, str)
-        })
+        store.set_artifacts(experiment_id, {k: v for k, v in results.items() if isinstance(v, str)})
         if "training_loss" in results:
-            store.add_metrics(experiment_id, {
-                "loss": results["training_loss"],
-                "step": results.get("global_steps", 0),
-            })
+            store.add_metrics(
+                experiment_id,
+                {
+                    "loss": results["training_loss"],
+                    "step": results.get("global_steps", 0),
+                },
+            )
 
         # Store eval results if auto-eval ran
         if "eval_results" in results:
@@ -213,10 +210,7 @@ def list_jobs() -> list[dict]:
     Returns:
         List of job info dicts.
     """
-    return [
-        {k: v for k, v in job.items() if k != "future"}
-        for job in _jobs.values()
-    ]
+    return [{k: v for k, v in job.items() if k != "future"} for job in _jobs.values()]
 
 
 def shutdown_executor() -> None:
@@ -245,4 +239,3 @@ def cancel_job(job_id: str) -> bool:
             store.update_status(job["experiment_id"], "cancelled")
         return cancelled
     return False
-

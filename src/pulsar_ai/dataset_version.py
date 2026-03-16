@@ -160,12 +160,14 @@ class DatasetVersionStore:
         result = []
         for name, versions in self._versions.items():
             latest = versions[-1] if versions else None
-            result.append({
-                "name": name,
-                "versions": len(versions),
-                "latest_fingerprint": latest.fingerprint if latest else "",
-                "latest_rows": latest.num_rows if latest else 0,
-            })
+            result.append(
+                {
+                    "name": name,
+                    "versions": len(versions),
+                    "latest_fingerprint": latest.fingerprint if latest else "",
+                    "latest_rows": latest.num_rows if latest else 0,
+                }
+            )
         return result
 
     def diff(self, name: str, v1: int, v2: int) -> dict[str, Any]:

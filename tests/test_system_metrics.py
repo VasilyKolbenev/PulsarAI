@@ -14,7 +14,6 @@ from pulsar_ai.ui.metrics import (
 )
 from pulsar_ai.ui.app import create_app
 
-
 # ──────────────────────────────────────────────────────────
 # Metrics Collection
 # ──────────────────────────────────────────────────────────
@@ -134,10 +133,12 @@ class TestGPUMetrics:
 @pytest.fixture
 def client():
     """Create test client."""
-    with patch("pulsar_ai.ui.routes.training._store"), \
-         patch("pulsar_ai.ui.routes.experiments._store"), \
-         patch("pulsar_ai.ui.routes.evaluation._store"), \
-         patch("pulsar_ai.ui.routes.export_routes._store"):
+    with (
+        patch("pulsar_ai.ui.routes.training._store"),
+        patch("pulsar_ai.ui.routes.experiments._store"),
+        patch("pulsar_ai.ui.routes.evaluation._store"),
+        patch("pulsar_ai.ui.routes.export_routes._store"),
+    ):
         app = create_app()
         yield TestClient(app)
 

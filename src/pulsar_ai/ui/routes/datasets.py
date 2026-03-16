@@ -94,14 +94,16 @@ async def list_datasets() -> list[dict]:
         if path.is_file() and path.suffix in (".csv", ".jsonl", ".parquet", ".xlsx", ".xls"):
             try:
                 df = _read_dataframe(path)
-                results.append({
-                    "id": path.stem,
-                    "name": path.name,
-                    "format": path.suffix.lstrip("."),
-                    "num_rows": len(df),
-                    "size_bytes": path.stat().st_size,
-                    "path": str(path),
-                })
+                results.append(
+                    {
+                        "id": path.stem,
+                        "name": path.name,
+                        "format": path.suffix.lstrip("."),
+                        "num_rows": len(df),
+                        "size_bytes": path.stat().st_size,
+                        "path": str(path),
+                    }
+                )
             except Exception:
                 logger.warning("Failed to read dataset: %s", path)
     return results

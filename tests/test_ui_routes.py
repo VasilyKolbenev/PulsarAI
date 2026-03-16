@@ -13,10 +13,12 @@ from pulsar_ai.ui.app import create_app
 @pytest.fixture
 def client(tmp_path):
     """Create a test client with temp experiment store."""
-    with patch("pulsar_ai.ui.routes.training._store") as mock_store, \
-         patch("pulsar_ai.ui.routes.experiments._store") as mock_exp_store, \
-         patch("pulsar_ai.ui.routes.evaluation._store") as mock_eval_store, \
-         patch("pulsar_ai.ui.routes.export_routes._store") as mock_export_store:
+    with (
+        patch("pulsar_ai.ui.routes.training._store") as mock_store,
+        patch("pulsar_ai.ui.routes.experiments._store") as mock_exp_store,
+        patch("pulsar_ai.ui.routes.evaluation._store") as mock_eval_store,
+        patch("pulsar_ai.ui.routes.export_routes._store") as mock_export_store,
+    ):
 
         mock_store.create.return_value = "exp123"
         mock_exp_store.list_all.return_value = []
@@ -46,11 +48,14 @@ class TestTrainingRoutes:
         """Test POST /api/v1/training/start."""
         mock_submit.return_value = "job123"
 
-        resp = client.post("/api/v1/training/start", json={
-            "name": "test-experiment",
-            "config": {"model": {"name": "test"}},
-            "task": "sft",
-        })
+        resp = client.post(
+            "/api/v1/training/start",
+            json={
+                "name": "test-experiment",
+                "config": {"model": {"name": "test"}},
+                "task": "sft",
+            },
+        )
 
         assert resp.status_code == 200
         data = resp.json()
@@ -220,10 +225,13 @@ class TestEvalRoute:
 
     def test_eval_experiment_not_found(self, client):
         """Test eval returns 404 when experiment not found."""
-        resp = client.post("/api/v1/evaluation/run", json={
-            "experiment_id": "missing",
-            "test_data_path": "data/test.csv",
-        })
+        resp = client.post(
+            "/api/v1/evaluation/run",
+            json={
+                "experiment_id": "missing",
+                "test_data_path": "data/test.csv",
+            },
+        )
         assert resp.status_code == 404
 
 
@@ -232,7 +240,10 @@ class TestExportRoute:
 
     def test_export_experiment_not_found(self, client):
         """Test export returns 404 when experiment not found."""
-        resp = client.post("/api/v1/export", json={
-            "experiment_id": "missing",
-        })
+        resp = client.post(
+            "/api/v1/export",
+            json={
+                "experiment_id": "missing",
+            },
+        )
         assert resp.status_code == 404

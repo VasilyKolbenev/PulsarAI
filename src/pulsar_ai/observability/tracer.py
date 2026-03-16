@@ -47,11 +47,13 @@ class Span:
 
     def add_event(self, name: str, attributes: dict[str, Any] | None = None) -> None:
         """Add a timestamped event to the span."""
-        self.events.append({
-            "name": name,
-            "timestamp": time.time(),
-            "attributes": attributes or {},
-        })
+        self.events.append(
+            {
+                "name": name,
+                "timestamp": time.time(),
+                "attributes": attributes or {},
+            }
+        )
 
     def finish(self, status: str = "ok") -> None:
         """Mark span as complete."""
@@ -164,7 +166,11 @@ class Tracer:
 
     @contextmanager
     def start_span(
-        self, trace: Trace, name: str, parent_id: str = "", **attributes: Any,
+        self,
+        trace: Trace,
+        name: str,
+        parent_id: str = "",
+        **attributes: Any,
     ) -> Generator[Span, None, None]:
         """Start a new span within a trace.
 
@@ -225,10 +231,9 @@ class Tracer:
         Returns:
             The recorded Span.
         """
-        cost = (
-            (input_tokens / 1000) * cost_per_1k_input
-            + (output_tokens / 1000) * cost_per_1k_output
-        )
+        cost = (input_tokens / 1000) * cost_per_1k_input + (
+            output_tokens / 1000
+        ) * cost_per_1k_output
 
         span = Span(
             name=f"llm.{model}",
@@ -289,8 +294,7 @@ class Tracer:
         sorted_ids = sorted(
             self._traces.keys(),
             key=lambda tid: (
-                self._traces[tid].spans[0].start_time
-                if self._traces[tid].spans else 0
+                self._traces[tid].spans[0].start_time if self._traces[tid].spans else 0
             ),
         )
 

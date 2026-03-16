@@ -169,10 +169,7 @@ class TestParseScores:
 
     def test_parse_unknown_criterion_ignored(self, judge: LLMJudge) -> None:
         """Unknown criterion names are silently ignored."""
-        output = (
-            "helpfulness: 4 | OK\n"
-            "unknown_criterion: 5 | Should be ignored\n"
-        )
+        output = "helpfulness: 4 | OK\n" "unknown_criterion: 5 | Should be ignored\n"
         scores = judge.parse_scores(output)
         assert len(scores) == 1
         assert scores[0].criterion == "helpfulness"
@@ -210,8 +207,8 @@ class TestComputeOverall:
         # relevance=2.0, clarity=1.0, depth=1.0
         scores = [
             JudgeScore(criterion="relevance", score=5),  # weight 2
-            JudgeScore(criterion="clarity", score=3),     # weight 1
-            JudgeScore(criterion="depth", score=3),       # weight 1
+            JudgeScore(criterion="clarity", score=3),  # weight 1
+            JudgeScore(criterion="depth", score=3),  # weight 1
         ]
         overall = custom_judge.compute_overall(scores)
         expected = (5 * 2 + 3 * 1 + 3 * 1) / (2 + 1 + 1)
@@ -253,7 +250,8 @@ class TestEvaluate:
     def test_evaluate_metadata(self, judge: LLMJudge) -> None:
         """evaluate() stores model and instruction in metadata."""
         result = judge.evaluate(
-            instruction="Q", response="A",
+            instruction="Q",
+            response="A",
             judge_output="helpfulness: 3 | OK\n",
         )
         assert result.metadata["model"] == "judge"
@@ -262,7 +260,8 @@ class TestEvaluate:
     def test_evaluate_to_dict(self, judge: LLMJudge) -> None:
         """JudgeResult.to_dict() contains all expected fields."""
         result = judge.evaluate(
-            instruction="Q", response="A",
+            instruction="Q",
+            response="A",
             judge_output="helpfulness: 4 | Good\n",
             sample_id="s1",
         )
@@ -275,7 +274,8 @@ class TestEvaluate:
     def test_evaluate_with_malformed_output(self, judge: LLMJudge) -> None:
         """evaluate() with malformed output returns zero overall."""
         result = judge.evaluate(
-            instruction="Q", response="A",
+            instruction="Q",
+            response="A",
             judge_output="totally invalid output",
         )
         assert result.overall_score == 0.0

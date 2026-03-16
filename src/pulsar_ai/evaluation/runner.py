@@ -173,22 +173,22 @@ def _batch_inference(
             )
 
         response = tokenizer.decode(
-            outputs[0][inputs["input_ids"].shape[1]:],
+            outputs[0][inputs["input_ids"].shape[1] :],
             skip_special_tokens=True,
         ).strip()
 
         # Try to parse JSON
         parsed = _try_parse_json(response)
-        predictions.append({
-            "input": user_text,
-            "raw_output": response,
-            "parsed": parsed,
-            "parse_success": parsed is not None,
-        })
+        predictions.append(
+            {
+                "input": user_text,
+                "raw_output": response,
+                "parsed": parsed,
+                "parse_success": parsed is not None,
+            }
+        )
 
-    parse_rate = sum(1 for p in predictions if p["parse_success"]) / max(
-        len(predictions), 1
-    )
+    parse_rate = sum(1 for p in predictions if p["parse_success"]) / max(len(predictions), 1)
     logger.info(
         "Inference complete: %d samples, %.1f%% JSON parse rate",
         len(predictions),
@@ -227,7 +227,7 @@ def _try_parse_json(text: str) -> dict | None:
     end = text.rfind("}")
     if start != -1 and end > start:
         try:
-            return json.loads(text[start:end + 1])
+            return json.loads(text[start : end + 1])
         except json.JSONDecodeError:
             pass
     return None

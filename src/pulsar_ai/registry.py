@@ -222,8 +222,7 @@ class ModelRegistry:
                 for m in models
             ],
             "metrics": {
-                key: [m.get("metrics", {}).get(key) for m in models]
-                for key in sorted(all_metrics)
+                key: [m.get("metrics", {}).get(key) for m in models] for key in sorted(all_metrics)
             },
         }
         return comparison

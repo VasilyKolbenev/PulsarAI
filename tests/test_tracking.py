@@ -199,13 +199,15 @@ class TestCompareRuns:
 
     def test_compare_two_runs(self, runs_dir):
         t1 = RunTracker(
-            backend="local", run_name="r1",
+            backend="local",
+            run_name="r1",
             config={"training": {"learning_rate": 1e-4, "epochs": 3}},
         )
         t1.finish(status="completed", results={"training_loss": 0.2})
 
         t2 = RunTracker(
-            backend="local", run_name="r2",
+            backend="local",
+            run_name="r2",
             config={"training": {"learning_rate": 5e-5, "epochs": 5}},
         )
         t2.finish(status="completed", results={"training_loss": 0.15})

@@ -16,10 +16,10 @@ from pulsar_ai.ui.assistant import (
 )
 from pulsar_ai.ui.app import create_app
 
-
 # ──────────────────────────────────────────────────────────
 # Forge Tools
 # ──────────────────────────────────────────────────────────
+
 
 class TestForgeTools:
     """Test that pulsar tools are properly registered."""
@@ -28,11 +28,20 @@ class TestForgeTools:
         """Test all 14 pulsar tools are registered."""
         tools = _get_pulsar_tools()
         expected = {
-            "list_experiments", "get_experiment", "start_training",
-            "check_training", "cancel_training", "list_datasets",
-            "preview_dataset", "recommend_params", "get_hardware",
-            "run_evaluation", "list_workflows", "get_workflow",
-            "estimate_training_cost", "suggest_config",
+            "list_experiments",
+            "get_experiment",
+            "start_training",
+            "check_training",
+            "cancel_training",
+            "list_datasets",
+            "preview_dataset",
+            "recommend_params",
+            "get_hardware",
+            "run_evaluation",
+            "list_workflows",
+            "get_workflow",
+            "estimate_training_cost",
+            "suggest_config",
         }
         assert set(tools.list_tools()) == expected
 
@@ -61,9 +70,14 @@ class TestForgeTools:
         tools = _get_pulsar_tools()
         with patch("pulsar_ai.ui.assistant._store") as mock_store:
             mock_store.get.return_value = {
-                "id": "abc", "name": "test", "status": "completed",
-                "task": "sft", "model": "qwen", "final_loss": 0.3,
-                "created_at": "2024-01-01", "artifacts": {},
+                "id": "abc",
+                "name": "test",
+                "status": "completed",
+                "task": "sft",
+                "model": "qwen",
+                "final_loss": 0.3,
+                "created_at": "2024-01-01",
+                "artifacts": {},
             }
             result = tools.get("get_experiment").execute(experiment_id="abc")
         parsed = json.loads(result)
@@ -100,18 +114,14 @@ class TestForgeTools:
     def test_recommend_params_default(self):
         """Test recommend_params returns recommendations."""
         tools = _get_pulsar_tools()
-        result = tools.get("recommend_params").execute(
-            model="Qwen/Qwen2.5-3B-Instruct"
-        )
+        result = tools.get("recommend_params").execute(model="Qwen/Qwen2.5-3B-Instruct")
         assert "Learning rate" in result
         assert "Batch size" in result
 
     def test_recommend_params_small_model(self):
         """Test recommend_params for small model."""
         tools = _get_pulsar_tools()
-        result = tools.get("recommend_params").execute(
-            model="llama-1B", dataset_rows=50
-        )
+        result = tools.get("recommend_params").execute(model="llama-1B", dataset_rows=50)
         assert "Epochs: 10" in result  # Small dataset → more epochs
 
     def test_get_hardware(self):
@@ -140,8 +150,7 @@ class TestForgeTools:
         tools = _get_pulsar_tools()
         with patch("pulsar_ai.ui.workflow_store.WorkflowStore") as mock_cls:
             mock_cls.return_value.list_all.return_value = [
-                {"id": "w1", "name": "My Pipeline", "nodes": [1, 2], "edges": [1],
-                 "run_count": 3},
+                {"id": "w1", "name": "My Pipeline", "nodes": [1, 2], "edges": [1], "run_count": 3},
             ]
             result = tools.get("list_workflows").execute()
         assert "w1" in result
@@ -181,9 +190,7 @@ class TestForgeTools:
     def test_suggest_config_low_budget(self):
         """Test suggest_config downgrades model for low budget."""
         tools = _get_pulsar_tools()
-        result = tools.get("suggest_config").execute(
-            use_case="chatbot", budget="low"
-        )
+        result = tools.get("suggest_config").execute(use_case="chatbot", budget="low")
         assert "3B" in result
 
     def test_check_llm_available_with_key(self):
@@ -206,6 +213,7 @@ class TestForgeTools:
 # Command Parser
 # ──────────────────────────────────────────────────────────
 
+
 class TestCommandParser:
     """Test slash command parsing."""
 
@@ -217,8 +225,10 @@ class TestCommandParser:
 
     def test_status_command(self):
         """Test /status calls check_training + list_experiments."""
-        with patch("pulsar_ai.ui.assistant._store") as mock_store, \
-             patch("pulsar_ai.ui.assistant.list_jobs") as mock_jobs:
+        with (
+            patch("pulsar_ai.ui.assistant._store") as mock_store,
+            patch("pulsar_ai.ui.assistant.list_jobs") as mock_jobs,
+        ):
             mock_store.list_all.return_value = []
             mock_jobs.return_value = []
             result = parse_command("/status")
@@ -300,13 +310,16 @@ class TestCommandParser:
 # API Endpoints
 # ──────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def client():
     """Create test client for assistant endpoints."""
-    with patch("pulsar_ai.ui.routes.training._store"), \
-         patch("pulsar_ai.ui.routes.experiments._store"), \
-         patch("pulsar_ai.ui.routes.evaluation._store"), \
-         patch("pulsar_ai.ui.routes.export_routes._store"):
+    with (
+        patch("pulsar_ai.ui.routes.training._store"),
+        patch("pulsar_ai.ui.routes.experiments._store"),
+        patch("pulsar_ai.ui.routes.evaluation._store"),
+        patch("pulsar_ai.ui.routes.export_routes._store"),
+    ):
         app = create_app()
         yield TestClient(app)
 
@@ -332,9 +345,12 @@ class TestAssistantAPI:
     def test_chat_no_llm_no_command(self, mock_llm, client):
         """Test chat without LLM and without command shows help."""
         mock_llm.return_value = False
-        resp = client.post("/api/v1/assistant/chat", json={
-            "message": "how do I train a model?",
-        })
+        resp = client.post(
+            "/api/v1/assistant/chat",
+            json={
+                "message": "how do I train a model?",
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["mode"] == "command"
@@ -342,9 +358,11 @@ class TestAssistantAPI:
 
     def test_status_endpoint(self, client):
         """Test GET /api/v1/assistant/status."""
-        with patch("pulsar_ai.ui.assistant.list_jobs") as mock_jobs, \
-             patch("pulsar_ai.ui.assistant._store") as mock_store, \
-             patch("pulsar_ai.ui.assistant._check_llm_available") as mock_llm:
+        with (
+            patch("pulsar_ai.ui.assistant.list_jobs") as mock_jobs,
+            patch("pulsar_ai.ui.assistant._store") as mock_store,
+            patch("pulsar_ai.ui.assistant._check_llm_available") as mock_llm,
+        ):
             mock_jobs.return_value = []
             mock_store.list_all.return_value = []
             mock_llm.return_value = False
@@ -360,10 +378,13 @@ class TestAssistantAPI:
         resp1 = client.post("/api/v1/assistant/chat", json={"message": "/help"})
         sid = resp1.json()["session_id"]
 
-        resp2 = client.post("/api/v1/assistant/chat", json={
-            "message": "/help",
-            "session_id": sid,
-        })
+        resp2 = client.post(
+            "/api/v1/assistant/chat",
+            json={
+                "message": "/help",
+                "session_id": sid,
+            },
+        )
         assert resp2.json()["session_id"] == sid
 
     def test_delete_session(self, client):
@@ -374,8 +395,11 @@ class TestAssistantAPI:
 
     def test_chat_with_context(self, client):
         """Test chat passes context through."""
-        resp = client.post("/api/v1/assistant/chat", json={
-            "message": "/status",
-            "context": {"page": "/new", "active_jobs": []},
-        })
+        resp = client.post(
+            "/api/v1/assistant/chat",
+            json={
+                "message": "/status",
+                "context": {"page": "/new", "active_jobs": []},
+            },
+        )
         assert resp.status_code == 200

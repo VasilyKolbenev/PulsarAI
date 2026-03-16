@@ -62,8 +62,12 @@ _INJECTION_PATTERNS: list[re.Pattern] = [
 # ── Toxicity keywords (basic) ─────────────────────────────────────
 
 _TOXICITY_INDICATORS: list[str] = [
-    "kill yourself", "kys", "die in a fire",
-    "bomb threat", "shoot up", "mass shooting",
+    "kill yourself",
+    "kys",
+    "die in a fire",
+    "bomb threat",
+    "shoot up",
+    "mass shooting",
 ]
 
 
@@ -172,8 +176,7 @@ class GuardrailEngine:
                     current_text = result.masked_text
 
         passed = not blocked and all(
-            c.result != GuardResult.FAIL or c.action != GuardAction.BLOCK
-            for c in checks
+            c.result != GuardResult.FAIL or c.action != GuardAction.BLOCK for c in checks
         )
 
         return GuardReport(
@@ -286,7 +289,9 @@ class GuardrailEngine:
         pattern_str = rule.config.get("pattern", "")
         if not pattern_str:
             return GuardCheckResult(
-                rule_name=rule.name, result=GuardResult.PASS, action=rule.action,
+                rule_name=rule.name,
+                result=GuardResult.PASS,
+                action=rule.action,
             )
 
         must_match = rule.config.get("must_match", False)
@@ -294,7 +299,9 @@ class GuardrailEngine:
             pattern = re.compile(pattern_str, re.IGNORECASE)
         except re.error as e:
             return GuardCheckResult(
-                rule_name=rule.name, result=GuardResult.WARN, action=GuardAction.LOG,
+                rule_name=rule.name,
+                result=GuardResult.WARN,
+                action=GuardAction.LOG,
                 details=f"Invalid regex: {e}",
             )
 
@@ -302,17 +309,23 @@ class GuardrailEngine:
 
         if must_match and not found:
             return GuardCheckResult(
-                rule_name=rule.name, result=GuardResult.FAIL, action=rule.action,
+                rule_name=rule.name,
+                result=GuardResult.FAIL,
+                action=rule.action,
                 details=f"Required pattern not found: {pattern_str}",
             )
         if not must_match and found:
             return GuardCheckResult(
-                rule_name=rule.name, result=GuardResult.FAIL, action=rule.action,
+                rule_name=rule.name,
+                result=GuardResult.FAIL,
+                action=rule.action,
                 details=f"Forbidden pattern found: {pattern_str}",
             )
 
         return GuardCheckResult(
-            rule_name=rule.name, result=GuardResult.PASS, action=rule.action,
+            rule_name=rule.name,
+            result=GuardResult.PASS,
+            action=rule.action,
         )
 
     def _check_json_schema(self, rule: GuardRule, text: str) -> GuardCheckResult:
@@ -323,7 +336,9 @@ class GuardrailEngine:
             data = json.loads(text)
         except (json.JSONDecodeError, TypeError):
             return GuardCheckResult(
-                rule_name=rule.name, result=GuardResult.FAIL, action=rule.action,
+                rule_name=rule.name,
+                result=GuardResult.FAIL,
+                action=rule.action,
                 details="Text is not valid JSON",
             )
 
@@ -331,12 +346,16 @@ class GuardrailEngine:
             missing = [k for k in required_keys if k not in data]
             if missing:
                 return GuardCheckResult(
-                    rule_name=rule.name, result=GuardResult.FAIL, action=rule.action,
+                    rule_name=rule.name,
+                    result=GuardResult.FAIL,
+                    action=rule.action,
                     details=f"Missing required keys: {missing}",
                 )
 
         return GuardCheckResult(
-            rule_name=rule.name, result=GuardResult.PASS, action=rule.action,
+            rule_name=rule.name,
+            result=GuardResult.PASS,
+            action=rule.action,
         )
 
     def _check_length(self, rule: GuardRule, text: str) -> GuardCheckResult:
@@ -346,18 +365,24 @@ class GuardrailEngine:
 
         if len(text) < min_len:
             return GuardCheckResult(
-                rule_name=rule.name, result=GuardResult.FAIL, action=rule.action,
+                rule_name=rule.name,
+                result=GuardResult.FAIL,
+                action=rule.action,
                 details=f"Text too short: {len(text)} < {min_len}",
             )
 
         if len(text) > max_len:
             return GuardCheckResult(
-                rule_name=rule.name, result=GuardResult.FAIL, action=rule.action,
+                rule_name=rule.name,
+                result=GuardResult.FAIL,
+                action=rule.action,
                 details=f"Text too long: {len(text)} > {max_len}",
             )
 
         return GuardCheckResult(
-            rule_name=rule.name, result=GuardResult.PASS, action=rule.action,
+            rule_name=rule.name,
+            result=GuardResult.PASS,
+            action=rule.action,
         )
 
 
@@ -383,22 +408,31 @@ def create_input_guard(
     engine = GuardrailEngine()
 
     if pii:
-        engine.add_rule(GuardRule(
-            name="pii_detector", type="pii",
-            action=GuardAction(pii_action),
-        ))
+        engine.add_rule(
+            GuardRule(
+                name="pii_detector",
+                type="pii",
+                action=GuardAction(pii_action),
+            )
+        )
     if injection:
-        engine.add_rule(GuardRule(
-            name="injection_detector", type="injection",
-            action=GuardAction.BLOCK,
-        ))
+        engine.add_rule(
+            GuardRule(
+                name="injection_detector",
+                type="injection",
+                action=GuardAction.BLOCK,
+            )
+        )
     if toxicity:
-        engine.add_rule(GuardRule(
-            name="toxicity_filter", type="toxicity",
-            action=GuardAction.BLOCK,
-        ))
+        engine.add_rule(
+            GuardRule(
+                name="toxicity_filter",
+                type="toxicity",
+                action=GuardAction.BLOCK,
+            )
+        )
 
-    for rule_dict in (custom_rules or []):
+    for rule_dict in custom_rules or []:
         engine.add_rule(GuardRule.from_dict(rule_dict))
 
     return engine
@@ -426,24 +460,33 @@ def create_output_guard(
     engine = GuardrailEngine()
 
     if pii:
-        engine.add_rule(GuardRule(
-            name="output_pii_check", type="pii",
-            action=GuardAction.MASK,
-        ))
+        engine.add_rule(
+            GuardRule(
+                name="output_pii_check",
+                type="pii",
+                action=GuardAction.MASK,
+            )
+        )
     if json_schema:
-        engine.add_rule(GuardRule(
-            name="json_format_check", type="json_schema",
-            action=GuardAction.BLOCK,
-            config={"required_keys": required_keys or []},
-        ))
+        engine.add_rule(
+            GuardRule(
+                name="json_format_check",
+                type="json_schema",
+                action=GuardAction.BLOCK,
+                config={"required_keys": required_keys or []},
+            )
+        )
     if max_length > 0:
-        engine.add_rule(GuardRule(
-            name="length_check", type="length",
-            action=GuardAction.BLOCK,
-            config={"max_length": max_length},
-        ))
+        engine.add_rule(
+            GuardRule(
+                name="length_check",
+                type="length",
+                action=GuardAction.BLOCK,
+                config={"max_length": max_length},
+            )
+        )
 
-    for rule_dict in (custom_rules or []):
+    for rule_dict in custom_rules or []:
         engine.add_rule(GuardRule.from_dict(rule_dict))
 
     return engine

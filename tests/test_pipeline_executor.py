@@ -125,10 +125,12 @@ class TestPipelineExecutor:
         executor = PipelineExecutor(config, tracker=tracker)
         executor._outputs["s1"] = {"dir": "/out"}
 
-        resolved = executor._resolve_vars({
-            "a": {"b": "${s1.dir}/model"},
-            "c": ["${s1.dir}/data"],
-        })
+        resolved = executor._resolve_vars(
+            {
+                "a": {"b": "${s1.dir}/model"},
+                "c": ["${s1.dir}/data"],
+            }
+        )
         assert resolved["a"]["b"] == "/out/model"
         assert resolved["c"][0] == "/out/data"
 

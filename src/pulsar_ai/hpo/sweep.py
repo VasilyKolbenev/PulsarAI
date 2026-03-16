@@ -36,9 +36,7 @@ class SweepRunner:
     ) -> None:
         self.base_config_path = base_config_path
         self.sweep = (
-            self._load_sweep(sweep_config)
-            if isinstance(sweep_config, str)
-            else sweep_config
+            self._load_sweep(sweep_config) if isinstance(sweep_config, str) else sweep_config
         )
         self.study_name = study_name or f"sweep-{int(time.time())}"
         self.results: list[dict] = []
@@ -69,8 +67,7 @@ class SweepRunner:
             import optuna
         except ImportError:
             raise ImportError(
-                "optuna is required for HPO sweeps. "
-                "Install with: pip install optuna"
+                "optuna is required for HPO sweeps. " "Install with: pip install optuna"
             )
 
         sweep_conf = self.sweep.get("hpo", self.sweep)
@@ -102,12 +99,14 @@ class SweepRunner:
             result = self._run_trial(config)
 
             value = result.get(metric, float("inf") if direction == "minimize" else 0)
-            self.results.append({
-                "trial": trial.number,
-                "params": params,
-                "result": result,
-                "value": value,
-            })
+            self.results.append(
+                {
+                    "trial": trial.number,
+                    "params": params,
+                    "result": result,
+                    "value": value,
+                }
+            )
 
             return value
 
@@ -154,8 +153,10 @@ class SweepRunner:
                 else:
                     params[param_key] = trial.suggest_float(name, low, high)
 
-            elif isinstance(spec, list) and len(spec) == 2 and all(
-                isinstance(v, (int, float)) for v in spec
+            elif (
+                isinstance(spec, list)
+                and len(spec) == 2
+                and all(isinstance(v, (int, float)) for v in spec)
             ):
                 # Numeric range: [min, max]
                 low, high = spec
@@ -213,9 +214,11 @@ class SweepRunner:
         try:
             if task == "sft":
                 from pulsar_ai.training.sft import train_sft
+
                 return train_sft(config)
             elif task == "dpo":
                 from pulsar_ai.training.dpo import train_dpo
+
                 return train_dpo(config)
             else:
                 raise ValueError(f"Unknown task for HPO: {task}")

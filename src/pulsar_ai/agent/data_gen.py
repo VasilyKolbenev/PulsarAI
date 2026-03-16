@@ -65,10 +65,12 @@ def trace_to_sft(
             response_parts.append(f"Final Answer: {entry['content']}")
 
     if response_parts:
-        messages.append({
-            "role": "assistant",
-            "content": "\n".join(response_parts),
-        })
+        messages.append(
+            {
+                "role": "assistant",
+                "content": "\n".join(response_parts),
+            }
+        )
     else:
         messages.append({"role": "assistant", "content": final_answer})
 

@@ -130,9 +130,7 @@ def _generate_markdown(results: dict, path: Path) -> None:
                     acc = cls_data.get("accuracy", 0)
                     correct = cls_data.get("correct", 0)
                     total = cls_data.get("count", 0)
-                    lines.append(
-                        f"| {cls_name} | {acc:.1%} | {correct} | {total} |"
-                    )
+                    lines.append(f"| {cls_name} | {acc:.1%} | {correct} | {total} |")
                 lines.append("")
 
     # Confusion matrix
@@ -149,9 +147,7 @@ def _generate_markdown(results: dict, path: Path) -> None:
             lines.append(separator)
             for i, label in enumerate(labels):
                 row_str = f"| **{label}** |"
-                row_str += "|".join(
-                    f" {matrix[i][j]} " for j in range(len(labels))
-                )
+                row_str += "|".join(f" {matrix[i][j]} " for j in range(len(labels)))
                 row_str += "|"
                 lines.append(row_str)
             lines.append("")

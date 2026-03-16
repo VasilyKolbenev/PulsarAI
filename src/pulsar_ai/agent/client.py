@@ -33,10 +33,12 @@ class ModelClient:
         self.model = model
         self.timeout = timeout
         self._session = requests.Session()
-        self._session.headers.update({
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}",
-        })
+        self._session.headers.update(
+            {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {api_key}",
+            }
+        )
 
     def chat(
         self,
@@ -73,9 +75,7 @@ class ModelClient:
         url = f"{self.base_url}/chat/completions"
 
         try:
-            response = self._session.post(
-                url, json=payload, timeout=self.timeout
-            )
+            response = self._session.post(url, json=payload, timeout=self.timeout)
         except requests.ConnectionError as e:
             raise ConnectionError(
                 f"Cannot connect to model server at {self.base_url}. "
@@ -88,9 +88,7 @@ class ModelClient:
             ) from e
 
         if response.status_code != 200:
-            raise RuntimeError(
-                f"API error {response.status_code}: {response.text}"
-            )
+            raise RuntimeError(f"API error {response.status_code}: {response.text}")
 
         data = response.json()
         choice = data["choices"][0]
@@ -125,9 +123,7 @@ class ModelClient:
             True if server responds, False otherwise.
         """
         try:
-            resp = self._session.get(
-                f"{self.base_url}/models", timeout=5
-            )
+            resp = self._session.get(f"{self.base_url}/models", timeout=5)
             return resp.status_code == 200
         except (requests.ConnectionError, requests.Timeout):
             return False

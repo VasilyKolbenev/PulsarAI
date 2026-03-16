@@ -110,7 +110,10 @@ class CostTracker:
         return entry
 
     def estimate_cost(
-        self, model: str, input_tokens: int, output_tokens: int,
+        self,
+        model: str,
+        input_tokens: int,
+        output_tokens: int,
     ) -> float:
         """Estimate cost for a given model and token count.
 
@@ -123,10 +126,9 @@ class CostTracker:
             Estimated cost in USD.
         """
         pricing = self._pricing.get(model, self._pricing.get("local", {}))
-        cost = (
-            (input_tokens / 1000) * pricing.get("input", 0.0)
-            + (output_tokens / 1000) * pricing.get("output", 0.0)
-        )
+        cost = (input_tokens / 1000) * pricing.get("input", 0.0) + (
+            output_tokens / 1000
+        ) * pricing.get("output", 0.0)
         return round(cost, 6)
 
     @property
@@ -154,7 +156,9 @@ class CostTracker:
         return max(0.0, self.budget_limit - self.total_cost)
 
     def get_summary(
-        self, experiment_id: str = "", window_seconds: float = 0,
+        self,
+        experiment_id: str = "",
+        window_seconds: float = 0,
     ) -> dict[str, Any]:
         """Get cost summary with breakdowns.
 
@@ -178,7 +182,10 @@ class CostTracker:
         for entry in entries:
             if entry.model not in by_model:
                 by_model[entry.model] = {
-                    "input_tokens": 0, "output_tokens": 0, "cost": 0.0, "calls": 0,
+                    "input_tokens": 0,
+                    "output_tokens": 0,
+                    "cost": 0.0,
+                    "calls": 0,
                 }
             by_model[entry.model]["input_tokens"] += entry.input_tokens
             by_model[entry.model]["output_tokens"] += entry.output_tokens

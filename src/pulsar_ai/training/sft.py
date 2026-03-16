@@ -26,8 +26,13 @@ def _get_lora_params(config: dict) -> dict:
     lora = config.get("lora", {})
     model_config = config.get("model", {})
     default_modules = [
-        "q_proj", "k_proj", "v_proj", "o_proj",
-        "gate_proj", "up_proj", "down_proj",
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj",
     ]
     return {
         "r": lora.get("r", config.get("lora_r", 16)),
@@ -72,6 +77,7 @@ def train_sft(config: dict, progress: Any = None) -> dict:
     hf_callbacks = []
     if progress is not None:
         from pulsar_ai.ui.progress import make_hf_callback
+
         hf_callbacks.append(make_hf_callback(progress))
 
     with track_experiment(config, task="sft") as tracker:
@@ -80,11 +86,13 @@ def train_sft(config: dict, progress: Any = None) -> dict:
         else:
             results = _train_sft_hf(config, callbacks=hf_callbacks)
 
-        tracker.log_metrics({
-            "training_loss": results.get("training_loss", 0),
-            "global_steps": results.get("global_steps", 0),
-            "vram_peak_gb": results.get("vram_peak_gb", 0),
-        })
+        tracker.log_metrics(
+            {
+                "training_loss": results.get("training_loss", 0),
+                "global_steps": results.get("global_steps", 0),
+                "vram_peak_gb": results.get("vram_peak_gb", 0),
+            }
+        )
 
         if results.get("adapter_dir"):
             tracker.log_artifact("adapter", results["adapter_dir"])
@@ -140,7 +148,9 @@ def _train_sft_unsloth(config: dict, callbacks: list | None = None) -> dict:
 
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
     total = sum(p.numel() for p in model.parameters())
-    logger.info("Trainable: %s / %s (%.2f%%)", f"{trainable:,}", f"{total:,}", trainable / total * 100)
+    logger.info(
+        "Trainable: %s / %s (%.2f%%)", f"{trainable:,}", f"{total:,}", trainable / total * 100
+    )
 
     # Load dataset
     train_dataset = _load_train_dataset(config, tokenizer)
@@ -236,12 +246,8 @@ def _train_sft_hf(config: dict, callbacks: list | None = None) -> dict:
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type=config.get("bnb_4bit_quant_type", "nf4"),
-            bnb_4bit_compute_dtype=getattr(
-                torch, config.get("bnb_4bit_compute_dtype", "bfloat16")
-            ),
-            bnb_4bit_use_double_quant=config.get(
-                "bnb_4bit_use_double_quant", True
-            ),
+            bnb_4bit_compute_dtype=getattr(torch, config.get("bnb_4bit_compute_dtype", "bfloat16")),
+            bnb_4bit_use_double_quant=config.get("bnb_4bit_use_double_quant", True),
         )
 
     # Detect multimodal models (e.g. Qwen 3.5) and use correct model class
@@ -250,6 +256,7 @@ def _train_sft_hf(config: dict, callbacks: list | None = None) -> dict:
     architectures = getattr(hf_config, "architectures", []) or []
     if any("ConditionalGeneration" in a for a in architectures):
         import transformers
+
         arch_name = architectures[0]
         model_cls = getattr(transformers, arch_name, AutoModelForCausalLM)
         logger.info("Multimodal model detected, using %s", arch_name)
@@ -262,7 +269,8 @@ def _train_sft_hf(config: dict, callbacks: list | None = None) -> dict:
         trust_remote_code=True,
     )
     tokenizer = AutoTokenizer.from_pretrained(
-        model_name, trust_remote_code=True,
+        model_name,
+        trust_remote_code=True,
     )
 
     # Apply LoRA
@@ -282,6 +290,7 @@ def _train_sft_hf(config: dict, callbacks: list | None = None) -> dict:
     train_dataset = _load_train_dataset(config, tokenizer)
 
     from trl import SFTConfig
+
     lr = training_config.get("learning_rate", 2e-4)
     if isinstance(lr, str):
         lr = float(lr)
@@ -305,10 +314,14 @@ def _train_sft_hf(config: dict, callbacks: list | None = None) -> dict:
         packing=training_config.get("packing", True),
         # FSDP settings
         fsdp=config.get("fsdp_sharding_strategy") if config.get("fsdp_enabled") else "",
-        fsdp_config={
-            "fsdp_auto_wrap_policy": "TRANSFORMER_BASED_WRAP",
-            "fsdp_cpu_offload": config.get("fsdp_cpu_offload", False),
-        } if config.get("fsdp_enabled") else None,
+        fsdp_config=(
+            {
+                "fsdp_auto_wrap_policy": "TRANSFORMER_BASED_WRAP",
+                "fsdp_cpu_offload": config.get("fsdp_cpu_offload", False),
+            }
+            if config.get("fsdp_enabled")
+            else None
+        ),
     )
 
     trainer = SFTTrainer(

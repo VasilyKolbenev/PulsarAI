@@ -20,9 +20,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_JSON_PATH = Path("./data/experiments.json")
 try:
-    DEFAULT_STALE_RUNNING_MINUTES = int(
-        os.environ.get("PULSAR_STALE_RUNNING_MINUTES", "90")
-    )
+    DEFAULT_STALE_RUNNING_MINUTES = int(os.environ.get("PULSAR_STALE_RUNNING_MINUTES", "90"))
 except ValueError:
     DEFAULT_STALE_RUNNING_MINUTES = 90
 
@@ -59,7 +57,11 @@ class ExperimentStore:
         """
         exp_id = str(uuid.uuid4())[:8]
         now_iso = datetime.now().isoformat()
-        model = config.get("model", {}).get("name", "unknown") if isinstance(config.get("model"), dict) else config.get("model", "unknown")
+        model = (
+            config.get("model", {}).get("name", "unknown")
+            if isinstance(config.get("model"), dict)
+            else config.get("model", "unknown")
+        )
         dataset_id = config.get("_dataset_id", "")
 
         self._db.execute(
@@ -71,9 +73,14 @@ class ExperimentStore:
             VALUES (?, ?, 'queued', ?, ?, ?, ?, ?, ?, NULL, NULL, NULL, '{}')
             """,
             (
-                exp_id, name, task, model, dataset_id,
+                exp_id,
+                name,
+                task,
+                model,
+                dataset_id,
                 json.dumps(config, ensure_ascii=False, default=str),
-                now_iso, now_iso,
+                now_iso,
+                now_iso,
             ),
         )
         self._db.commit()
@@ -183,9 +190,7 @@ class ExperimentStore:
         )
         self._db.commit()
 
-    def reconcile_stale_running(
-        self, stale_after_minutes: int | None = None
-    ) -> int:
+    def reconcile_stale_running(self, stale_after_minutes: int | None = None) -> int:
         """Mark stale running experiments as failed.
 
         Args:
@@ -195,9 +200,7 @@ class ExperimentStore:
             Number of reconciled experiments.
         """
         threshold_min = (
-            DEFAULT_STALE_RUNNING_MINUTES
-            if stale_after_minutes is None
-            else stale_after_minutes
+            DEFAULT_STALE_RUNNING_MINUTES if stale_after_minutes is None else stale_after_minutes
         )
         if threshold_min <= 0:
             return 0
@@ -255,9 +258,7 @@ class ExperimentStore:
         Returns:
             Experiment dict or None.
         """
-        row = self._db.fetch_one(
-            "SELECT * FROM experiments WHERE id = ?", (exp_id,)
-        )
+        row = self._db.fetch_one("SELECT * FROM experiments WHERE id = ?", (exp_id,))
         if row is None:
             return None
         return self._row_to_dict(row)
@@ -283,9 +284,7 @@ class ExperimentStore:
                 (status,),
             )
         else:
-            rows = self._db.fetch_all(
-                "SELECT * FROM experiments ORDER BY created_at DESC"
-            )
+            rows = self._db.fetch_all("SELECT * FROM experiments ORDER BY created_at DESC")
 
         return [self._row_to_dict(r) for r in rows]
 
@@ -300,9 +299,7 @@ class ExperimentStore:
         Returns:
             True if deleted, False if not found.
         """
-        cursor = self._db.execute(
-            "DELETE FROM experiments WHERE id = ?", (exp_id,)
-        )
+        cursor = self._db.execute("DELETE FROM experiments WHERE id = ?", (exp_id,))
         self._db.commit()
         return cursor.rowcount > 0
 
@@ -346,17 +343,13 @@ class ExperimentStore:
             "completed_at": row["completed_at"],
             "final_loss": row["final_loss"],
             "training_history": training_history,
-            "eval_results": json.loads(row["eval_results"])
-            if row["eval_results"]
-            else None,
+            "eval_results": json.loads(row["eval_results"]) if row["eval_results"] else None,
             "artifacts": json.loads(row["artifacts"] or "{}"),
         }
 
     def _auto_migrate_json(self) -> None:
         """Auto-migrate from JSON if the SQLite table is empty and JSON exists."""
-        count_row = self._db.fetch_one(
-            "SELECT COUNT(*) as cnt FROM experiments"
-        )
+        count_row = self._db.fetch_one("SELECT COUNT(*) as cnt FROM experiments")
         if count_row and count_row["cnt"] > 0:
             return
 
@@ -366,9 +359,7 @@ class ExperimentStore:
 
         count = migrate_experiments(self._db, json_path)
         if count > 0:
-            logger.info(
-                "Auto-migrated %d experiments from %s", count, json_path
-            )
+            logger.info("Auto-migrated %d experiments from %s", count, json_path)
 
     # ── Legacy compat ────────────────────────────────────────────────
     # These static helpers are kept for any code that imported them.

@@ -1,4 +1,5 @@
 """Tests for JobRegistry durable job tracking."""
+
 import pytest
 from pulsar_ai.storage.database import Database
 from pulsar_ai.storage.job_registry import JobRegistry
@@ -72,9 +73,7 @@ def test_update_status_completed(registry):
 
 def test_update_status_failed_with_error(registry):
     job = registry.create(job_type="sft")
-    registry.update_status(
-        job["id"], "failed", error_message="OOM on GPU 0"
-    )
+    registry.update_status(job["id"], "failed", error_message="OOM on GPU 0")
     updated = registry.get(job["id"])
     assert updated["status"] == "failed"
     assert updated["error_message"] == "OOM on GPU 0"

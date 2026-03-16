@@ -47,9 +47,7 @@ def export_merged(config: dict) -> dict:
     }
 
 
-def _merge_unsloth(
-    config: dict, adapter_path: str, model_config: dict
-) -> tuple[Any, Any]:
+def _merge_unsloth(config: dict, adapter_path: str, model_config: dict) -> tuple[Any, Any]:
     """Merge adapter using Unsloth.
 
     Args:
@@ -85,9 +83,7 @@ def _merge_unsloth(
     return model, tokenizer
 
 
-def _merge_peft(
-    config: dict, adapter_path: str, model_config: dict
-) -> tuple[Any, Any]:
+def _merge_peft(config: dict, adapter_path: str, model_config: dict) -> tuple[Any, Any]:
     """Merge adapter using PEFT.
 
     Args:

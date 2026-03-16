@@ -67,8 +67,7 @@ class ABTestConfig:
     def from_dict(cls, data: dict[str, Any]) -> "ABTestConfig":
         """Create from dict."""
         variants = [
-            ModelEndpoint(**v) if isinstance(v, dict) else v
-            for v in data.get("variants", [])
+            ModelEndpoint(**v) if isinstance(v, dict) else v for v in data.get("variants", [])
         ]
         return cls(
             variants=variants,
@@ -166,12 +165,10 @@ class CanaryDeployer:
     def get_status(self) -> dict[str, Any]:
         """Get current deployment status."""
         canary_error_rate = (
-            self._canary_errors / self._canary_requests
-            if self._canary_requests > 0 else 0.0
+            self._canary_errors / self._canary_requests if self._canary_requests > 0 else 0.0
         )
         primary_error_rate = (
-            self._primary_errors / self._primary_requests
-            if self._primary_requests > 0 else 0.0
+            self._primary_errors / self._primary_requests if self._primary_requests > 0 else 0.0
         )
 
         return {
@@ -204,9 +201,7 @@ class ABTester:
 
     def __init__(self, config: ABTestConfig) -> None:
         self.config = config
-        self._results: dict[str, list[float]] = {
-            v.name: [] for v in config.variants
-        }
+        self._results: dict[str, list[float]] = {v.name: [] for v in config.variants}
 
     def route(self) -> str:
         """Select a variant weighted by config.

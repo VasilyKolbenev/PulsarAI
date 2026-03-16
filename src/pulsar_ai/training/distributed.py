@@ -40,9 +40,7 @@ def launch_distributed(
         )
 
     # Write accelerate config to temp file
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".yaml", delete=False, prefix="accel_"
-    ) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False, prefix="accel_") as f:
         import yaml
 
         yaml.dump(accel_config, f)
@@ -58,16 +56,19 @@ def launch_distributed(
         train_config_path = f.name
 
     if script_path is None:
-        script_path = str(
-            Path(__file__).parent / "_distributed_entry.py"
-        )
+        script_path = str(Path(__file__).parent / "_distributed_entry.py")
 
     cmd = [
-        sys.executable, "-m", "accelerate.commands.launch",
-        "--config_file", accel_config_path,
-        "--num_processes", str(num_gpus),
+        sys.executable,
+        "-m",
+        "accelerate.commands.launch",
+        "--config_file",
+        accel_config_path,
+        "--num_processes",
+        str(num_gpus),
         script_path,
-        "--config", train_config_path,
+        "--config",
+        train_config_path,
     ]
 
     logger.info(
@@ -107,21 +108,13 @@ def _build_fsdp_config(config: dict) -> dict:
         "fsdp_config": {
             "fsdp_sharding_strategy": sharding,
             "fsdp_offload_params": cpu_offload,
-            "fsdp_auto_wrap_policy": fsdp_config.get(
-                "auto_wrap_policy", "TRANSFORMER_BASED_WRAP"
-            ),
-            "fsdp_backward_prefetch_policy": fsdp_config.get(
-                "backward_prefetch", "BACKWARD_PRE"
-            ),
+            "fsdp_auto_wrap_policy": fsdp_config.get("auto_wrap_policy", "TRANSFORMER_BASED_WRAP"),
+            "fsdp_backward_prefetch_policy": fsdp_config.get("backward_prefetch", "BACKWARD_PRE"),
             "fsdp_state_dict_type": "SHARDED_STATE_DICT",
-            "fsdp_sync_module_states": fsdp_config.get(
-                "sync_module_states", True
-            ),
+            "fsdp_sync_module_states": fsdp_config.get("sync_module_states", True),
             "fsdp_use_orig_params": True,
         },
-        "mixed_precision": (
-            "bf16" if training_config.get("bf16", True) else "no"
-        ),
+        "mixed_precision": ("bf16" if training_config.get("bf16", True) else "no"),
         "num_machines": 1,
         "num_processes": config.get("_hardware", {}).get("num_gpus", 2),
         "main_training_function": "main",
@@ -147,39 +140,21 @@ def _build_deepspeed_config(config: dict) -> dict:
         "zero_optimization": {
             "stage": stage,
             "offload_optimizer": {
-                "device": (
-                    "cpu"
-                    if ds_config.get("cpu_offload", False)
-                    else "none"
-                ),
+                "device": ("cpu" if ds_config.get("cpu_offload", False) else "none"),
             },
             "offload_param": {
-                "device": (
-                    "cpu"
-                    if stage == 3 and ds_config.get("cpu_offload")
-                    else "none"
-                ),
+                "device": ("cpu" if stage == 3 and ds_config.get("cpu_offload") else "none"),
             },
             "overlap_comm": True,
             "contiguous_gradients": True,
-            "reduce_bucket_size": ds_config.get(
-                "reduce_bucket_size", 5e8
-            ),
-            "stage3_prefetch_bucket_size": ds_config.get(
-                "prefetch_bucket_size", 5e8
-            ),
-            "stage3_param_persistence_threshold": ds_config.get(
-                "param_persistence_threshold", 1e6
-            ),
+            "reduce_bucket_size": ds_config.get("reduce_bucket_size", 5e8),
+            "stage3_prefetch_bucket_size": ds_config.get("prefetch_bucket_size", 5e8),
+            "stage3_param_persistence_threshold": ds_config.get("param_persistence_threshold", 1e6),
         },
         "bf16": {"enabled": training_config.get("bf16", True)},
-        "gradient_accumulation_steps": training_config.get(
-            "gradient_accumulation", 8
-        ),
+        "gradient_accumulation_steps": training_config.get("gradient_accumulation", 8),
         "train_batch_size": "auto",
-        "train_micro_batch_size_per_gpu": training_config.get(
-            "batch_size", 1
-        ),
+        "train_micro_batch_size_per_gpu": training_config.get("batch_size", 1),
     }
 
     accel = {
@@ -239,8 +214,6 @@ def generate_deepspeed_config(
             "device": "cpu" if cpu_offload else "none",
             "pin_memory": True,
         }
-        config["zero_optimization"][
-            "stage3_gather_16bit_weights_on_model_save"
-        ] = True
+        config["zero_optimization"]["stage3_gather_16bit_weights_on_model_save"] = True
 
     return config

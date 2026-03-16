@@ -97,8 +97,7 @@ class LLMJudge:
             Formatted evaluation prompt string.
         """
         criteria_text = "\n".join(
-            f"- **{c.name}** ({c.scale_min}-{c.scale_max}): {c.description}"
-            for c in self.criteria
+            f"- **{c.name}** ({c.scale_min}-{c.scale_max}): {c.description}" for c in self.criteria
         )
 
         return (
@@ -151,11 +150,13 @@ class LLMJudge:
             except ValueError:
                 continue
 
-            scores.append(JudgeScore(
-                criterion=criterion.name,
-                score=score_val,
-                explanation=explanation.strip(),
-            ))
+            scores.append(
+                JudgeScore(
+                    criterion=criterion.name,
+                    score=score_val,
+                    explanation=explanation.strip(),
+                )
+            )
 
         return scores
 
@@ -210,7 +211,10 @@ class LLMJudge:
         )
 
     def build_comparison_prompt(
-        self, instruction: str, response_a: str, response_b: str,
+        self,
+        instruction: str,
+        response_a: str,
+        response_b: str,
     ) -> str:
         """Build a pairwise comparison prompt.
 
@@ -222,9 +226,7 @@ class LLMJudge:
         Returns:
             Comparison prompt string.
         """
-        criteria_text = "\n".join(
-            f"- **{c.name}**: {c.description}" for c in self.criteria
-        )
+        criteria_text = "\n".join(f"- **{c.name}**: {c.description}" for c in self.criteria)
 
         return (
             "You are an expert evaluator comparing two responses.\n\n"

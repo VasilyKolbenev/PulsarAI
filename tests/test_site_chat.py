@@ -277,9 +277,7 @@ class TestOpenAICall:
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.raise_for_status = MagicMock()
-        mock_response.json.return_value = {
-            "choices": [{"message": {"content": "Test reply"}}]
-        }
+        mock_response.json.return_value = {"choices": [{"message": {"content": "Test reply"}}]}
 
         mock_client = AsyncMock()
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)

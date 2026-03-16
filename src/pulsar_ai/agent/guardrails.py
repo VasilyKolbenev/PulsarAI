@@ -34,9 +34,7 @@ class GuardrailsConfig:
             True if within limits, False if exceeded.
         """
         if current >= self.max_iterations:
-            logger.warning(
-                "Agent hit max iterations limit (%d)", self.max_iterations
-            )
+            logger.warning("Agent hit max iterations limit (%d)", self.max_iterations)
             return False
         return True
 

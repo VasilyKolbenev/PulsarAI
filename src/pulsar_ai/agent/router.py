@@ -53,7 +53,7 @@ class AgentRoute:
         matches = 0
         for trigger in self.triggers:
             # Word boundary matching for better precision
-            pattern = r'\b' + re.escape(trigger) + r'\b'
+            pattern = r"\b" + re.escape(trigger) + r"\b"
             if re.search(pattern, query_lower):
                 matches += 1
 
@@ -99,7 +99,9 @@ class RouterAgent:
             score = route.match_score(query)
             logger.debug(
                 "Route '%s' scored %.2f for query: %s",
-                route.name, score, query[:50],
+                route.name,
+                score,
+                query[:50],
             )
             if score > best_score:
                 best_score = score
@@ -109,14 +111,17 @@ class RouterAgent:
             self._last_route = best_route.name
             logger.info(
                 "Routing to '%s' (score=%.2f): %s",
-                best_route.name, best_score, query[:80],
+                best_route.name,
+                best_score,
+                query[:80],
             )
             return best_route.name, best_route.agent
 
         self._last_route = "fallback"
         logger.info(
             "No route matched (best=%.2f < threshold=%.2f), using fallback",
-            best_score, self.confidence_threshold,
+            best_score,
+            self.confidence_threshold,
         )
         return "fallback", self.fallback
 
@@ -173,21 +178,22 @@ class RouterAgent:
             if name in agent_factory:
                 agent = agent_factory[name]
             else:
-                logger.warning(
-                    "Agent '%s' not in factory, creating from config", name
-                )
+                logger.warning("Agent '%s' not in factory, creating from config", name)
                 agent_config = route_def.get("config", {})
                 if isinstance(agent_config, str):
                     from pulsar_ai.agent.loader import load_agent_config
+
                     agent_config = load_agent_config(agent_config)
                 agent = BaseAgent.from_config(agent_config)
 
-            routes.append(AgentRoute(
-                name=name,
-                agent=agent,
-                triggers=triggers,
-                description=description,
-            ))
+            routes.append(
+                AgentRoute(
+                    name=name,
+                    agent=agent,
+                    triggers=triggers,
+                    description=description,
+                )
+            )
 
         fallback_name = router_config.get("fallback", "")
         if fallback_name and fallback_name in agent_factory:

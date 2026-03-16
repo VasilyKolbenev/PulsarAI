@@ -14,22 +14,50 @@ _REQUIRED_KEYS: dict[str, list[str]] = {
 
 # Known top-level keys (warnings for typos)
 _KNOWN_KEYS = {
-    "model", "training", "dataset", "output", "logging",
-    "strategy", "task", "inherit",
-    "load_in_4bit", "use_lora", "use_unsloth",
+    "model",
+    "training",
+    "dataset",
+    "output",
+    "logging",
+    "strategy",
+    "task",
+    "inherit",
+    "load_in_4bit",
+    "use_lora",
+    "use_unsloth",
     "gradient_checkpointing",
-    "lora", "fsdp", "deepspeed", "dpo",
-    "bnb_4bit_quant_type", "bnb_4bit_compute_dtype", "bnb_4bit_use_double_quant",
-    "fsdp_enabled", "fsdp_sharding_strategy", "fsdp_cpu_offload",
-    "deepspeed_enabled", "deepspeed_stage",
-    "deepspeed_offload_optimizer", "deepspeed_offload_params",
-    "lora_r", "lora_alpha", "lora_dropout",
-    "sft_adapter_path", "base_model_path", "model_path", "test_data_path",
-    "evaluation", "export",
+    "lora",
+    "fsdp",
+    "deepspeed",
+    "dpo",
+    "bnb_4bit_quant_type",
+    "bnb_4bit_compute_dtype",
+    "bnb_4bit_use_double_quant",
+    "fsdp_enabled",
+    "fsdp_sharding_strategy",
+    "fsdp_cpu_offload",
+    "deepspeed_enabled",
+    "deepspeed_stage",
+    "deepspeed_offload_optimizer",
+    "deepspeed_offload_params",
+    "lora_r",
+    "lora_alpha",
+    "lora_dropout",
+    "sft_adapter_path",
+    "base_model_path",
+    "model_path",
+    "test_data_path",
+    "evaluation",
+    "export",
     # Internal keys set by hardware detection
-    "_detected_strategy", "_hardware",
+    "_detected_strategy",
+    "_hardware",
     # Agent keys
-    "agent", "tools", "memory", "guardrails", "resume_from_checkpoint",
+    "agent",
+    "tools",
+    "memory",
+    "guardrails",
+    "resume_from_checkpoint",
 }
 
 
@@ -93,9 +121,7 @@ def validate_config(config: dict, task: Optional[str] = None) -> list[str]:
             # Any one of these must exist
             alternatives = key_spec.split("|")
             if not any(_has_nested(config, k) for k in alternatives):
-                errors.append(
-                    f"Missing required key (one of): {', '.join(alternatives)}"
-                )
+                errors.append(f"Missing required key (one of): {', '.join(alternatives)}")
         else:
             if not _has_nested(config, key_spec):
                 errors.append(f"Missing required key: {key_spec}")
@@ -110,21 +136,13 @@ def validate_config(config: dict, task: Optional[str] = None) -> list[str]:
     if isinstance(training, dict):
         lr = training.get("learning_rate")
         if lr is not None and not isinstance(lr, (int, float)):
-            errors.append(
-                f"training.learning_rate must be a number, got: {type(lr).__name__}"
-            )
+            errors.append(f"training.learning_rate must be a number, got: {type(lr).__name__}")
         epochs = training.get("epochs")
         if epochs is not None and not isinstance(epochs, int):
-            errors.append(
-                f"training.epochs must be an integer, got: {type(epochs).__name__}"
-            )
+            errors.append(f"training.epochs must be an integer, got: {type(epochs).__name__}")
         batch_size = training.get("batch_size")
-        if batch_size is not None and (
-            not isinstance(batch_size, int) or batch_size < 1
-        ):
-            errors.append(
-                f"training.batch_size must be a positive integer, got: {batch_size}"
-            )
+        if batch_size is not None and (not isinstance(batch_size, int) or batch_size < 1):
+            errors.append(f"training.batch_size must be a positive integer, got: {batch_size}")
 
     return errors
 

@@ -12,7 +12,6 @@ from pulsar_ai.compute.remote_runner import RemoteJobRunner, RemoteJobStatus
 from pulsar_ai.storage.database import Database
 from pulsar_ai.ui.app import create_app
 
-
 # ──────────────────────────────────────────────────────────
 # ComputeManager
 # ──────────────────────────────────────────────────────────
@@ -112,15 +111,15 @@ class TestSSHConnection:
 
     def test_init_with_key(self):
         """Test SSH connection with key path."""
-        conn = SSHConnection(
-            host="10.0.0.1", user="root", key_path="/tmp/key"
-        )
+        conn = SSHConnection(host="10.0.0.1", user="root", key_path="/tmp/key")
         assert conn.key_path == "/tmp/key"
 
     def test_context_manager(self):
         """Test SSH connection as context manager."""
-        with patch.object(SSHConnection, "connect") as mock_connect, \
-             patch.object(SSHConnection, "close") as mock_close:
+        with (
+            patch.object(SSHConnection, "connect") as mock_connect,
+            patch.object(SSHConnection, "close") as mock_close,
+        ):
             with SSHConnection(host="x", user="y") as conn:
                 mock_connect.assert_called_once()
             mock_close.assert_called_once()
@@ -169,11 +168,13 @@ class TestRemoteJobRunner:
 @pytest.fixture
 def client(tmp_path):
     """Create test client with patched stores."""
-    with patch("pulsar_ai.ui.routes.training._store"), \
-         patch("pulsar_ai.ui.routes.experiments._store"), \
-         patch("pulsar_ai.ui.routes.evaluation._store"), \
-         patch("pulsar_ai.ui.routes.export_routes._store"), \
-         patch("pulsar_ai.ui.routes.compute._manager") as mock_mgr:
+    with (
+        patch("pulsar_ai.ui.routes.training._store"),
+        patch("pulsar_ai.ui.routes.experiments._store"),
+        patch("pulsar_ai.ui.routes.evaluation._store"),
+        patch("pulsar_ai.ui.routes.export_routes._store"),
+        patch("pulsar_ai.ui.routes.compute._manager") as mock_mgr,
+    ):
         mock_mgr.list_targets.return_value = []
         mock_mgr.add_target.return_value = ComputeTarget(
             id="abc12345",
@@ -194,7 +195,9 @@ def client(tmp_path):
             success=True, message="OK", latency_ms=50.0
         )
         mock_mgr.detect_remote_hardware.return_value = {
-            "gpu_count": 2, "gpu_type": "RTX 4090", "vram_gb": 24.0
+            "gpu_count": 2,
+            "gpu_type": "RTX 4090",
+            "vram_gb": 24.0,
         }
         app = create_app()
         yield TestClient(app)
@@ -211,11 +214,14 @@ class TestComputeAPI:
 
     def test_add_target(self, client):
         """Test POST /api/v1/compute/targets."""
-        resp = client.post("/api/v1/compute/targets", json={
-            "name": "test-gpu",
-            "host": "10.0.0.1",
-            "user": "ubuntu",
-        })
+        resp = client.post(
+            "/api/v1/compute/targets",
+            json={
+                "name": "test-gpu",
+                "host": "10.0.0.1",
+                "user": "ubuntu",
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["name"] == "test-gpu"

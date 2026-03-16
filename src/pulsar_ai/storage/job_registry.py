@@ -74,9 +74,7 @@ class JobRegistry:
         Returns:
             Job dict or None.
         """
-        row = self._db.fetch_one(
-            "SELECT * FROM jobs WHERE id = ?", (job_id,)
-        )
+        row = self._db.fetch_one("SELECT * FROM jobs WHERE id = ?", (job_id,))
         if row is None:
             return None
         return self._row_to_dict(row)
@@ -96,9 +94,7 @@ class JobRegistry:
                 (status,),
             )
         else:
-            rows = self._db.fetch_all(
-                "SELECT * FROM jobs ORDER BY started_at DESC"
-            )
+            rows = self._db.fetch_all("SELECT * FROM jobs ORDER BY started_at DESC")
         return [self._row_to_dict(r) for r in rows]
 
     def update_status(
@@ -154,9 +150,7 @@ class JobRegistry:
         Returns:
             True if deleted, False if not found.
         """
-        cursor = self._db.execute(
-            "DELETE FROM jobs WHERE id = ?", (job_id,)
-        )
+        cursor = self._db.execute("DELETE FROM jobs WHERE id = ?", (job_id,))
         self._db.commit()
         return cursor.rowcount > 0
 
@@ -166,13 +160,11 @@ class JobRegistry:
         Returns:
             List of active job dicts.
         """
-        rows = self._db.fetch_all(
-            """
+        rows = self._db.fetch_all("""
             SELECT * FROM jobs
             WHERE status IN ('queued', 'running')
             ORDER BY started_at
-            """
-        )
+            """)
         return [self._row_to_dict(r) for r in rows]
 
     @staticmethod

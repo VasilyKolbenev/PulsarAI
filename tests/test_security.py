@@ -145,8 +145,11 @@ class TestRemoteRunnerNoHeredoc:
         from pulsar_ai.compute.manager import ComputeTarget
 
         target = ComputeTarget(
-            id="test", name="test", host="example.com",
-            user="root", port=22,
+            id="test",
+            name="test",
+            host="example.com",
+            user="root",
+            port=22,
         )
         runner = RemoteJobRunner(target)
 
@@ -167,8 +170,12 @@ class TestRemoteRunnerNoHeredoc:
         from pulsar_ai.compute.manager import ComputeTarget
 
         target = ComputeTarget(
-            id="test", name="test", host="example.com",
-            user="root", port=22, gpu_count=1,
+            id="test",
+            name="test",
+            host="example.com",
+            user="root",
+            port=22,
+            gpu_count=1,
         )
         runner = RemoteJobRunner(target)
 

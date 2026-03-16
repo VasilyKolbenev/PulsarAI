@@ -16,9 +16,7 @@ _VAR_PATTERN = re.compile(r"\$\{(\w+)\.(\w+)\}")
 class PipelineCallback(Protocol):
     """Protocol for pipeline execution callbacks."""
 
-    def on_pipeline_start(
-        self, pipeline_name: str, step_names: list[str]
-    ) -> None: ...
+    def on_pipeline_start(self, pipeline_name: str, step_names: list[str]) -> None: ...
 
     def on_step_start(self, step_name: str, step_type: str) -> None: ...
 
@@ -38,17 +36,13 @@ class PipelineCallback(Protocol):
 class NullCallback:
     """No-op callback for when no external listener is needed."""
 
-    def on_pipeline_start(
-        self, pipeline_name: str, step_names: list[str]
-    ) -> None:
+    def on_pipeline_start(self, pipeline_name: str, step_names: list[str]) -> None:
         pass
 
     def on_step_start(self, step_name: str, step_type: str) -> None:
         pass
 
-    def on_step_complete(
-        self, step_name: str, result: dict[str, Any], duration_s: float
-    ) -> None:
+    def on_step_complete(self, step_name: str, result: dict[str, Any], duration_s: float) -> None:
         pass
 
     def on_step_skip(self, step_name: str) -> None:
@@ -114,9 +108,7 @@ class PipelineExecutor:
             # Check conditional — skip step if condition not met
             condition = step.get("condition")
             if condition and not check_condition(condition, self._outputs):
-                logger.info(
-                    "Skipping step '%s': condition not met", step_name
-                )
+                logger.info("Skipping step '%s': condition not met", step_name)
                 self.tracker.update_step(step_name, "skipped")
                 self.callback.on_step_skip(step_name)
                 self._outputs[step_name] = {"_skipped": True}
@@ -141,12 +133,8 @@ class PipelineExecutor:
                 self.tracker.update_step(
                     step_name, "completed", result=result, duration_s=round(elapsed, 1)
                 )
-                self.callback.on_step_complete(
-                    step_name, result, round(elapsed, 1)
-                )
-                logger.info(
-                    "Step '%s' completed in %.1fs", step_name, elapsed
-                )
+                self.callback.on_step_complete(step_name, result, round(elapsed, 1))
+                logger.info("Step '%s' completed in %.1fs", step_name, elapsed)
             except Exception as e:
                 self.tracker.update_step(step_name, "failed", error=str(e))
                 self.callback.on_step_fail(step_name, str(e))
@@ -175,9 +163,7 @@ class PipelineExecutor:
             step_deps = step.get("depends_on", [])
             for d in step_deps:
                 if d not in step_names:
-                    raise ValueError(
-                        f"Step '{name}' depends on unknown step '{d}'"
-                    )
+                    raise ValueError(f"Step '{name}' depends on unknown step '{d}'")
             deps[name] = step_deps
 
         ordered: list[str] = []
@@ -230,9 +216,7 @@ class PipelineExecutor:
         step_name = match.group(1)
         key = match.group(2)
         if step_name not in self._outputs:
-            logger.warning(
-                "Variable ${%s.%s} references unfinished step", step_name, key
-            )
+            logger.warning("Variable ${%s.%s} references unfinished step", step_name, key)
             return match.group(0)
         value = self._outputs[step_name].get(key, match.group(0))
         return str(value)

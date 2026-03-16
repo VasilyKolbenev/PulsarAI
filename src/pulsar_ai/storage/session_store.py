@@ -36,9 +36,7 @@ class SessionStore:
         Returns:
             Session dict with id, session_type, messages, created_at, updated_at.
         """
-        row = self._db.fetch_one(
-            "SELECT * FROM assistant_sessions WHERE id = ?", (session_id,)
-        )
+        row = self._db.fetch_one("SELECT * FROM assistant_sessions WHERE id = ?", (session_id,))
         if row:
             return self._row_to_dict(row)
 
@@ -67,9 +65,7 @@ class SessionStore:
         Returns:
             Session dict or None.
         """
-        row = self._db.fetch_one(
-            "SELECT * FROM assistant_sessions WHERE id = ?", (session_id,)
-        )
+        row = self._db.fetch_one("SELECT * FROM assistant_sessions WHERE id = ?", (session_id,))
         return self._row_to_dict(row) if row else None
 
     def get_messages(self, session_id: str) -> list[dict[str, str]]:
@@ -133,17 +129,11 @@ class SessionStore:
         Returns:
             True if deleted, False if not found.
         """
-        self._db.execute(
-            "DELETE FROM assistant_sessions WHERE id = ?", (session_id,)
-        )
+        self._db.execute("DELETE FROM assistant_sessions WHERE id = ?", (session_id,))
         self._db.commit()
-        return self._db.execute(
-            "SELECT changes()"
-        ).fetchone()[0] > 0
+        return self._db.execute("SELECT changes()").fetchone()[0] > 0
 
-    def list_sessions(
-        self, session_type: str | None = None
-    ) -> list[dict[str, Any]]:
+    def list_sessions(self, session_type: str | None = None) -> list[dict[str, Any]]:
         """List sessions, optionally filtered by type.
 
         Args:
@@ -159,9 +149,7 @@ class SessionStore:
                 (session_type,),
             )
         else:
-            rows = self._db.fetch_all(
-                "SELECT * FROM assistant_sessions ORDER BY updated_at DESC"
-            )
+            rows = self._db.fetch_all("SELECT * FROM assistant_sessions ORDER BY updated_at DESC")
         return [self._row_to_dict(r) for r in rows]
 
     def cleanup_expired(self) -> int:

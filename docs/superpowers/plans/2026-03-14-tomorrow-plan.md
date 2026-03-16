@@ -92,10 +92,10 @@
 - [x] Task 16d: UX improvements (Breadcrumbs, Skeletons)
 
 ### Chunk 4: Quality (Tasks 17-20) — Дни 5-6
-- [ ] Task 17: Test infrastructure (conftest.py, pytest config)
-- [ ] Task 18: Docker verification
-- [ ] Task 19: GitHub Actions CI (lint + test + build + docker)
-- [ ] Task 20: DX files (Makefile, .env.example, CONTRIBUTING.md)
+- [x] Task 17: Test infrastructure (conftest.py, pytest config)
+- [x] Task 18: Docker verification
+- [x] Task 19: GitHub Actions CI (lint + test + build + docker)
+- [x] Task 20: DX files (Makefile, .env.example, CONTRIBUTING.md)
 
 ---
 

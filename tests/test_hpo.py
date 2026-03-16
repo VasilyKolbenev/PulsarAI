@@ -93,9 +93,7 @@ class TestSweepRunner:
         trial = MagicMock()
         trial.suggest_float.return_value = 1e-4
 
-        params = runner._sample_params(
-            trial, {"training.learning_rate": [1e-5, 1e-3, "log"]}
-        )
+        params = runner._sample_params(trial, {"training.learning_rate": [1e-5, 1e-3, "log"]})
         assert "training.learning_rate" in params
         trial.suggest_float.assert_called_once()
 
@@ -151,9 +149,7 @@ class TestSweepRunner:
             sweep_config={"hpo": {"search_space": {"training.lr": [1e-5, 1e-3, "log"]}}},
         )
 
-        config = runner._build_trial_config(
-            {"training.lr": 1e-4}, trial_num=0
-        )
+        config = runner._build_trial_config({"training.lr": 1e-4}, trial_num=0)
         assert config["training"]["lr"] == 1e-4
         assert "trial_0" in config["output"]["dir"]
 

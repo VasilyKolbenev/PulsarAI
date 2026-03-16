@@ -217,8 +217,11 @@ class TestTracer:
         tracer = Tracer()
         with tracer.start_trace("t") as trace:
             span = tracer.record_llm_call(
-                trace=trace, model="local", input_tokens=1000,
-                output_tokens=500, latency_ms=100.0,
+                trace=trace,
+                model="local",
+                input_tokens=1000,
+                output_tokens=500,
+                latency_ms=100.0,
             )
         assert span.attributes["estimated_cost"] == 0.0
 

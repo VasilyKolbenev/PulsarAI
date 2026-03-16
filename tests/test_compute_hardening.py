@@ -10,8 +10,8 @@ from pulsar_ai.compute.ssh import SSHConnection, MAX_RETRIES, RETRY_BASE_DELAY
 from pulsar_ai.compute.remote_runner import RemoteJobRunner, _SAFE_TASK_RE, _SAFE_ID_RE
 from pulsar_ai.compute.manager import ComputeTarget
 
-
 # ── Input validation ──────────────────────────────────────────
+
 
 class TestInputValidation:
     def test_safe_task_regex_allows_valid(self):
@@ -38,11 +38,18 @@ class TestInputValidation:
 
 # ── Submit job validation ─────────────────────────────────────
 
+
 class TestSubmitJobValidation:
     def _make_runner(self):
         target = ComputeTarget(
-            id="t1", name="test", host="1.2.3.4", user="ubuntu",
-            port=22, key_path=None, gpu_count=1, gpu_type="A100",
+            id="t1",
+            name="test",
+            host="1.2.3.4",
+            user="ubuntu",
+            port=22,
+            key_path=None,
+            gpu_count=1,
+            gpu_type="A100",
         )
         return RemoteJobRunner(target)
 
@@ -59,11 +66,18 @@ class TestSubmitJobValidation:
 
 # ── Get status / cancel validation ────────────────────────────
 
+
 class TestJobIdValidation:
     def _make_runner(self):
         target = ComputeTarget(
-            id="t1", name="test", host="1.2.3.4", user="ubuntu",
-            port=22, key_path=None, gpu_count=1, gpu_type="A100",
+            id="t1",
+            name="test",
+            host="1.2.3.4",
+            user="ubuntu",
+            port=22,
+            key_path=None,
+            gpu_count=1,
+            gpu_type="A100",
         )
         return RemoteJobRunner(target)
 
@@ -90,6 +104,7 @@ class TestJobIdValidation:
 
 # ── Shlex quoting in commands ─────────────────────────────────
 
+
 class TestShlexQuoting:
     def test_tail_file_quotes_path(self):
         conn = SSHConnection(host="h", user="u")
@@ -101,6 +116,7 @@ class TestShlexQuoting:
 
 
 # ── SSH retry logic ───────────────────────────────────────────
+
 
 class TestSSHRetry:
     @patch("pulsar_ai.compute.ssh.time.sleep")

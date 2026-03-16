@@ -60,6 +60,7 @@ def load_agent_config(
     # Apply CLI overrides
     if cli_overrides:
         from pulsar_ai.config import _set_nested
+
         for key, value in cli_overrides.items():
             _set_nested(merged, key, value)
 

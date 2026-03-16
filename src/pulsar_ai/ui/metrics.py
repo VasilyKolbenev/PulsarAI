@@ -60,9 +60,7 @@ def _collect_gpu_metrics() -> list[GPUMetrics]:
             mem = pynvml.nvmlDeviceGetMemoryInfo(handle)
             util = pynvml.nvmlDeviceGetUtilizationRates(handle)
             try:
-                temp = pynvml.nvmlDeviceGetTemperature(
-                    handle, pynvml.NVML_TEMPERATURE_GPU
-                )
+                temp = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
             except pynvml.NVMLError:
                 temp = 0
             try:

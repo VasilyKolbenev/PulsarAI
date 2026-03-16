@@ -62,9 +62,7 @@ class TestComputeMetrics:
             {"domain": "A", "skill": "X"},
             {"domain": "B", "skill": "Z"},  # skill mismatch
         ]
-        results = compute_metrics(
-            predictions, true_labels, ["domain", "skill"]
-        )
+        results = compute_metrics(predictions, true_labels, ["domain", "skill"])
         # Only first sample has all columns matching
         assert results["overall_accuracy"] == 0.5
         # But domain accuracy is 100%

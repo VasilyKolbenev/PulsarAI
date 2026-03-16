@@ -98,9 +98,7 @@ class TestModelRegistry:
         assert registry.update_status("nope", "production") is None
 
     def test_update_metrics(self, registry):
-        registry.register(
-            name="m", model_path="/m", metrics={"accuracy": 0.9}
-        )
+        registry.register(name="m", model_path="/m", metrics={"accuracy": 0.9})
 
         result = registry.update_metrics("m-v1", {"f1": 0.88, "accuracy": 0.95})
         assert result["metrics"]["accuracy"] == 0.95
@@ -116,11 +114,13 @@ class TestModelRegistry:
 
     def test_compare_models(self, registry):
         registry.register(
-            name="a", model_path="/a",
+            name="a",
+            model_path="/a",
             metrics={"accuracy": 0.9, "loss": 0.2},
         )
         registry.register(
-            name="b", model_path="/b",
+            name="b",
+            model_path="/b",
             metrics={"accuracy": 0.95, "loss": 0.15},
         )
 

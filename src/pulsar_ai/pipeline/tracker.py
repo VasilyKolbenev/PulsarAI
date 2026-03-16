@@ -80,8 +80,7 @@ class PipelineTracker:
             if result is not None:
                 # Only store string/number values to keep manifest clean
                 step["result"] = {
-                    k: v for k, v in result.items()
-                    if isinstance(v, (str, int, float, bool))
+                    k: v for k, v in result.items() if isinstance(v, (str, int, float, bool))
                 }
             if error is not None:
                 step["error"] = error

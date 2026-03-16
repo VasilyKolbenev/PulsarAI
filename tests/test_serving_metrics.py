@@ -54,6 +54,7 @@ class TestServingMetrics:
         m = ServingMetrics()
         # Add an old request by manually setting timestamp
         from pulsar_ai.serving.metrics import RequestMetric
+
         old = RequestMetric(
             timestamp=time.time() - 120,  # 2 minutes ago
             latency_ms=500,

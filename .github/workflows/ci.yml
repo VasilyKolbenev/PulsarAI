@@ -26,7 +26,7 @@ jobs:
         run: pip install -e ".[dev,ui]" black ruff mypy
 
       - name: Check formatting (black)
-        run: black --check src/ tests/
+        run: black --check --fast src/ tests/
 
       - name: Lint (ruff)
         run: ruff check src/ tests/

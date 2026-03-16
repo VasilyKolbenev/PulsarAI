@@ -48,6 +48,7 @@ class ProgressCallback:
         if self.experiment_id:
             try:
                 from pulsar_ai.ui.experiment_store import ExperimentStore
+
                 store = ExperimentStore()
                 store.add_metrics(self.experiment_id, metrics)
             except Exception:
@@ -61,10 +62,12 @@ class ProgressCallback:
         Args:
             results: Training results dict.
         """
-        self._queue.put({
-            "event": "completed",
-            "data": results,
-        })
+        self._queue.put(
+            {
+                "event": "completed",
+                "data": results,
+            }
+        )
 
     def on_error(self, error: str) -> None:
         """Called when training fails.
@@ -72,10 +75,12 @@ class ProgressCallback:
         Args:
             error: Error message.
         """
-        self._queue.put({
-            "event": "error",
-            "data": {"error": error},
-        })
+        self._queue.put(
+            {
+                "event": "error",
+                "data": {"error": error},
+            }
+        )
 
 
 def make_hf_callback(progress: ProgressCallback) -> Any:
@@ -139,6 +144,7 @@ def _get_gpu_memory() -> float | None:
     """
     try:
         import torch
+
         if torch.cuda.is_available():
             return round(torch.cuda.memory_allocated() / (1024**3), 2)
     except ImportError:

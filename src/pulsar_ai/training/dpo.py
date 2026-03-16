@@ -39,13 +39,12 @@ def train_dpo(config: dict, progress: Any = None) -> dict:
     sft_adapter = config.get("base_model_path", config.get("sft_adapter_path"))
 
     if not sft_adapter:
-        raise ValueError(
-            "DPO requires base_model_path or sft_adapter_path in config"
-        )
+        raise ValueError("DPO requires base_model_path or sft_adapter_path in config")
 
     hf_callbacks = []
     if progress is not None:
         from pulsar_ai.ui.progress import make_hf_callback
+
         hf_callbacks.append(make_hf_callback(progress))
 
     with track_experiment(config, task="dpo") as tracker:
@@ -65,9 +64,7 @@ def train_dpo(config: dict, progress: Any = None) -> dict:
             callbacks=hf_callbacks,
             args=DPOConfig(
                 per_device_train_batch_size=training_config.get("batch_size", 1),
-                gradient_accumulation_steps=training_config.get(
-                    "gradient_accumulation", 8
-                ),
+                gradient_accumulation_steps=training_config.get("gradient_accumulation", 8),
                 warmup_steps=training_config.get("warmup_steps", 10),
                 num_train_epochs=training_config.get("epochs", 2),
                 learning_rate=float(training_config.get("learning_rate", 5e-5)),
@@ -99,11 +96,13 @@ def train_dpo(config: dict, progress: Any = None) -> dict:
             "adapter_dir": adapter_dir,
         }
 
-        tracker.log_metrics({
-            "training_loss": results["training_loss"],
-            "global_steps": results["global_steps"],
-            "vram_peak_gb": results["vram_peak_gb"],
-        })
+        tracker.log_metrics(
+            {
+                "training_loss": results["training_loss"],
+                "global_steps": results["global_steps"],
+                "vram_peak_gb": results["vram_peak_gb"],
+            }
+        )
         tracker.log_artifact("adapter", adapter_dir)
         tracker.finish(status="completed", results=results)
 

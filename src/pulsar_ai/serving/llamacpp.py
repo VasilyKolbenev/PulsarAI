@@ -40,17 +40,13 @@ def start_server(
         raise FileNotFoundError(f"Model not found: {model_path}")
 
     if model_file.suffix != ".gguf":
-        raise ValueError(
-            f"llama.cpp requires .gguf model file, got: {model_file.suffix}"
-        )
+        raise ValueError(f"llama.cpp requires .gguf model file, got: {model_file.suffix}")
 
     # Method 1: llama-server binary
     llama_server = shutil.which("llama-server")
     if llama_server:
         logger.info("Starting llama-server on %s:%d", host, port)
-        _run_llama_server(
-            llama_server, model_path, host, port, n_ctx, n_gpu_layers
-        )
+        _run_llama_server(llama_server, model_path, host, port, n_ctx, n_gpu_layers)
         return
 
     # Method 2: llama-cpp-python
@@ -94,11 +90,16 @@ def _run_llama_server(
     """
     cmd = [
         binary,
-        "--model", model_path,
-        "--host", host,
-        "--port", str(port),
-        "--ctx-size", str(n_ctx),
-        "--n-gpu-layers", str(n_gpu_layers),
+        "--model",
+        model_path,
+        "--host",
+        host,
+        "--port",
+        str(port),
+        "--ctx-size",
+        str(n_ctx),
+        "--n-gpu-layers",
+        str(n_gpu_layers),
     ]
 
     logger.info("Running: %s", " ".join(cmd))

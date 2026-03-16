@@ -34,9 +34,7 @@ def compute_metrics(
     for col in label_columns:
         correct = 0
         evaluated = 0
-        per_class: dict[str, dict[str, int]] = defaultdict(
-            lambda: {"correct": 0, "total": 0}
-        )
+        per_class: dict[str, dict[str, int]] = defaultdict(lambda: {"correct": 0, "total": 0})
 
         for pred, true in zip(predictions, true_labels):
             if col not in true:
@@ -178,11 +176,7 @@ def compute_f1(
             continue
         true_val = str(true[column]).strip()
         parsed = pred.get("parsed")
-        pred_val = (
-            str(parsed.get(column, "PARSE_ERROR")).strip()
-            if parsed
-            else "PARSE_ERROR"
-        )
+        pred_val = str(parsed.get(column, "PARSE_ERROR")).strip() if parsed else "PARSE_ERROR"
         y_true.append(true_val)
         y_pred.append(pred_val)
 
@@ -191,10 +185,6 @@ def compute_f1(
 
     return {
         "f1": round(f1_score(y_true, y_pred, average=average, zero_division=0), 4),
-        "precision": round(
-            precision_score(y_true, y_pred, average=average, zero_division=0), 4
-        ),
-        "recall": round(
-            recall_score(y_true, y_pred, average=average, zero_division=0), 4
-        ),
+        "precision": round(precision_score(y_true, y_pred, average=average, zero_division=0), 4),
+        "recall": round(recall_score(y_true, y_pred, average=average, zero_division=0), 4),
     }

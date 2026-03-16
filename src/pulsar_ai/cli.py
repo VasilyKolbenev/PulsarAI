@@ -319,10 +319,12 @@ def export(
         config = {}
 
     config["model_path"] = model
-    config.setdefault("export", {}).update({
-        "format": export_format,
-        "quantization": quant,
-    })
+    config.setdefault("export", {}).update(
+        {
+            "format": export_format,
+            "quantization": quant,
+        }
+    )
     if output:
         config["export"]["output_path"] = output
 
@@ -368,9 +370,7 @@ def serve(model: str, port: int, backend: str, host: str) -> None:
         pulsar serve --model ./outputs/model.gguf --port 8080
         pulsar serve --model ./outputs/cam-sft --backend vllm --port 8000
     """
-    console.print(
-        Panel(f"Starting [bold]{backend}[/bold] server on {host}:{port}")
-    )
+    console.print(Panel(f"Starting [bold]{backend}[/bold] server on {host}:{port}"))
 
     if backend == "llamacpp":
         from pulsar_ai.serving.llamacpp import start_server
@@ -451,12 +451,14 @@ def init(name: str, task: str, model: str, output_dir: Optional[str]) -> None:
     with open(config_path, "w", encoding="utf-8") as f:
         yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
-    console.print(Panel(
-        f"[green]Created:[/green] {config_path}\n"
-        f"[dim]Edit dataset.path and label_columns, then run:[/dim]\n"
-        f"  pulsar train {config_path}",
-        title=f"New Experiment: {name}",
-    ))
+    console.print(
+        Panel(
+            f"[green]Created:[/green] {config_path}\n"
+            f"[dim]Edit dataset.path and label_columns, then run:[/dim]\n"
+            f"  pulsar train {config_path}",
+            title=f"New Experiment: {name}",
+        )
+    )
 
 
 @main.command()
@@ -492,6 +494,7 @@ def info() -> None:
 # Agent subgroup
 # РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 
+
 @main.group()
 def agent() -> None:
     """Agent system commands: init, test, serve."""
@@ -524,8 +527,7 @@ def agent_init(name: str, model_url: str, model_name: str) -> None:
         "agent": {
             "name": name,
             "system_prompt": (
-                f"You are {name}, a helpful AI assistant. "
-                "Use the available tools when needed."
+                f"You are {name}, a helpful AI assistant. " "Use the available tools when needed."
             ),
         },
         "model": {
@@ -555,12 +557,14 @@ def agent_init(name: str, model_url: str, model_name: str) -> None:
     with open(config_path, "w", encoding="utf-8") as f:
         yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
-    console.print(Panel(
-        f"[green]Created:[/green] {config_path}\n"
-        f"[dim]Edit the config, then run:[/dim]\n"
-        f"  pulsar agent test {config_path}",
-        title=f"New Agent: {name}",
-    ))
+    console.print(
+        Panel(
+            f"[green]Created:[/green] {config_path}\n"
+            f"[dim]Edit the config, then run:[/dim]\n"
+            f"  pulsar agent test {config_path}",
+            title=f"New Agent: {name}",
+        )
+    )
 
 
 @agent.command(name="test")
@@ -594,12 +598,14 @@ def agent_test(config_path: str, native_tools: bool) -> None:
     agent_instance = BaseAgent.from_config(config, tools=tools)
 
     agent_name = config.get("agent", {}).get("name", "agent")
-    console.print(Panel(
-        f"Agent [bold]{agent_name}[/bold] loaded with "
-        f"{len(tools)} tools.\n"
-        f"Type your message and press Enter. Type 'quit' to exit.",
-        title="Agent REPL",
-    ))
+    console.print(
+        Panel(
+            f"Agent [bold]{agent_name}[/bold] loaded with "
+            f"{len(tools)} tools.\n"
+            f"Type your message and press Enter. Type 'quit' to exit.",
+            title="Agent REPL",
+        )
+    )
 
     while True:
         try:
@@ -651,12 +657,14 @@ def agent_serve(config_path: str, host: str, port: int) -> None:
         sys.exit(1)
 
     agent_name = config.get("agent", {}).get("name", "agent")
-    console.print(Panel(
-        f"Starting agent [bold]{agent_name}[/bold] server\n"
-        f"Endpoint: http://{host}:{port}/v1/agent/chat\n"
-        f"Health:   http://{host}:{port}/v1/agent/health",
-        title="Agent Server",
-    ))
+    console.print(
+        Panel(
+            f"Starting agent [bold]{agent_name}[/bold] server\n"
+            f"Endpoint: http://{host}:{port}/v1/agent/chat\n"
+            f"Health:   http://{host}:{port}/v1/agent/health",
+            title="Agent Server",
+        )
+    )
 
     start_agent_server(config, host=host, port=port)
 
@@ -664,6 +672,7 @@ def agent_serve(config_path: str, host: str, port: int) -> None:
 # РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 # Web UI command
 # РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
+
 
 @main.command(name="ui")
 @click.option("--host", default="0.0.0.0", help="Server host.")
@@ -678,12 +687,14 @@ def ui(host: str, port: int) -> None:
     """
     from pulsar_ai.ui.app import start_ui_server
 
-    console.print(Panel(
-        f"Starting [bold]Pulsar AI UI[/bold]\n"
-        f"Dashboard: http://{host}:{port}\n"
-        f"API docs:  http://{host}:{port}/docs",
-        title="Web UI",
-    ))
+    console.print(
+        Panel(
+            f"Starting [bold]Pulsar AI UI[/bold]\n"
+            f"Dashboard: http://{host}:{port}\n"
+            f"API docs:  http://{host}:{port}/docs",
+            title="Web UI",
+        )
+    )
 
     start_ui_server(host=host, port=port)
 
@@ -691,6 +702,7 @@ def ui(host: str, port: int) -> None:
 # РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 # Pipeline subgroup
 # РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
+
 
 @main.group()
 def pipeline() -> None:
@@ -714,11 +726,12 @@ def pipeline_run(config_path: str) -> None:
     name = pipeline_config.get("pipeline", {}).get("name", "unnamed")
     steps = pipeline_config.get("steps", [])
 
-    console.print(Panel(
-        f"Pipeline: [bold]{name}[/bold]\n"
-        f"Steps: {len(steps)}",
-        title="Pipeline Run",
-    ))
+    console.print(
+        Panel(
+            f"Pipeline: [bold]{name}[/bold]\n" f"Steps: {len(steps)}",
+            title="Pipeline Run",
+        )
+    )
 
     from pulsar_ai.pipeline.executor import PipelineExecutor
 
@@ -735,7 +748,8 @@ def pipeline_run(config_path: str) -> None:
 
         for step_name, result in outputs.items():
             keys = ", ".join(
-                f"{k}={v}" for k, v in result.items()
+                f"{k}={v}"
+                for k, v in result.items()
                 if isinstance(v, (str, int, float)) and k != "output_dir"
             )[:80]
             table.add_row(step_name, "completed", keys or "-")
@@ -775,7 +789,9 @@ def pipeline_list(name: str | None) -> None:
         status = run.get("status", "unknown")
         style = "green" if status == "completed" else "red" if status == "failed" else "yellow"
         steps = run.get("steps", {})
-        step_summary = f"{sum(1 for s in steps.values() if s.get('status') == 'completed')}/{len(steps)}"
+        step_summary = (
+            f"{sum(1 for s in steps.values() if s.get('status') == 'completed')}/{len(steps)}"
+        )
 
         table.add_row(
             run.get("run_id", "?"),
@@ -791,6 +807,7 @@ def pipeline_list(name: str | None) -> None:
 # РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 # Experiment tracking & comparison
 # РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
+
 
 @main.group()
 def runs() -> None:
@@ -826,7 +843,9 @@ def runs_list(project: str | None, status: str | None, limit: int) -> None:
 
     for run in results:
         status_val = run.get("status", "?")
-        style = "green" if status_val == "completed" else "red" if status_val == "failed" else "yellow"
+        style = (
+            "green" if status_val == "completed" else "red" if status_val == "failed" else "yellow"
+        )
         loss = run.get("results", {}).get("training_loss")
         loss_str = f"{loss:.4f}" if isinstance(loss, (int, float)) else "-"
         duration = run.get("duration_s")
@@ -860,14 +879,16 @@ def runs_show(run_id: str) -> None:
         console.print(f"[red]Run not found: {run_id}[/red]")
         sys.exit(1)
 
-    console.print(Panel(
-        f"[bold]{run.get('name', '?')}[/bold]\n"
-        f"Status: {run.get('status')}\n"
-        f"Duration: {run.get('duration_s', 0):.1f}s\n"
-        f"Backend: {run.get('backend')}\n"
-        f"Started: {run.get('started_at', '?')[:19]}",
-        title=f"Run {run_id}",
-    ))
+    console.print(
+        Panel(
+            f"[bold]{run.get('name', '?')}[/bold]\n"
+            f"Status: {run.get('status')}\n"
+            f"Duration: {run.get('duration_s', 0):.1f}s\n"
+            f"Backend: {run.get('backend')}\n"
+            f"Started: {run.get('started_at', '?')[:19]}",
+            title=f"Run {run_id}",
+        )
+    )
 
     # Results
     results = run.get("results", {})
@@ -944,6 +965,7 @@ def runs_compare(run_ids: tuple[str, ...]) -> None:
 # HPO sweep
 # РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 
+
 @main.command()
 @click.argument("config_path", type=click.Path(exists=True))
 @click.argument("sweep_config_path", type=click.Path(exists=True))
@@ -967,15 +989,17 @@ def sweep(
     sweep_config = load_sweep_config(sweep_config_path)
     sweep_conf = sweep_config.get("hpo", sweep_config)
 
-    console.print(Panel(
-        f"Sweep config: {sweep_config_path}\n"
-        f"Base config: {config_path}\n"
-        f"Trials: {n_trials or sweep_conf.get('n_trials', 10)}\n"
-        f"Metric: {sweep_conf.get('metric', 'training_loss')}\n"
-        f"Direction: {sweep_conf.get('direction', 'minimize')}\n"
-        f"Search space: {len(sweep_conf.get('search_space', {}))} parameters",
-        title="HPO Sweep",
-    ))
+    console.print(
+        Panel(
+            f"Sweep config: {sweep_config_path}\n"
+            f"Base config: {config_path}\n"
+            f"Trials: {n_trials or sweep_conf.get('n_trials', 10)}\n"
+            f"Metric: {sweep_conf.get('metric', 'training_loss')}\n"
+            f"Direction: {sweep_conf.get('direction', 'minimize')}\n"
+            f"Search space: {len(sweep_conf.get('search_space', {}))} parameters",
+            title="HPO Sweep",
+        )
+    )
 
     runner = SweepRunner(
         base_config_path=config_path,
@@ -1000,6 +1024,7 @@ def sweep(
 # РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
 # Model registry
 # РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
+
 
 @main.group()
 def registry() -> None:
@@ -1038,9 +1063,9 @@ def registry_list(name: str | None, status: str | None) -> None:
     for m in models:
         status_val = m.get("status", "?")
         style = (
-            "green" if status_val == "production"
-            else "yellow" if status_val == "staging"
-            else "dim"
+            "green"
+            if status_val == "production"
+            else "yellow" if status_val == "staging" else "dim"
         )
         table.add_row(
             m["id"],
@@ -1084,9 +1109,7 @@ def registry_register(
         base_model=base_model,
         tags=list(tag),
     )
-    console.print(
-        f"[green]Registered:[/green] {entry['id']} ({entry['model_path']})"
-    )
+    console.print(f"[green]Registered:[/green] {entry['id']} ({entry['model_path']})")
 
 
 @registry.command(name="promote")
@@ -1206,7 +1229,3 @@ def _show_eval_results(results: dict) -> None:
                 cls_table.add_row(cls_name, f"{acc:.2%}", str(count))
 
         console.print(cls_table)
-
-
-
-

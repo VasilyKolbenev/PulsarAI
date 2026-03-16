@@ -196,11 +196,13 @@ class FeedbackCollector:
         # Direct preference pairs
         for entry in self._entries:
             if entry.feedback_type == "preference" and entry.chosen and entry.rejected:
-                pairs.append({
-                    "prompt": entry.prompt,
-                    "chosen": entry.chosen,
-                    "rejected": entry.rejected,
-                })
+                pairs.append(
+                    {
+                        "prompt": entry.prompt,
+                        "chosen": entry.chosen,
+                        "rejected": entry.rejected,
+                    }
+                )
 
         # Convert thumbs: pair positive with negative for same prompt
         by_prompt: dict[str, dict[str, list[str]]] = {}
@@ -224,11 +226,13 @@ class FeedbackCollector:
         for prompt, responses in by_prompt.items():
             for chosen in responses["positive"]:
                 for rejected in responses["negative"]:
-                    pairs.append({
-                        "prompt": prompt,
-                        "chosen": chosen,
-                        "rejected": rejected,
-                    })
+                    pairs.append(
+                        {
+                            "prompt": prompt,
+                            "chosen": chosen,
+                            "rejected": rejected,
+                        }
+                    )
 
         return pairs
 

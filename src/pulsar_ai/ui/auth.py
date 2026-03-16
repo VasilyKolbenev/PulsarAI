@@ -24,12 +24,14 @@ from pulsar_ai.storage.database import Database, get_database
 logger = logging.getLogger(__name__)
 
 # Paths that don't require authentication
-PUBLIC_PATHS = frozenset({
-    "/api/v1/health",
-    "/docs",
-    "/openapi.json",
-    "/redoc",
-})
+PUBLIC_PATHS = frozenset(
+    {
+        "/api/v1/health",
+        "/docs",
+        "/openapi.json",
+        "/redoc",
+    }
+)
 
 
 class ApiKeyStore:
@@ -48,9 +50,7 @@ class ApiKeyStore:
 
     # ── Audit helpers ─────────────────────────────────────────────
 
-    def _log_event(
-        self, key_id: str, event_type: str, ip_address: str = ""
-    ) -> None:
+    def _log_event(self, key_id: str, event_type: str, ip_address: str = "") -> None:
         """Write an audit event to api_key_events."""
         self._db.execute(
             "INSERT INTO api_key_events (key_id, event_type, timestamp, ip_address) "
@@ -153,9 +153,7 @@ class ApiKeyStore:
         Returns:
             List of dicts with 'name' field.
         """
-        rows = self._db.fetch_all(
-            "SELECT name FROM api_keys WHERE revoked = 0"
-        )
+        rows = self._db.fetch_all("SELECT name FROM api_keys WHERE revoked = 0")
         return [{"name": r["name"]} for r in rows]
 
     def revoke(self, name: str) -> bool:
@@ -241,12 +239,14 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
 
 
 # Paths always allowed in demo mode (reads + chat)
-_DEMO_SAFE_PATHS = frozenset({
-    "/api/v1/health",
-    "/api/v1/settings",
-    "/assistant/chat",
-    "/site/chat",
-})
+_DEMO_SAFE_PATHS = frozenset(
+    {
+        "/api/v1/health",
+        "/api/v1/settings",
+        "/assistant/chat",
+        "/site/chat",
+    }
+)
 
 
 class DemoModeMiddleware(BaseHTTPMiddleware):

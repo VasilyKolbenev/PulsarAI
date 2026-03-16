@@ -58,9 +58,7 @@ async def compare_experiments(req: CompareRequest) -> dict:
             "training_history": exp.get("training_history", []),
             "config": {
                 "model": exp.get("model", ""),
-                "learning_rate": exp.get("config", {}).get(
-                    "training", {}
-                ).get("learning_rate"),
+                "learning_rate": exp.get("config", {}).get("training", {}).get("learning_rate"),
                 "epochs": exp.get("config", {}).get("training", {}).get("epochs"),
             },
         }

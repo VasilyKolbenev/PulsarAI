@@ -61,7 +61,9 @@ def _read_file(path: str, max_lines: int = 200) -> str:
         text = file_path.read_text(encoding="utf-8")
         lines = text.splitlines()
         if len(lines) > max_lines:
-            return "\n".join(lines[:max_lines]) + f"\n\n... ({len(lines) - max_lines} lines truncated)"
+            return (
+                "\n".join(lines[:max_lines]) + f"\n\n... ({len(lines) - max_lines} lines truncated)"
+            )
         return text
     except UnicodeDecodeError:
         return f"Error: File '{path}' is not a text file."

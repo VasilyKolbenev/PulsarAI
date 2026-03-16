@@ -40,13 +40,9 @@ def load_model(
         base_name = adapter_cfg.get("base_model_name_or_path")
 
     if is_adapter and use_unsloth:
-        model, tokenizer = _load_unsloth_with_adapter(
-            config, base_name, model_path, trainable
-        )
+        model, tokenizer = _load_unsloth_with_adapter(config, base_name, model_path, trainable)
     elif is_adapter:
-        model, tokenizer = _load_hf_with_adapter(
-            config, base_name, model_path, trainable
-        )
+        model, tokenizer = _load_hf_with_adapter(config, base_name, model_path, trainable)
     elif use_unsloth:
         model, tokenizer = _load_unsloth_base(config, base_name or model_path)
     else:
@@ -141,9 +137,7 @@ def _load_unsloth_with_adapter(
         max_seq_length=config.get("training", {}).get("max_seq_length", 1024),
         load_in_4bit=config.get("load_in_4bit", True),
     )
-    model = PeftModel.from_pretrained(
-        base_model, adapter_path, is_trainable=trainable
-    )
+    model = PeftModel.from_pretrained(base_model, adapter_path, is_trainable=trainable)
     return model, tokenizer
 
 
@@ -178,9 +172,7 @@ def _load_hf_with_adapter(
         torch_dtype=torch.bfloat16,
     )
     tokenizer = AutoTokenizer.from_pretrained(base_name)
-    model = PeftModel.from_pretrained(
-        base_model, adapter_path, is_trainable=trainable
-    )
+    model = PeftModel.from_pretrained(base_model, adapter_path, is_trainable=trainable)
     return model, tokenizer
 
 
@@ -249,8 +241,6 @@ def _get_bnb_config(config: dict) -> Any:
     return BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type=config.get("bnb_4bit_quant_type", "nf4"),
-        bnb_4bit_compute_dtype=getattr(
-            torch, config.get("bnb_4bit_compute_dtype", "bfloat16")
-        ),
+        bnb_4bit_compute_dtype=getattr(torch, config.get("bnb_4bit_compute_dtype", "bfloat16")),
         bnb_4bit_use_double_quant=config.get("bnb_4bit_use_double_quant", True),
     )

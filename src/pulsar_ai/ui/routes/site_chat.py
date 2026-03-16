@@ -174,15 +174,11 @@ async def site_chat(req: ChatRequest) -> ChatResponse:
         )
 
     # Get or create persistent session
-    session = _session_store.get_or_create(
-        session_id, session_type="site_chat", ttl_hours=4
-    )
+    session = _session_store.get_or_create(session_id, session_type="site_chat", ttl_hours=4)
     history = session["messages"]
 
     # Add user message
-    _session_store.append_message(
-        session_id, "user", req.message.strip(), max_messages=MAX_HISTORY
-    )
+    _session_store.append_message(session_id, "user", req.message.strip(), max_messages=MAX_HISTORY)
     history.append({"role": "user", "content": req.message.strip()})
 
     # Trim local copy for OpenAI call
@@ -200,17 +196,13 @@ async def site_chat(req: ChatRequest) -> ChatResponse:
             "below to get in touch with our team, or visit our GitHub repository "
             "for documentation."
         )
-        _session_store.append_message(
-            session_id, "assistant", fallback, max_messages=MAX_HISTORY
-        )
+        _session_store.append_message(session_id, "assistant", fallback, max_messages=MAX_HISTORY)
         return ChatResponse(reply=fallback, session_id=session_id)
 
     reply = await _call_openai(messages)
 
     # Save assistant reply
-    _session_store.append_message(
-        session_id, "assistant", reply, max_messages=MAX_HISTORY
-    )
+    _session_store.append_message(session_id, "assistant", reply, max_messages=MAX_HISTORY)
 
     return ChatResponse(reply=reply, session_id=session_id)
 

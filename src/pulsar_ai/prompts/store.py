@@ -135,9 +135,7 @@ class PromptStore:
         Returns:
             Prompt dict or None.
         """
-        row = self._db.fetch_one(
-            "SELECT * FROM prompts WHERE id = ?", (prompt_id,)
-        )
+        row = self._db.fetch_one("SELECT * FROM prompts WHERE id = ?", (prompt_id,))
         if row is None:
             return None
         return self._row_to_dict(row)
@@ -151,9 +149,7 @@ class PromptStore:
         Returns:
             List of prompt dicts (newest first).
         """
-        rows = self._db.fetch_all(
-            "SELECT * FROM prompts ORDER BY updated_at DESC"
-        )
+        rows = self._db.fetch_all("SELECT * FROM prompts ORDER BY updated_at DESC")
         prompts = [self._row_to_dict(r) for r in rows]
         if tag:
             prompts = [p for p in prompts if tag in p.get("tags", [])]
@@ -178,17 +174,13 @@ class PromptStore:
         Returns:
             Updated prompt dict or None.
         """
-        existing = self._db.fetch_one(
-            "SELECT id FROM prompts WHERE id = ?", (prompt_id,)
-        )
+        existing = self._db.fetch_one("SELECT id FROM prompts WHERE id = ?", (prompt_id,))
         if existing is None:
             return None
 
         now_iso = datetime.now().isoformat()
         if name is not None:
-            self._db.execute(
-                "UPDATE prompts SET name = ? WHERE id = ?", (name, prompt_id)
-            )
+            self._db.execute("UPDATE prompts SET name = ? WHERE id = ?", (name, prompt_id))
         if description is not None:
             self._db.execute(
                 "UPDATE prompts SET description = ? WHERE id = ?",
@@ -244,13 +236,13 @@ class PromptStore:
         variables = self._extract_variables(system_prompt)
         now_iso = datetime.now().isoformat()
 
-        resolved_model = model if model is not None else (
-            prev_version["model"] if prev_version else ""
+        resolved_model = (
+            model if model is not None else (prev_version["model"] if prev_version else "")
         )
-        resolved_params = parameters if parameters is not None else (
-            json.loads(prev_version["parameters"] or "{}")
-            if prev_version
-            else {}
+        resolved_params = (
+            parameters
+            if parameters is not None
+            else (json.loads(prev_version["parameters"] or "{}") if prev_version else {})
         )
 
         self._db.execute(
@@ -329,12 +321,14 @@ class PromptStore:
         if not ver1 or not ver2:
             return None
 
-        diff_lines = list(unified_diff(
-            ver1["system_prompt"].splitlines(keepends=True),
-            ver2["system_prompt"].splitlines(keepends=True),
-            fromfile=f"v{v1}",
-            tofile=f"v{v2}",
-        ))
+        diff_lines = list(
+            unified_diff(
+                ver1["system_prompt"].splitlines(keepends=True),
+                ver2["system_prompt"].splitlines(keepends=True),
+                fromfile=f"v{v1}",
+                tofile=f"v{v2}",
+            )
+        )
 
         return {
             "prompt_id": prompt_id,
@@ -343,12 +337,8 @@ class PromptStore:
             "diff": "".join(diff_lines),
             "v1_variables": ver1["variables"],
             "v2_variables": ver2["variables"],
-            "variables_added": [
-                v for v in ver2["variables"] if v not in ver1["variables"]
-            ],
-            "variables_removed": [
-                v for v in ver1["variables"] if v not in ver2["variables"]
-            ],
+            "variables_added": [v for v in ver2["variables"] if v not in ver1["variables"]],
+            "variables_removed": [v for v in ver1["variables"] if v not in ver2["variables"]],
         }
 
     def delete(self, prompt_id: str) -> bool:
@@ -360,9 +350,7 @@ class PromptStore:
         Returns:
             True if deleted, False if not found.
         """
-        cursor = self._db.execute(
-            "DELETE FROM prompts WHERE id = ?", (prompt_id,)
-        )
+        cursor = self._db.execute("DELETE FROM prompts WHERE id = ?", (prompt_id,))
         self._db.commit()
         return cursor.rowcount > 0
 
@@ -420,16 +408,12 @@ class PromptStore:
             "model": row.get("model", ""),
             "parameters": json.loads(row["parameters"] or "{}"),
             "created_at": row["created_at"],
-            "metrics": (
-                json.loads(row["metrics"]) if row.get("metrics") else None
-            ),
+            "metrics": (json.loads(row["metrics"]) if row.get("metrics") else None),
         }
 
     def _auto_migrate_json(self) -> None:
         """Auto-migrate from JSON if the SQLite table is empty and JSON exists."""
-        count_row = self._db.fetch_one(
-            "SELECT COUNT(*) as cnt FROM prompts"
-        )
+        count_row = self._db.fetch_one("SELECT COUNT(*) as cnt FROM prompts")
         if count_row and count_row["cnt"] > 0:
             return
 
@@ -438,6 +422,4 @@ class PromptStore:
 
         count = migrate_prompts(self._db, DEFAULT_JSON_PATH)
         if count > 0:
-            logger.info(
-                "Auto-migrated %d prompts from %s", count, DEFAULT_JSON_PATH
-            )
+            logger.info("Auto-migrated %d prompts from %s", count, DEFAULT_JSON_PATH)

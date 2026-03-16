@@ -52,9 +52,7 @@ class RemoteJobRunner:
         self.target = target
         self._conn: SSHConnection | None = None
 
-    def _write_remote_json(
-        self, conn: SSHConnection, data: dict, remote_path: str
-    ) -> None:
+    def _write_remote_json(self, conn: SSHConnection, data: dict, remote_path: str) -> None:
         """Write JSON to a remote file via SFTP (no shell injection risk).
 
         Args:
@@ -141,17 +139,12 @@ class RemoteJobRunner:
             )
         else:
             train_cmd = (
-                f"cd {q_dir} && "
-                f"python -m pulsar_ai.cli train config.json --task {q_task}"
+                f"cd {q_dir} && " f"python -m pulsar_ai.cli train config.json --task {q_task}"
             )
 
         # Launch in background with nohup
         q_log = shlex.quote(f"{remote_job_dir}/output.log")
-        launch_cmd = (
-            f"nohup bash -c {shlex.quote(train_cmd)} "
-            f"> {q_log} 2>&1 & "
-            f"echo $!"
-        )
+        launch_cmd = f"nohup bash -c {shlex.quote(train_cmd)} " f"> {q_log} 2>&1 & " f"echo $!"
 
         stdout, stderr, code = conn.exec_command(launch_cmd)
         pid = stdout.strip()
@@ -170,7 +163,9 @@ class RemoteJobRunner:
 
         logger.info(
             "Submitted remote job %s on %s (PID: %s)",
-            job_id, self.target.name, pid,
+            job_id,
+            self.target.name,
+            pid,
         )
         return job_id
 
@@ -193,9 +188,7 @@ class RemoteJobRunner:
         q_dir = shlex.quote(f"{self.REMOTE_WORK_DIR}/{job_id}")
 
         # Read job metadata
-        stdout, _, code = conn.exec_command(
-            f"cat {q_dir}/job_meta.json 2>/dev/null"
-        )
+        stdout, _, code = conn.exec_command(f"cat {q_dir}/job_meta.json 2>/dev/null")
         if code != 0:
             return RemoteJobStatus(
                 job_id=job_id,
@@ -226,9 +219,7 @@ class RemoteJobRunner:
         is_running = "running" in check_stdout
 
         # Get log tail
-        log_stdout, _, _ = conn.exec_command(
-            f"tail -n 20 {q_dir}/output.log 2>/dev/null"
-        )
+        log_stdout, _, _ = conn.exec_command(f"tail -n 20 {q_dir}/output.log 2>/dev/null")
         log_lines = log_stdout.strip().splitlines() if log_stdout.strip() else []
 
         status = "running" if is_running else "completed"
@@ -236,9 +227,7 @@ class RemoteJobRunner:
         # Check exit code if done
         exit_code = None
         if not is_running:
-            exit_stdout, _, _ = conn.exec_command(
-                f"cat {q_dir}/exit_code 2>/dev/null"
-            )
+            exit_stdout, _, _ = conn.exec_command(f"cat {q_dir}/exit_code 2>/dev/null")
             if exit_stdout.strip().isdigit():
                 exit_code = int(exit_stdout.strip())
                 if exit_code != 0:
@@ -290,9 +279,7 @@ class RemoteJobRunner:
         conn = self._get_connection()
         q_dir = shlex.quote(f"{self.REMOTE_WORK_DIR}/{job_id}")
 
-        stdout, _, code = conn.exec_command(
-            f"cat {q_dir}/job_meta.json 2>/dev/null"
-        )
+        stdout, _, code = conn.exec_command(f"cat {q_dir}/job_meta.json 2>/dev/null")
         if code != 0:
             return False
 

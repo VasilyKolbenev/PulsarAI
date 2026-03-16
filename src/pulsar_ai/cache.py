@@ -196,8 +196,7 @@ class SemanticCache:
         hit_rate = self._stats["hits"] / total if total > 0 else 0.0
 
         tokens_saved = sum(
-            (e.input_tokens + e.output_tokens) * e.hit_count
-            for e in self._cache.values()
+            (e.input_tokens + e.output_tokens) * e.hit_count for e in self._cache.values()
         )
 
         return {

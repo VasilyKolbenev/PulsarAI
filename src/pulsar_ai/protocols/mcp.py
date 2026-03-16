@@ -43,8 +43,7 @@ class MCPServerConfig:
             MCPServerConfig instance.
         """
         tools = [
-            MCPToolDefinition(**t) if isinstance(t, dict) else t
-            for t in data.get("tools", [])
+            MCPToolDefinition(**t) if isinstance(t, dict) else t for t in data.get("tools", [])
         ]
         return cls(
             name=data.get("name", "pulsar-ai"),
@@ -107,30 +106,34 @@ class MCPServer:
         params = request.get("params", {})
 
         if method == "initialize":
-            return self._rpc_response(req_id, {
-                "protocolVersion": "2025-03-26",
-                "capabilities": {
-                    "tools": {"listChanged": False},
+            return self._rpc_response(
+                req_id,
+                {
+                    "protocolVersion": "2025-03-26",
+                    "capabilities": {
+                        "tools": {"listChanged": False},
+                    },
+                    "serverInfo": {
+                        "name": self.config.name,
+                        "version": "1.0.0",
+                    },
                 },
-                "serverInfo": {
-                    "name": self.config.name,
-                    "version": "1.0.0",
-                },
-            })
+            )
 
         if method == "tools/list":
-            return self._rpc_response(req_id, {
-                "tools": self.tool_definitions,
-            })
+            return self._rpc_response(
+                req_id,
+                {
+                    "tools": self.tool_definitions,
+                },
+            )
 
         if method == "tools/call":
             return self._handle_tool_call(req_id, params)
 
         return self._rpc_error(req_id, -32601, f"Method not found: {method}")
 
-    def _handle_tool_call(
-        self, req_id: Any, params: dict[str, Any]
-    ) -> dict[str, Any]:
+    def _handle_tool_call(self, req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
         """Handle a tools/call request.
 
         Args:
@@ -145,27 +148,29 @@ class MCPServer:
 
         known_names = {t.name for t in self.config.tools}
         if tool_name not in known_names:
-            return self._rpc_error(
-                req_id, -32602, f"Unknown tool: {tool_name}"
-            )
+            return self._rpc_error(req_id, -32602, f"Unknown tool: {tool_name}")
 
         if not self._tool_handler:
-            return self._rpc_error(
-                req_id, -32603, "No tool handler configured"
-            )
+            return self._rpc_error(req_id, -32603, "No tool handler configured")
 
         try:
             result = self._tool_handler(tool_name, arguments)
             content = result if isinstance(result, str) else json.dumps(result)
-            return self._rpc_response(req_id, {
-                "content": [{"type": "text", "text": content}],
-            })
+            return self._rpc_response(
+                req_id,
+                {
+                    "content": [{"type": "text", "text": content}],
+                },
+            )
         except Exception as e:
             logger.error("Tool execution failed: %s — %s", tool_name, e)
-            return self._rpc_response(req_id, {
-                "content": [{"type": "text", "text": f"Error: {e}"}],
-                "isError": True,
-            })
+            return self._rpc_response(
+                req_id,
+                {
+                    "content": [{"type": "text", "text": f"Error: {e}"}],
+                    "isError": True,
+                },
+            )
 
     @staticmethod
     def _rpc_response(req_id: Any, result: Any) -> dict[str, Any]:

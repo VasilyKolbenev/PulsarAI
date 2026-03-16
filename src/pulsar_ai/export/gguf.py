@@ -70,9 +70,7 @@ def _ensure_merged_model(config: dict, model_path: str) -> str:
         from pulsar_ai.export.merged import export_merged
 
         merge_config = dict(config)
-        merge_config["export"] = {
-            "output_path": str(Path(model_path).parent / "merged_for_gguf")
-        }
+        merge_config["export"] = {"output_path": str(Path(model_path).parent / "merged_for_gguf")}
         result = export_merged(merge_config)
         return result["output_path"]
 
@@ -102,9 +100,7 @@ def _convert_to_gguf(
         RuntimeError: If no conversion method is available.
     """
     if output_path is None:
-        output_path = str(
-            Path(model_dir).parent / f"model-{quantization}.gguf"
-        )
+        output_path = str(Path(model_dir).parent / f"model-{quantization}.gguf")
 
     # Method 1: Try Unsloth
     try:
@@ -127,9 +123,7 @@ def _convert_to_gguf(
     )
 
 
-def _convert_via_unsloth(
-    model_dir: str, quantization: str, output_path: str
-) -> str:
+def _convert_via_unsloth(model_dir: str, quantization: str, output_path: str) -> str:
     """Convert to GGUF using Unsloth's built-in method.
 
     Args:
@@ -157,9 +151,7 @@ def _convert_via_unsloth(
     return output_path
 
 
-def _convert_via_llamacpp(
-    model_dir: str, quantization: str, output_path: str
-) -> str:
+def _convert_via_llamacpp(model_dir: str, quantization: str, output_path: str) -> str:
     """Convert to GGUF using llama.cpp CLI tools.
 
     Args:
@@ -175,9 +167,7 @@ def _convert_via_llamacpp(
     if not convert_script:
         convert_script = shutil.which("convert-hf-to-gguf.py")
     if not convert_script:
-        raise FileNotFoundError(
-            "convert_hf_to_gguf.py not found in PATH"
-        )
+        raise FileNotFoundError("convert_hf_to_gguf.py not found in PATH")
 
     quantize_bin = shutil.which("llama-quantize")
     if not quantize_bin:
@@ -189,8 +179,13 @@ def _convert_via_llamacpp(
     f16_path = output_path.replace(".gguf", "-f16.gguf")
     subprocess.run(
         [
-            "python", convert_script, model_dir,
-            "--outfile", f16_path, "--outtype", "f16",
+            "python",
+            convert_script,
+            model_dir,
+            "--outfile",
+            f16_path,
+            "--outtype",
+            "f16",
         ],
         check=True,
         capture_output=True,
@@ -203,8 +198,10 @@ def _convert_via_llamacpp(
     else:
         subprocess.run(
             [
-                quantize_bin, f16_path,
-                output_path, quantization.upper(),
+                quantize_bin,
+                f16_path,
+                output_path,
+                quantization.upper(),
             ],
             check=True,
             capture_output=True,
@@ -215,9 +212,7 @@ def _convert_via_llamacpp(
     return output_path
 
 
-def _generate_modelfile(
-    config: dict, gguf_path: str
-) -> Optional[str]:
+def _generate_modelfile(config: dict, gguf_path: str) -> Optional[str]:
     """Generate Ollama Modelfile for the GGUF model.
 
     Args:
@@ -234,9 +229,7 @@ def _generate_modelfile(
         try:
             from pulsar_ai.data.formatter import load_system_prompt
 
-            system_prompt = load_system_prompt(
-                ds_config["system_prompt_file"]
-            )
+            system_prompt = load_system_prompt(ds_config["system_prompt_file"])
         except FileNotFoundError:
             pass
 
@@ -244,12 +237,12 @@ def _generate_modelfile(
     gguf_name = Path(gguf_path).name
 
     lines = [
-        f'FROM ./{gguf_name}',
-        '',
-        'PARAMETER temperature 0.1',
-        'PARAMETER top_p 0.9',
+        f"FROM ./{gguf_name}",
+        "",
+        "PARAMETER temperature 0.1",
+        "PARAMETER top_p 0.9",
         'PARAMETER stop "<|im_end|>"',
-        '',
+        "",
     ]
 
     if system_prompt:

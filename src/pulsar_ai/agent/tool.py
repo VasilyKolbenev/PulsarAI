@@ -52,7 +52,8 @@ class Tool:
             "function": {
                 "name": self.name,
                 "description": self.description,
-                "parameters": self.parameters or {
+                "parameters": self.parameters
+                or {
                     "type": "object",
                     "properties": {},
                 },
@@ -97,9 +98,7 @@ class ToolRegistry:
             KeyError: If tool is not found.
         """
         if name not in self._tools:
-            raise KeyError(
-                f"Tool '{name}' not found. Available: {list(self._tools.keys())}"
-            )
+            raise KeyError(f"Tool '{name}' not found. Available: {list(self._tools.keys())}")
         return self._tools[name]
 
     def list_tools(self) -> list[str]:
@@ -129,9 +128,7 @@ class ToolRegistry:
             lines.append(f"- {t.name}: {t.description}")
             if t.parameters and t.parameters.get("properties"):
                 props = t.parameters["properties"]
-                params_str = ", ".join(
-                    f"{k} ({v.get('type', 'any')})" for k, v in props.items()
-                )
+                params_str = ", ".join(f"{k} ({v.get('type', 'any')})" for k, v in props.items())
                 lines.append(f"  Parameters: {params_str}")
         return "\n".join(lines)
 
@@ -190,9 +187,7 @@ def _extract_parameters_from_func(func: Callable) -> dict[str, Any]:
     return schema
 
 
-def tool(
-    name: str | None = None, description: str = ""
-) -> Callable[[Callable[..., str]], Tool]:
+def tool(name: str | None = None, description: str = "") -> Callable[[Callable[..., str]], Tool]:
     """Decorator to create a Tool from a function.
 
     Args:

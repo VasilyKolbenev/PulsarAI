@@ -43,17 +43,19 @@ def start_server(
         from vllm.entrypoints.openai.api_server import run_server
         from vllm.entrypoints.openai.cli_args import make_arg_parser
     except ImportError:
-        raise ImportError(
-            "vLLM is not installed. Install with: "
-            "pip install 'pulsar-ai[vllm]'"
-        )
+        raise ImportError("vLLM is not installed. Install with: " "pip install 'pulsar-ai[vllm]'")
 
     args = [
-        "--model", str(model_path),
-        "--host", host,
-        "--port", str(port),
-        "--tensor-parallel-size", str(tensor_parallel_size),
-        "--gpu-memory-utilization", str(gpu_memory_utilization),
+        "--model",
+        str(model_path),
+        "--host",
+        host,
+        "--port",
+        str(port),
+        "--tensor-parallel-size",
+        str(tensor_parallel_size),
+        "--gpu-memory-utilization",
+        str(gpu_memory_utilization),
     ]
 
     if max_model_len:
@@ -77,11 +79,15 @@ def start_server(
         base_model = cfg.get("base_model_name_or_path")
         if base_model:
             args = [
-                "--model", base_model,
+                "--model",
+                base_model,
                 "--enable-lora",
-                "--lora-modules", f"adapter={model_path}",
-                "--host", host,
-                "--port", str(port),
+                "--lora-modules",
+                f"adapter={model_path}",
+                "--host",
+                host,
+                "--port",
+                str(port),
                 "--tensor-parallel-size",
                 str(tensor_parallel_size),
                 "--gpu-memory-utilization",

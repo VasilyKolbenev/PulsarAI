@@ -49,9 +49,9 @@ class RunTracker:
         self.metrics_history: list[dict] = []
         self.artifacts: dict[str, str] = {}
         self.start_time = time.time()
-        self._run_id = hashlib.sha256(
-            f"{self.run_name}-{self.start_time}".encode()
-        ).hexdigest()[:12]
+        self._run_id = hashlib.sha256(f"{self.run_name}-{self.start_time}".encode()).hexdigest()[
+            :12
+        ]
         self._external_task: Any = None
 
         self._init_backend()
@@ -129,11 +129,14 @@ class RunTracker:
             for key, value in metrics.items():
                 if isinstance(value, (int, float)):
                     task_logger.report_scalar(
-                        title=key, series=key, value=value,
+                        title=key,
+                        series=key,
+                        value=value,
                         iteration=step or len(self.metrics_history),
                     )
         elif self.backend == "wandb" and self._external_task:
             import wandb
+
             wandb.log(metrics, step=step)
 
     def log_artifact(self, name: str, path: str) -> None:
@@ -150,6 +153,7 @@ class RunTracker:
         elif self.backend == "wandb":
             try:
                 import wandb
+
                 artifact = wandb.Artifact(name, type="model")
                 if Path(path).is_dir():
                     artifact.add_dir(path)
@@ -204,15 +208,14 @@ class RunTracker:
         elif self.backend == "wandb":
             try:
                 import wandb
+
                 if results:
                     wandb.summary.update(results)
                 wandb.finish()
             except Exception as e:
                 logger.warning("W&B finish failed: %s", e)
 
-        logger.info(
-            "Run '%s' finished (%s) in %.1fs", self.run_name, status, elapsed
-        )
+        logger.info("Run '%s' finished (%s) in %.1fs", self.run_name, status, elapsed)
         return summary
 
     def _save_local(self, summary: dict) -> None:
@@ -240,6 +243,7 @@ def capture_environment() -> dict:
     # Installed packages
     try:
         import importlib.metadata
+
         packages = {
             dist.metadata["Name"]: dist.metadata["Version"]
             for dist in importlib.metadata.distributions()
@@ -252,6 +256,7 @@ def capture_environment() -> dict:
     # GPU info
     try:
         import torch
+
         if torch.cuda.is_available():
             env["cuda_version"] = torch.version.cuda
             env["gpu_count"] = torch.cuda.device_count()
@@ -266,9 +271,19 @@ def capture_environment() -> dict:
 
 
 _TRACKED_PACKAGES = {
-    "torch", "transformers", "peft", "trl", "datasets",
-    "bitsandbytes", "accelerate", "unsloth", "vllm",
-    "llama-cpp-python", "clearml", "wandb", "optuna",
+    "torch",
+    "transformers",
+    "peft",
+    "trl",
+    "datasets",
+    "bitsandbytes",
+    "accelerate",
+    "unsloth",
+    "vllm",
+    "llama-cpp-python",
+    "clearml",
+    "wandb",
+    "optuna",
     "pulsar-ai",
 }
 

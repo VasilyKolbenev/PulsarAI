@@ -71,10 +71,19 @@ def generate_model_card(
         sections.append("| Parameter | Value |")
         sections.append("|-----------|-------|")
         display_keys = [
-            "lr", "epochs", "batch_size", "max_seq_length",
-            "lora_r", "lora_alpha", "lora_dropout", "optimizer",
-            "gradient_accumulation_steps", "warmup_steps", "bf16",
-            "gradient_checkpointing", "use_unsloth",
+            "lr",
+            "epochs",
+            "batch_size",
+            "max_seq_length",
+            "lora_r",
+            "lora_alpha",
+            "lora_dropout",
+            "optimizer",
+            "gradient_accumulation_steps",
+            "warmup_steps",
+            "bf16",
+            "gradient_checkpointing",
+            "use_unsloth",
         ]
         for key in display_keys:
             if key in config:

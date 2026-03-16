@@ -42,22 +42,27 @@ async def export_model(req: ExportRequest) -> dict:
 
     config = exp.get("config", {}).copy()
     config["model_path"] = model_path
-    config.setdefault("export", {}).update({
-        "format": req.format,
-        "quantization": req.quantization,
-    })
+    config.setdefault("export", {}).update(
+        {
+            "format": req.format,
+            "quantization": req.quantization,
+        }
+    )
     if req.output_path:
         config["export"]["output_path"] = req.output_path
 
     try:
         if req.format == "gguf":
             from pulsar_ai.export.gguf import export_gguf
+
             result = export_gguf(config)
         elif req.format == "merged":
             from pulsar_ai.export.merged import export_merged
+
             result = export_merged(config)
         elif req.format == "hub":
             from pulsar_ai.export.hub import push_to_hub
+
             result = push_to_hub(config)
         else:
             raise HTTPException(

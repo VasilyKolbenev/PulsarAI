@@ -99,9 +99,7 @@ class TestBaseAgentReact:
         client = _mock_client_responses(
             {
                 "content": (
-                    "Thought: Let me search.\n"
-                    "Action: search\n"
-                    'Action Input: {"query": "test"}'
+                    "Thought: Let me search.\n" "Action: search\n" 'Action Input: {"query": "test"}'
                 )
             },
             {"content": "Final Answer: Could not search, tool is banned."},
@@ -140,9 +138,7 @@ class TestBaseAgentReact:
         client = _mock_client_responses(
             {
                 "content": (
-                    "Thought: Search time.\n"
-                    "Action: search\n"
-                    'Action Input: {"query": "hello"}'
+                    "Thought: Search time.\n" "Action: search\n" 'Action Input: {"query": "hello"}'
                 )
             },
             {"content": "Final Answer: Done."},
@@ -169,9 +165,7 @@ class TestBaseAgentNative:
         client = _mock_client_responses(
             {
                 "content": "",
-                "tool_calls": [
-                    {"name": "search", "arguments": {"query": "test"}}
-                ],
+                "tool_calls": [{"name": "search", "arguments": {"query": "test"}}],
             },
             {"content": "Found the result: test"},
         )
@@ -185,9 +179,7 @@ class TestBaseAgentNative:
         assert result == "Found the result: test"
 
     def test_native_direct_answer(self) -> None:
-        client = _mock_client_responses(
-            {"content": "Hello! I can help you."}
-        )
+        client = _mock_client_responses({"content": "Hello! I can help you."})
         agent = BaseAgent(
             client=client,
             tools=ToolRegistry(),

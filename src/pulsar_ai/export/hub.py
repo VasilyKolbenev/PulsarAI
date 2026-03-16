@@ -23,14 +23,11 @@ def push_to_hub(config: dict) -> dict:
     repo_id = hub_config.get("repo_id")
     if not repo_id:
         raise ValueError(
-            "export.hub.repo_id is required for Hub push. "
-            "Example: 'username/model-name'"
+            "export.hub.repo_id is required for Hub push. " "Example: 'username/model-name'"
         )
 
     private = hub_config.get("private", True)
-    commit_message = hub_config.get(
-        "commit_message", "Upload model via Pulsar AI"
-    )
+    commit_message = hub_config.get("commit_message", "Upload model via Pulsar AI")
 
     if not model_path:
         raise ValueError("model_path is required for Hub push")
@@ -40,13 +37,9 @@ def push_to_hub(config: dict) -> dict:
     is_adapter = adapter_config.exists()
 
     if is_adapter:
-        url = _push_adapter(
-            model_path, repo_id, private, commit_message
-        )
+        url = _push_adapter(model_path, repo_id, private, commit_message)
     else:
-        url = _push_model(
-            model_path, repo_id, private, commit_message
-        )
+        url = _push_model(model_path, repo_id, private, commit_message)
 
     logger.info("Pushed to HuggingFace Hub: %s", url)
     return {

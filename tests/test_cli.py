@@ -47,9 +47,7 @@ class TestForgeInit:
 
     def test_init_custom_model(self, runner: CliRunner, tmp_path: Path) -> None:
         with runner.isolated_filesystem(temp_dir=tmp_path):
-            result = runner.invoke(
-                main, ["init", "test-llama", "--model", "llama3.2-1b"]
-            )
+            result = runner.invoke(main, ["init", "test-llama", "--model", "llama3.2-1b"])
             assert result.exit_code == 0
 
             config_path = Path("configs/experiments/test-llama.yaml")

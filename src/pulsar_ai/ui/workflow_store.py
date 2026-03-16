@@ -95,9 +95,7 @@ class WorkflowStore:
         Returns:
             Workflow dict or None.
         """
-        row = self._db.fetch_one(
-            "SELECT * FROM workflows WHERE id = ?", (workflow_id,)
-        )
+        row = self._db.fetch_one("SELECT * FROM workflows WHERE id = ?", (workflow_id,))
         if row is None:
             return None
         return self._row_to_dict(row)
@@ -108,9 +106,7 @@ class WorkflowStore:
         Returns:
             List of workflow dicts.
         """
-        rows = self._db.fetch_all(
-            "SELECT * FROM workflows ORDER BY updated_at DESC"
-        )
+        rows = self._db.fetch_all("SELECT * FROM workflows ORDER BY updated_at DESC")
         return [self._row_to_dict(r) for r in rows]
 
     def delete(self, workflow_id: str) -> bool:
@@ -122,9 +118,7 @@ class WorkflowStore:
         Returns:
             True if deleted, False if not found.
         """
-        cursor = self._db.execute(
-            "DELETE FROM workflows WHERE id = ?", (workflow_id,)
-        )
+        cursor = self._db.execute("DELETE FROM workflows WHERE id = ?", (workflow_id,))
         self._db.commit()
         return cursor.rowcount > 0
 
@@ -168,10 +162,7 @@ class WorkflowStore:
         node_names: dict[str, str] = {}
         for node in nodes:
             node_names[node["id"]] = (
-                node.get("data", {})
-                .get("label", node["id"])
-                .lower()
-                .replace(" ", "_")
+                node.get("data", {}).get("label", node["id"]).lower().replace(" ", "_")
             )
 
         steps = []
@@ -260,9 +251,7 @@ class WorkflowStore:
             if risk_level not in _GOV_RISK_LEVELS:
                 risk_level = "medium"
             config["risk_level"] = risk_level
-            config["requires_approval"] = bool(
-                config.get("requires_approval", False)
-            )
+            config["requires_approval"] = bool(config.get("requires_approval", False))
 
         data["config"] = config
         normalized_node["data"] = data
@@ -270,9 +259,7 @@ class WorkflowStore:
 
     def _auto_migrate_json(self) -> None:
         """Auto-migrate from JSON if the SQLite table is empty and JSON exists."""
-        count_row = self._db.fetch_one(
-            "SELECT COUNT(*) as cnt FROM workflows"
-        )
+        count_row = self._db.fetch_one("SELECT COUNT(*) as cnt FROM workflows")
         if count_row and count_row["cnt"] > 0:
             return
 
@@ -281,6 +268,4 @@ class WorkflowStore:
 
         count = migrate_workflows(self._db, DEFAULT_JSON_PATH)
         if count > 0:
-            logger.info(
-                "Auto-migrated %d workflows from %s", count, DEFAULT_JSON_PATH
-            )
+            logger.info("Auto-migrated %d workflows from %s", count, DEFAULT_JSON_PATH)

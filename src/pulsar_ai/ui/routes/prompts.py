@@ -148,8 +148,5 @@ async def test_prompt(prompt_id: str, req: TestPromptRequest) -> dict:
         "version": v["version"],
         "rendered": rendered,
         "variables_used": list(req.variables.keys()),
-        "variables_missing": [
-            var for var in v["variables"]
-            if var not in req.variables
-        ],
+        "variables_missing": [var for var in v["variables"] if var not in req.variables],
     }

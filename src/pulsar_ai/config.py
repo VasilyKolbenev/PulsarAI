@@ -26,11 +26,7 @@ def deep_merge(base: dict, override: dict) -> dict:
     """
     result = copy.deepcopy(base)
     for key, value in override.items():
-        if (
-            key in result
-            and isinstance(result[key], dict)
-            and isinstance(value, dict)
-        ):
+        if key in result and isinstance(result[key], dict) and isinstance(value, dict):
             result[key] = deep_merge(result[key], value)
         else:
             result[key] = copy.deepcopy(value)
@@ -92,8 +88,7 @@ def resolve_config_path(name: str, config_dir: Optional[Path] = None) -> Path:
         return direct_path
 
     raise FileNotFoundError(
-        f"Config '{name}' not found in {config_dir}. "
-        f"Tried: {path}, {yaml_path}, {direct_path}"
+        f"Config '{name}' not found in {config_dir}. " f"Tried: {path}, {yaml_path}, {direct_path}"
     )
 
 
@@ -155,9 +150,7 @@ def load_config(
         if "batch_size" not in training:
             training["batch_size"] = hw.recommended_batch_size
         if "gradient_accumulation" not in training:
-            training["gradient_accumulation"] = (
-                hw.recommended_gradient_accumulation
-            )
+            training["gradient_accumulation"] = hw.recommended_gradient_accumulation
         merged["training"] = training
         logger.info(
             "Auto-detected strategy: %s (%d x %s, %.1f GB)",

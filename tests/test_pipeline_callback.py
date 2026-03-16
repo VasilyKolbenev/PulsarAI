@@ -1,4 +1,5 @@
 """Tests for pipeline callback and JobRegistry integration."""
+
 import pytest
 from unittest.mock import MagicMock, patch
 
@@ -85,9 +86,7 @@ class TestExecutorWithCallback:
         executor = PipelineExecutor(SIMPLE_CONFIG, callback=cb)
         executor.run()
 
-        cb.on_pipeline_start.assert_called_once_with(
-            "test-pipe", ["step_a", "step_b"]
-        )
+        cb.on_pipeline_start.assert_called_once_with("test-pipe", ["step_a", "step_b"])
         assert cb.on_step_start.call_count == 2
         assert cb.on_step_complete.call_count == 2
         cb.on_pipeline_complete.assert_called_once()

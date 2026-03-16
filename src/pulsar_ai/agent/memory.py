@@ -26,18 +26,18 @@ class ShortTermMemory:
 
     CHARS_PER_TOKEN = 4  # rough estimate for token counting
 
-    def __init__(
-        self, max_tokens: int = 4096, system_prompt: str = ""
-    ) -> None:
+    def __init__(self, max_tokens: int = 4096, system_prompt: str = "") -> None:
         self.max_tokens = max_tokens
         self._messages: list[dict[str, Any]] = []
         self._system_prompt = system_prompt
 
         if system_prompt:
-            self._messages.append({
-                "role": "system",
-                "content": system_prompt,
-            })
+            self._messages.append(
+                {
+                    "role": "system",
+                    "content": system_prompt,
+                }
+            )
 
     def add(self, role: str, content: str, **kwargs: Any) -> None:
         """Add a message to memory.
@@ -64,10 +64,12 @@ class ShortTermMemory:
         """Clear all messages except the system prompt."""
         self._messages = []
         if self._system_prompt:
-            self._messages.append({
-                "role": "system",
-                "content": self._system_prompt,
-            })
+            self._messages.append(
+                {
+                    "role": "system",
+                    "content": self._system_prompt,
+                }
+            )
 
     def token_count(self) -> int:
         """Estimate total token count of all messages.
@@ -132,6 +134,7 @@ class LongTermMemory:
         if use_chromadb is None:
             try:
                 import chromadb  # noqa: F401
+
                 use_chromadb = True
             except ImportError:
                 use_chromadb = False
@@ -154,7 +157,8 @@ class LongTermMemory:
         )
         logger.debug(
             "LongTermMemory: chromadb collection '%s' at %s",
-            self.collection_name, self.store_path,
+            self.collection_name,
+            self.store_path,
         )
 
     def _init_json_store(self) -> None:
@@ -162,12 +166,11 @@ class LongTermMemory:
         self.store_path.mkdir(parents=True, exist_ok=True)
         self._json_file = self.store_path / f"{self.collection_name}.json"
         if self._json_file.exists():
-            self._json_store = json.loads(
-                self._json_file.read_text(encoding="utf-8")
-            )
+            self._json_store = json.loads(self._json_file.read_text(encoding="utf-8"))
         logger.debug(
             "LongTermMemory: JSON store with %d entries at %s",
-            len(self._json_store), self._json_file,
+            len(self._json_store),
+            self._json_file,
         )
 
     def add(self, text: str, metadata: dict[str, Any] | None = None) -> str:
@@ -190,11 +193,13 @@ class LongTermMemory:
                 ids=[entry_id],
             )
         else:
-            self._json_store.append({
-                "id": entry_id,
-                "text": text,
-                "metadata": metadata,
-            })
+            self._json_store.append(
+                {
+                    "id": entry_id,
+                    "text": text,
+                    "metadata": metadata,
+                }
+            )
             self._save_json()
 
         logger.debug("Stored entry %s (%d chars)", entry_id, len(text))
@@ -221,18 +226,19 @@ class LongTermMemory:
             entries = []
             if results["documents"] and results["documents"][0]:
                 for i, doc in enumerate(results["documents"][0]):
-                    entries.append({
-                        "text": doc,
-                        "metadata": results["metadatas"][0][i] if results["metadatas"] else {},
-                        "score": 1.0 - (results["distances"][0][i] if results["distances"] else 0),
-                    })
+                    entries.append(
+                        {
+                            "text": doc,
+                            "metadata": results["metadatas"][0][i] if results["metadatas"] else {},
+                            "score": 1.0
+                            - (results["distances"][0][i] if results["distances"] else 0),
+                        }
+                    )
             return entries
         else:
             return self._json_search(query, top_k)
 
-    def _json_search(
-        self, query: str, top_k: int
-    ) -> list[dict[str, Any]]:
+    def _json_search(self, query: str, top_k: int) -> list[dict[str, Any]]:
         """Simple substring-based search for JSON store.
 
         Args:
@@ -256,8 +262,7 @@ class LongTermMemory:
         scored.sort(key=lambda x: x[0], reverse=True)
 
         return [
-            {"text": e["text"], "metadata": e["metadata"], "score": s}
-            for s, e in scored[:top_k]
+            {"text": e["text"], "metadata": e["metadata"], "score": s} for s, e in scored[:top_k]
         ]
 
     def _save_json(self) -> None:

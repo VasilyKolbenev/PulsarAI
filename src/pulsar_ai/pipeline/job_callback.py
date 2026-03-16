@@ -33,9 +33,7 @@ class JobRegistryCallback:
         """The ID of the tracked job (set after on_pipeline_start)."""
         return self._job_id
 
-    def on_pipeline_start(
-        self, pipeline_name: str, step_names: list[str]
-    ) -> None:
+    def on_pipeline_start(self, pipeline_name: str, step_names: list[str]) -> None:
         """Create a job and mark it running."""
         job = self._registry.create(
             job_type="pipeline",
@@ -50,9 +48,7 @@ class JobRegistryCallback:
         """Log step start (no job-level change needed)."""
         pass
 
-    def on_step_complete(
-        self, step_name: str, result: dict[str, Any], duration_s: float
-    ) -> None:
+    def on_step_complete(self, step_name: str, result: dict[str, Any], duration_s: float) -> None:
         """Log step completion."""
         pass
 

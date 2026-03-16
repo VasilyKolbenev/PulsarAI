@@ -177,26 +177,30 @@ class TestNewStepTypes:
     @patch("pulsar_ai.registry.ModelRegistry")
     def test_register_step(self, MockRegistry):
         mock_reg = MagicMock()
-        mock_reg.register.return_value = {
-            "id": "test-v1", "model_path": "/test"
-        }
+        mock_reg.register.return_value = {"id": "test-v1", "model_path": "/test"}
         MockRegistry.return_value = mock_reg
 
-        result = dispatch_step("register", {
-            "name": "test",
-            "model_path": "/test",
-            "task": "sft",
-            "model": {"name": "qwen"},
-        })
+        result = dispatch_step(
+            "register",
+            {
+                "name": "test",
+                "model_path": "/test",
+                "task": "sft",
+                "model": {"name": "qwen"},
+            },
+        )
         assert result["model_id"] == "test-v1"
 
     def test_fingerprint_step(self, tmp_path):
         data_file = tmp_path / "data.csv"
         data_file.write_text("text,label\nhello,pos\n")
 
-        result = dispatch_step("fingerprint", {
-            "dataset": {"path": str(data_file)},
-        })
+        result = dispatch_step(
+            "fingerprint",
+            {
+                "dataset": {"path": str(data_file)},
+            },
+        )
         assert len(result["fingerprint"]) == 64
 
     def test_fingerprint_step_no_path(self):

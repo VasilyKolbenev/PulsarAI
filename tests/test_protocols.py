@@ -25,8 +25,8 @@ from pulsar_ai.protocols.gateway import (
     GatewayRoute,
 )
 
-
 # ── MCP Server ─────────────────────────────────────────────────────
+
 
 class TestMCPServer:
     def _make_server(self, tool_handler=None):
@@ -61,42 +61,54 @@ class TestMCPServer:
     def test_tools_call_success(self):
         handler = MagicMock(return_value="42")
         server = self._make_server(tool_handler=handler)
-        resp = server.handle_request({
-            "jsonrpc": "2.0", "id": 3,
-            "method": "tools/call",
-            "params": {"name": "calculator", "arguments": {"expr": "6*7"}},
-        })
+        resp = server.handle_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "method": "tools/call",
+                "params": {"name": "calculator", "arguments": {"expr": "6*7"}},
+            }
+        )
         assert resp["result"]["content"][0]["text"] == "42"
         handler.assert_called_once_with("calculator", {"expr": "6*7"})
 
     def test_tools_call_unknown_tool(self):
         server = self._make_server()
-        resp = server.handle_request({
-            "jsonrpc": "2.0", "id": 4,
-            "method": "tools/call",
-            "params": {"name": "nonexistent", "arguments": {}},
-        })
+        resp = server.handle_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 4,
+                "method": "tools/call",
+                "params": {"name": "nonexistent", "arguments": {}},
+            }
+        )
         assert "error" in resp
         assert resp["error"]["code"] == -32602
 
     def test_tools_call_no_handler(self):
         server = self._make_server(tool_handler=None)
-        resp = server.handle_request({
-            "jsonrpc": "2.0", "id": 5,
-            "method": "tools/call",
-            "params": {"name": "search", "arguments": {}},
-        })
+        resp = server.handle_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "method": "tools/call",
+                "params": {"name": "search", "arguments": {}},
+            }
+        )
         assert "error" in resp
         assert resp["error"]["code"] == -32603
 
     def test_tools_call_handler_error(self):
         handler = MagicMock(side_effect=ValueError("boom"))
         server = self._make_server(tool_handler=handler)
-        resp = server.handle_request({
-            "jsonrpc": "2.0", "id": 6,
-            "method": "tools/call",
-            "params": {"name": "search", "arguments": {"query": "test"}},
-        })
+        resp = server.handle_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 6,
+                "method": "tools/call",
+                "params": {"name": "search", "arguments": {"query": "test"}},
+            }
+        )
         assert resp["result"]["isError"] is True
         assert "boom" in resp["result"]["content"][0]["text"]
 
@@ -114,12 +126,14 @@ class TestMCPServer:
         assert len(d["tools"]) == 2
 
     def test_config_from_dict(self):
-        config = MCPServerConfig.from_dict({
-            "name": "my-server",
-            "transport": "sse",
-            "port": 5000,
-            "tools": [{"name": "t1", "description": "Tool 1"}],
-        })
+        config = MCPServerConfig.from_dict(
+            {
+                "name": "my-server",
+                "transport": "sse",
+                "port": 5000,
+                "tools": [{"name": "t1", "description": "Tool 1"}],
+            }
+        )
         assert config.name == "my-server"
         assert config.transport == "sse"
         assert config.port == 5000
@@ -127,6 +141,7 @@ class TestMCPServer:
 
 
 # ── MCP Client ─────────────────────────────────────────────────────
+
 
 class TestMCPClient:
     def test_build_request(self):
@@ -144,10 +159,13 @@ class TestMCPClient:
     def test_parse_response_error(self):
         client = MCPClient(MCPClientConfig())
         with pytest.raises(RuntimeError, match="MCP error"):
-            client.parse_response({
-                "jsonrpc": "2.0", "id": 1,
-                "error": {"code": -32601, "message": "Not found"},
-            })
+            client.parse_response(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {"code": -32601, "message": "Not found"},
+                }
+            )
 
     def test_set_and_get_tools(self):
         client = MCPClient(MCPClientConfig())
@@ -163,6 +181,7 @@ class TestMCPClient:
 
 # ── A2A Server ─────────────────────────────────────────────────────
 
+
 class TestA2AServer:
     def _make_server(self, task_handler=None):
         card = AgentCard(name="test-agent", description="Test", url="http://localhost")
@@ -175,14 +194,17 @@ class TestA2AServer:
 
     def test_send_task(self):
         server = self._make_server()
-        resp = server.handle_request({
-            "jsonrpc": "2.0", "id": 1,
-            "method": "tasks/send",
-            "params": {
-                "id": "task-1",
-                "message": {"role": "user", "parts": [{"type": "text", "text": "hello"}]},
-            },
-        })
+        resp = server.handle_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tasks/send",
+                "params": {
+                    "id": "task-1",
+                    "message": {"role": "user", "parts": [{"type": "text", "text": "hello"}]},
+                },
+            }
+        )
         task = resp["result"]
         assert task["id"] == "task-1"
         assert task["status"]["state"] == "working"
@@ -195,11 +217,14 @@ class TestA2AServer:
             return task
 
         server = self._make_server(task_handler=handler)
-        resp = server.handle_request({
-            "jsonrpc": "2.0", "id": 1,
-            "method": "tasks/send",
-            "params": {"id": "task-2", "message": {"role": "user", "parts": []}},
-        })
+        resp = server.handle_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tasks/send",
+                "params": {"id": "task-2", "message": {"role": "user", "parts": []}},
+            }
+        )
         assert resp["result"]["status"]["state"] == "completed"
         assert len(resp["result"]["artifacts"]) == 1
 
@@ -208,50 +233,68 @@ class TestA2AServer:
             raise RuntimeError("handler failed")
 
         server = self._make_server(task_handler=handler)
-        resp = server.handle_request({
-            "jsonrpc": "2.0", "id": 1,
-            "method": "tasks/send",
-            "params": {"id": "task-3", "message": {}},
-        })
+        resp = server.handle_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tasks/send",
+                "params": {"id": "task-3", "message": {}},
+            }
+        )
         assert resp["result"]["status"]["state"] == "failed"
 
     def test_get_task(self):
         server = self._make_server()
         # First create a task
-        server.handle_request({
-            "jsonrpc": "2.0", "id": 1,
-            "method": "tasks/send",
-            "params": {"id": "task-4", "message": {}},
-        })
+        server.handle_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tasks/send",
+                "params": {"id": "task-4", "message": {}},
+            }
+        )
         # Then get it
-        resp = server.handle_request({
-            "jsonrpc": "2.0", "id": 2,
-            "method": "tasks/get",
-            "params": {"id": "task-4"},
-        })
+        resp = server.handle_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "tasks/get",
+                "params": {"id": "task-4"},
+            }
+        )
         assert resp["result"]["id"] == "task-4"
 
     def test_get_task_not_found(self):
         server = self._make_server()
-        resp = server.handle_request({
-            "jsonrpc": "2.0", "id": 1,
-            "method": "tasks/get",
-            "params": {"id": "missing"},
-        })
+        resp = server.handle_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tasks/get",
+                "params": {"id": "missing"},
+            }
+        )
         assert "error" in resp
 
     def test_cancel_task(self):
         server = self._make_server()
-        server.handle_request({
-            "jsonrpc": "2.0", "id": 1,
-            "method": "tasks/send",
-            "params": {"id": "task-5", "message": {}},
-        })
-        resp = server.handle_request({
-            "jsonrpc": "2.0", "id": 2,
-            "method": "tasks/cancel",
-            "params": {"id": "task-5"},
-        })
+        server.handle_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tasks/send",
+                "params": {"id": "task-5", "message": {}},
+            }
+        )
+        resp = server.handle_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "tasks/cancel",
+                "params": {"id": "task-5"},
+            }
+        )
         assert resp["result"]["status"]["state"] == "canceled"
 
     def test_unknown_method(self):
@@ -261,6 +304,7 @@ class TestA2AServer:
 
 
 # ── A2A Client ─────────────────────────────────────────────────────
+
 
 class TestA2AClient:
     def test_build_send_request(self):
@@ -284,10 +328,13 @@ class TestA2AClient:
     def test_parse_response_error(self):
         client = A2AClient(A2AClientConfig())
         with pytest.raises(RuntimeError, match="A2A error"):
-            client.parse_response({
-                "jsonrpc": "2.0", "id": 1,
-                "error": {"code": -32602, "message": "Not found"},
-            })
+            client.parse_response(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {"code": -32602, "message": "Not found"},
+                }
+            )
 
     def test_agent_card_cache(self):
         client = A2AClient(A2AClientConfig())
@@ -297,6 +344,7 @@ class TestA2AClient:
 
 
 # ── A2A Data Classes ───────────────────────────────────────────────
+
 
 class TestA2ADataClasses:
     def test_agent_card_to_dict(self):
@@ -323,6 +371,7 @@ class TestA2ADataClasses:
 
 
 # ── API Gateway ────────────────────────────────────────────────────
+
 
 class TestAPIGateway:
     def _make_gateway(self, rate_limit=60):
@@ -408,11 +457,13 @@ class TestAPIGateway:
         assert len(d["routes"]) == 2
 
     def test_config_from_dict(self):
-        config = GatewayConfig.from_dict({
-            "protocols": "REST,gRPC",
-            "auth_method": "jwt",
-            "rate_limit": 100,
-        })
+        config = GatewayConfig.from_dict(
+            {
+                "protocols": "REST,gRPC",
+                "auth_method": "jwt",
+                "rate_limit": 100,
+            }
+        )
         assert config.protocols == ["REST", "gRPC"]
         assert config.auth_method == "jwt"
         assert config.rate_limit == 100

@@ -74,9 +74,7 @@ def test_api_key_events_table_exists(db: Database) -> None:
 
 def test_jobs_default_values(db: Database) -> None:
     """Verify default column values for jobs table."""
-    db.execute(
-        "INSERT INTO jobs (id, started_at) VALUES ('j2', '2026-01-01')"
-    )
+    db.execute("INSERT INTO jobs (id, started_at) VALUES ('j2', '2026-01-01')")
     db.commit()
     row = db.fetch_one("SELECT * FROM jobs WHERE id = 'j2'")
     assert row is not None
@@ -125,10 +123,7 @@ def test_jobs_status_index(db: Database) -> None:
 def test_new_tables_present_in_sqlite_master(db: Database) -> None:
     """Verify all 5 new tables appear in sqlite_master."""
     tables = {
-        row["name"]
-        for row in db.fetch_all(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        )
+        row["name"] for row in db.fetch_all("SELECT name FROM sqlite_master WHERE type='table'")
     }
     expected_new = {"api_keys", "compute_targets", "jobs", "assistant_sessions", "api_key_events"}
     assert expected_new.issubset(tables)

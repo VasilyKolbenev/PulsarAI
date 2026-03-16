@@ -38,14 +38,18 @@ class AgentCard:
     url: str = ""
     version: str = "1.0.0"
     skills: list[dict[str, str]] = field(default_factory=list)
-    capabilities: dict[str, bool] = field(default_factory=lambda: {
-        "streaming": True,
-        "pushNotifications": False,
-        "stateTransitionHistory": True,
-    })
-    authentication: dict[str, Any] = field(default_factory=lambda: {
-        "schemes": ["bearer"],
-    })
+    capabilities: dict[str, bool] = field(
+        default_factory=lambda: {
+            "streaming": True,
+            "pushNotifications": False,
+            "stateTransitionHistory": True,
+        }
+    )
+    authentication: dict[str, Any] = field(
+        default_factory=lambda: {
+            "schemes": ["bearer"],
+        }
+    )
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize to dict for JSON response.
@@ -167,9 +171,7 @@ class A2AServer:
 
         return handler(req_id, params)
 
-    def _handle_send(
-        self, req_id: Any, params: dict[str, Any]
-    ) -> dict[str, Any]:
+    def _handle_send(self, req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
         """Handle tasks/send — create or continue a task.
 
         Args:
@@ -205,9 +207,7 @@ class A2AServer:
 
         return self._rpc_response(req_id, task.to_dict())
 
-    def _handle_get(
-        self, req_id: Any, params: dict[str, Any]
-    ) -> dict[str, Any]:
+    def _handle_get(self, req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
         """Handle tasks/get — retrieve task status.
 
         Args:
@@ -223,9 +223,7 @@ class A2AServer:
             return self._rpc_error(req_id, -32602, f"Task not found: {task_id}")
         return self._rpc_response(req_id, task.to_dict())
 
-    def _handle_cancel(
-        self, req_id: Any, params: dict[str, Any]
-    ) -> dict[str, Any]:
+    def _handle_cancel(self, req_id: Any, params: dict[str, Any]) -> dict[str, Any]:
         """Handle tasks/cancel — cancel a running task.
 
         Args:

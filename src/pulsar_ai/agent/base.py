@@ -168,19 +168,23 @@ IMPORTANT: Always start with a Thought. Use tools when needed. Give a Final Answ
             tool_args = tc["arguments"]
             call_id = tc.get("id", "")
 
-            self._trace.append({
-                "type": "tool_call",
-                "tool": tool_name,
-                "arguments": tool_args,
-            })
+            self._trace.append(
+                {
+                    "type": "tool_call",
+                    "tool": tool_name,
+                    "arguments": tool_args,
+                }
+            )
 
             observation = self._execute_tool(tool_name, tool_args)
             self.memory.add("tool", observation, tool_call_id=call_id)
-            self._trace.append({
-                "type": "observation",
-                "tool": tool_name,
-                "result": observation,
-            })
+            self._trace.append(
+                {
+                    "type": "observation",
+                    "tool": tool_name,
+                    "result": observation,
+                }
+            )
 
         return None
 
@@ -212,11 +216,13 @@ IMPORTANT: Always start with a Thought. Use tools when needed. Give a Final Answ
             tool_name = action_match.group(1).strip()
             raw_args = action_match.group(2).strip()
 
-            self._trace.append({
-                "type": "tool_call",
-                "tool": tool_name,
-                "raw_arguments": raw_args,
-            })
+            self._trace.append(
+                {
+                    "type": "tool_call",
+                    "tool": tool_name,
+                    "raw_arguments": raw_args,
+                }
+            )
 
             # Parse arguments
             try:
@@ -230,11 +236,13 @@ IMPORTANT: Always start with a Thought. Use tools when needed. Give a Final Answ
             # Add the assistant's reasoning + observation to memory
             self.memory.add("assistant", text)
             self.memory.add("user", f"Observation: {observation}")
-            self._trace.append({
-                "type": "observation",
-                "tool": tool_name,
-                "result": observation,
-            })
+            self._trace.append(
+                {
+                    "type": "observation",
+                    "tool": tool_name,
+                    "result": observation,
+                }
+            )
             return None
 
         # No action or final answer — treat as intermediate thought,
@@ -242,8 +250,7 @@ IMPORTANT: Always start with a Thought. Use tools when needed. Give a Final Answ
         self.memory.add("assistant", text)
         self.memory.add(
             "user",
-            "Please continue. Use an Action to call a tool, "
-            "or provide a Final Answer.",
+            "Please continue. Use an Action to call a tool, " "or provide a Final Answer.",
         )
         return None
 

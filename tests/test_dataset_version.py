@@ -46,8 +46,10 @@ class TestRegister:
     def test_register_with_all_fields(self, store: DatasetVersionStore) -> None:
         """Registration stores all provided fields."""
         v = store.register(
-            "ds", path="/data/ds.jsonl",
-            num_rows=5000, num_columns=10,
+            "ds",
+            path="/data/ds.jsonl",
+            num_rows=5000,
+            num_columns=10,
             columns=["text", "label", "id"],
             size_bytes=1024000,
             parent_version=0,
@@ -63,7 +65,9 @@ class TestRegister:
         assert v.metadata["source"] == "production"
 
     def test_register_auto_computes_fingerprint(
-        self, store: DatasetVersionStore, tmp_path: Path,
+        self,
+        store: DatasetVersionStore,
+        tmp_path: Path,
     ) -> None:
         """Fingerprint is auto-computed from file if it exists."""
         data_file = tmp_path / "data.jsonl"
@@ -73,7 +77,8 @@ class TestRegister:
         assert v.fingerprint != ""
 
     def test_register_auto_fingerprint_nonexistent_file(
-        self, store: DatasetVersionStore,
+        self,
+        store: DatasetVersionStore,
     ) -> None:
         """Fingerprint falls back to path hash for non-existent file."""
         v = store.register("ds", path="/nonexistent/file.jsonl")
@@ -114,13 +119,15 @@ class TestGetVersion:
         assert v1.num_rows == 100
 
     def test_get_version_nonexistent_dataset(
-        self, store: DatasetVersionStore,
+        self,
+        store: DatasetVersionStore,
     ) -> None:
         """Non-existent dataset returns None."""
         assert store.get_version("nonexistent") is None
 
     def test_get_version_nonexistent_number(
-        self, store: DatasetVersionStore,
+        self,
+        store: DatasetVersionStore,
     ) -> None:
         """Non-existent version number returns None."""
         store.register("ds", path="/v1.jsonl")
@@ -156,7 +163,8 @@ class TestListDatasets:
         assert names == {"train", "eval"}
 
     def test_list_datasets_includes_version_count(
-        self, store: DatasetVersionStore,
+        self,
+        store: DatasetVersionStore,
     ) -> None:
         """Each dataset entry includes version count."""
         store.register("ds", path="/v1.jsonl")
@@ -181,7 +189,8 @@ class TestDiff:
         assert d["rows_delta"] == 50
 
     def test_diff_columns_added_removed(
-        self, store: DatasetVersionStore,
+        self,
+        store: DatasetVersionStore,
     ) -> None:
         """Diff detects added and removed columns."""
         store.register("ds", path="/v1.jsonl", columns=["a", "b", "c"])
@@ -232,12 +241,18 @@ class TestGetLineage:
         """Lineage returns all versions in order."""
         store.register("ds", path="/raw.jsonl", num_rows=1000)
         store.register(
-            "ds", path="/clean.jsonl", num_rows=900,
-            parent_version=1, transform="clean",
+            "ds",
+            path="/clean.jsonl",
+            num_rows=900,
+            parent_version=1,
+            transform="clean",
         )
         store.register(
-            "ds", path="/augmented.jsonl", num_rows=1800,
-            parent_version=2, transform="augment",
+            "ds",
+            path="/augmented.jsonl",
+            num_rows=1800,
+            parent_version=2,
+            transform="augment",
         )
         lineage = store.get_lineage("ds")
         assert len(lineage) == 3
@@ -252,7 +267,8 @@ class TestGetLineage:
         assert store.get_lineage("nonexistent") == []
 
     def test_lineage_fingerprint_truncated(
-        self, store: DatasetVersionStore,
+        self,
+        store: DatasetVersionStore,
     ) -> None:
         """Lineage fingerprints are truncated to 12 chars."""
         store.register("ds", path="/v1.jsonl", fingerprint="abcdefghijklmnop")
@@ -277,7 +293,9 @@ class TestPersistence:
         assert versions[1]["num_rows"] == 200
 
     def test_persistence_file_created(
-        self, persistent_store: DatasetVersionStore, tmp_path: Path,
+        self,
+        persistent_store: DatasetVersionStore,
+        tmp_path: Path,
     ) -> None:
         """Registering a version creates the JSON file."""
         persistent_store.register("ds", path="/v1.jsonl")
@@ -285,7 +303,9 @@ class TestPersistence:
         assert filepath.exists()
 
     def test_persisted_file_is_valid_json(
-        self, persistent_store: DatasetVersionStore, tmp_path: Path,
+        self,
+        persistent_store: DatasetVersionStore,
+        tmp_path: Path,
     ) -> None:
         """Persisted file is valid JSON."""
         persistent_store.register("ds", path="/v1.jsonl", fingerprint="fp1")

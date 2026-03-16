@@ -14,9 +14,11 @@ def register_step(name: str):
     Args:
         name: Step type name.
     """
+
     def wrapper(func):
         _STEP_HANDLERS[name] = func
         return func
+
     return wrapper
 
 
@@ -65,9 +67,11 @@ def _run_training_step(config: dict) -> dict[str, Any]:
 
     if task == "sft":
         from pulsar_ai.training.sft import train_sft
+
         return train_sft(config)
     elif task == "dpo":
         from pulsar_ai.training.dpo import train_dpo
+
         return train_dpo(config)
     else:
         raise ValueError(f"Unknown training task: {task}")
@@ -85,6 +89,7 @@ def _run_evaluation_step(config: dict) -> dict[str, Any]:
     logger.info("Evaluation step: model=%s", config.get("model_path"))
 
     from pulsar_ai.evaluation.runner import run_evaluation
+
     return run_evaluation(config)
 
 
@@ -103,12 +108,15 @@ def _run_export_step(config: dict) -> dict[str, Any]:
 
     if fmt == "gguf":
         from pulsar_ai.export.gguf import export_gguf
+
         return export_gguf(config)
     elif fmt == "merged":
         from pulsar_ai.export.merged import export_merged
+
         return export_merged(config)
     elif fmt == "hub":
         from pulsar_ai.export.hub import push_to_hub
+
         return push_to_hub(config)
     else:
         raise ValueError(f"Unknown export format: {fmt}")
@@ -154,8 +162,6 @@ def _run_fingerprint_step(config: dict) -> dict[str, Any]:
 
     fp = fingerprint_dataset(path)
     return {"fingerprint": fp, "dataset_path": path}
-
-
 
 
 def _simulated_step(step_type: str, config: dict) -> dict[str, Any]:
@@ -236,6 +242,7 @@ def _run_data_generation_step(config: dict) -> dict[str, Any]:
 def _run_conditional_step(config: dict) -> dict[str, Any]:
     return _simulated_step("conditional", config)
 
+
 def check_condition(condition: dict, step_outputs: dict) -> bool:
     """Evaluate a conditional expression against step outputs.
 
@@ -294,6 +301,11 @@ def check_condition(condition: dict, step_outputs: dict) -> bool:
     result = op_func(float(actual), float(threshold))
     logger.info(
         "Condition: %s.%s (%s) %s %s -> %s",
-        step_name, key, actual, operator, threshold, result,
+        step_name,
+        key,
+        actual,
+        operator,
+        threshold,
+        result,
     )
     return result

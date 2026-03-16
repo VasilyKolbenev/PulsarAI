@@ -22,8 +22,7 @@ _TEMPLATES: dict[str, dict] = {
     "banking_agentoffice": {
         "name": "Banking AgentOffice",
         "description": (
-            "Loan workflow with Intake, KYC/AML, Risk Scoring, "
-            "Decision and Compliance review"
+            "Loan workflow with Intake, KYC/AML, Risk Scoring, " "Decision and Compliance review"
         ),
         "nodes": [
             {

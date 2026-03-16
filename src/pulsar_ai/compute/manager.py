@@ -103,9 +103,7 @@ class ComputeManager:
         Returns:
             True if removed, False if not found.
         """
-        cursor = self._db.execute(
-            "DELETE FROM compute_targets WHERE id = ?", (target_id,)
-        )
+        cursor = self._db.execute("DELETE FROM compute_targets WHERE id = ?", (target_id,))
         self._db.commit()
         return cursor.rowcount > 0
 
@@ -118,9 +116,7 @@ class ComputeManager:
         Returns:
             ComputeTarget or None.
         """
-        row = self._db.fetch_one(
-            "SELECT * FROM compute_targets WHERE id = ?", (target_id,)
-        )
+        row = self._db.fetch_one("SELECT * FROM compute_targets WHERE id = ?", (target_id,))
         if row is None:
             return None
         return self._row_to_target(row)
@@ -131,9 +127,7 @@ class ComputeManager:
         Returns:
             List of ComputeTarget instances.
         """
-        rows = self._db.fetch_all(
-            "SELECT * FROM compute_targets ORDER BY created_at"
-        )
+        rows = self._db.fetch_all("SELECT * FROM compute_targets ORDER BY created_at")
         return [self._row_to_target(r) for r in rows]
 
     def test_connection(self, target_id: str) -> ConnectionTestResult:
@@ -147,9 +141,7 @@ class ComputeManager:
         """
         target = self.get_target(target_id)
         if not target:
-            return ConnectionTestResult(
-                success=False, message="Target not found"
-            )
+            return ConnectionTestResult(success=False, message="Target not found")
 
         import time
 
@@ -225,11 +217,7 @@ class ComputeManager:
             if "no-gpu" in stdout or code != 0:
                 return {"gpu_count": 0, "gpu_type": "CPU only", "vram_gb": 0}
 
-            lines = [
-                line.strip()
-                for line in stdout.strip().splitlines()
-                if line.strip()
-            ]
+            lines = [line.strip() for line in stdout.strip().splitlines() if line.strip()]
             if not lines:
                 return {"gpu_count": 0, "gpu_type": "CPU only", "vram_gb": 0}
 
