@@ -2,7 +2,7 @@
 
 ## Что такое SFT
 
-Supervised Fine-Tuning (SFT) -- основной метод дообучения языковых моделей на размеченных данных. Модель учится генерировать ожидаемые ответы на заданные инструкции, используя пары "вход-выход" из вашего датасета. В llm-forge SFT поддерживает два бэкенда: **Unsloth** (ускорение до 5x на одном GPU) и **HuggingFace SFTTrainer** (мульти-GPU через Accelerate/FSDP).
+Supervised Fine-Tuning (SFT) -- основной метод дообучения языковых моделей на размеченных данных. Модель учится генерировать ожидаемые ответы на заданные инструкции, используя пары "вход-выход" из вашего датасета. В pulsar-ai SFT поддерживает два бэкенда: **Unsloth** (ускорение до 5x на одном GPU) и **HuggingFace SFTTrainer** (мульти-GPU через Accelerate/FSDP).
 
 ---
 
@@ -102,13 +102,13 @@ logging:
 
     ```bash
     # Базовый запуск
-    forge train configs/experiments/my-classifier.yaml
+    pulsar train configs/experiments/my-classifier.yaml
 
     # С переопределением параметров
-    forge train configs/experiments/my-classifier.yaml learning_rate=1e-4 epochs=5
+    pulsar train configs/experiments/my-classifier.yaml learning_rate=1e-4 epochs=5
 
     # Указание задачи явно
-    forge train configs/experiments/my-classifier.yaml --task sft
+    pulsar train configs/experiments/my-classifier.yaml --task sft
     ```
 
 === "API"
@@ -137,7 +137,7 @@ logging:
 
 === "UI"
 
-    1. Откройте **Experiments** в Web UI (`forge ui`)
+    1. Откройте **Experiments** в Web UI (`pulsar ui`)
     2. Нажмите **New Experiment**
     3. Выберите модель, загрузите датасет, настройте параметры
     4. Нажмите **Start Training**
@@ -167,12 +167,12 @@ data: {"step": 60, "loss": 0.456, "learning_rate": 0.00015, "epoch": 1.5}
 
 ## Чекпоинты и возобновление обучения
 
-llm-forge автоматически сохраняет чекпоинты каждые `save_steps` шагов (по умолчанию 200). Для возобновления прерванного обучения используйте флаг `--resume`:
+pulsar-ai автоматически сохраняет чекпоинты каждые `save_steps` шагов (по умолчанию 200). Для возобновления прерванного обучения используйте флаг `--resume`:
 
 === "CLI"
 
     ```bash
-    forge train configs/experiments/my-classifier.yaml \
+    pulsar train configs/experiments/my-classifier.yaml \
       --resume ./outputs/my-classifier/checkpoint-400
     ```
 

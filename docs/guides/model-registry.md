@@ -46,7 +46,7 @@ my-chatbot-v3  →  после HPO sweep
 === "Регистрация"
 
     ```bash
-    forge registry register \
+    pulsar registry register \
       --name my-chatbot \
       --path ./output/sft-llama3-v2 \
       --base-model meta-llama/Llama-3-8B \
@@ -59,26 +59,26 @@ my-chatbot-v3  →  после HPO sweep
 
     ```bash
     # Все модели
-    forge registry list
+    pulsar registry list
 
     # Фильтр по стадии
-    forge registry list --stage production
+    pulsar registry list --stage production
 
     # Фильтр по тегу
-    forge registry list --tag sft
+    pulsar registry list --tag sft
     ```
 
 === "Продвижение стадии"
 
     ```bash
     # registered → staging
-    forge registry promote my-chatbot-v2 staging
+    pulsar registry promote my-chatbot-v2 staging
 
     # staging → production
-    forge registry promote my-chatbot-v2 production
+    pulsar registry promote my-chatbot-v2 production
 
     # production → archived
-    forge registry promote my-chatbot-v1 archived
+    pulsar registry promote my-chatbot-v1 archived
     ```
 
 ---
@@ -178,7 +178,7 @@ curl -X DELETE http://localhost:8000/registry/models/my-chatbot-v1
 === "CLI"
 
     ```bash
-    forge registry compare my-chatbot-v1 my-chatbot-v2 my-chatbot-v3
+    pulsar registry compare my-chatbot-v1 my-chatbot-v2 my-chatbot-v3
     ```
 
     Вывод:

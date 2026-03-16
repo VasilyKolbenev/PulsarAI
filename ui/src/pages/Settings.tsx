@@ -89,7 +89,7 @@ export function Settings() {
                     : "Checking..."}
               </div>
               <div className="text-xs text-muted-foreground">
-                {health === false && "Start with: forge ui"}
+                {health === false && "Start with: pulsar ui"}
               </div>
             </div>
           </div>

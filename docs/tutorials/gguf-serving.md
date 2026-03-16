@@ -49,7 +49,7 @@ special_tokens_map.json
 ## 2. Экспорт в GGUF
 
 ```bash
-forge export \
+pulsar export \
   --model outputs/cam-sft-qwen3.5-0.8b/lora \
   --format gguf \
   --quant q4_k_m
@@ -87,7 +87,7 @@ Quantization: Q4_K_M (4-bit, k-quant medium)
 === "q4_k_m"
 
     ```bash
-    forge export \
+    pulsar export \
       --model outputs/cam-sft-qwen3.5-0.8b/lora \
       --format gguf \
       --quant q4_k_m
@@ -96,7 +96,7 @@ Quantization: Q4_K_M (4-bit, k-quant medium)
 === "q8_0"
 
     ```bash
-    forge export \
+    pulsar export \
       --model outputs/cam-sft-qwen3.5-0.8b/lora \
       --format gguf \
       --quant q8_0
@@ -105,7 +105,7 @@ Quantization: Q4_K_M (4-bit, k-quant medium)
 === "f16"
 
     ```bash
-    forge export \
+    pulsar export \
       --model outputs/cam-sft-qwen3.5-0.8b/lora \
       --format gguf \
       --quant f16
@@ -116,7 +116,7 @@ Quantization: Q4_K_M (4-bit, k-quant medium)
 ## 4. Запуск сервера
 
 ```bash
-forge serve \
+pulsar serve \
   --model outputs/cam-sft-qwen3.5-0.8b-q4_k_m.gguf \
   --port 8080 \
   --backend llamacpp
@@ -189,7 +189,7 @@ curl http://localhost:8080/v1/chat/completions \
 
 ## 6. Python-клиент через OpenAI SDK
 
-Сервер llm-forge полностью совместим с OpenAI Python SDK:
+Сервер pulsar-ai полностью совместим с OpenAI Python SDK:
 
 ```python title="client.py"
 import json

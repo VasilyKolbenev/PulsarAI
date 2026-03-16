@@ -112,7 +112,7 @@ output_dir: outputs/cam-sft-qwen3.5-0.8b
 ## 4. Запуск обучения
 
 ```bash
-forge train configs/examples/cam-sft-qwen3.5-0.8b.yaml
+pulsar train configs/examples/cam-sft-qwen3.5-0.8b.yaml
 ```
 
 Ожидаемый вывод:
@@ -149,7 +149,7 @@ Training complete! Adapter saved to outputs/cam-sft-qwen3.5-0.8b/lora
 === "Терминал 1: Backend"
 
     ```bash
-    forge ui
+    pulsar ui
     ```
 
 === "Терминал 2: Frontend"
@@ -171,7 +171,7 @@ Training complete! Adapter saved to outputs/cam-sft-qwen3.5-0.8b/lora
 ## 6. Оценка модели
 
 ```bash
-forge eval \
+pulsar eval \
   --model outputs/cam-sft-qwen3.5-0.8b/lora \
   --test-data data/cam_intents_test.csv
 ```
@@ -208,7 +208,7 @@ Per-class metrics:
 ## 7. Экспорт в GGUF
 
 ```bash
-forge export \
+pulsar export \
   --model outputs/cam-sft-qwen3.5-0.8b/lora \
   --format gguf \
   --quant q4_k_m
@@ -236,7 +236,7 @@ Exported: outputs/cam-sft-qwen3.5-0.8b-q4_k_m.gguf (530 MB)
 ## 8. Запуск сервера
 
 ```bash
-forge serve \
+pulsar serve \
   --model outputs/cam-sft-qwen3.5-0.8b-q4_k_m.gguf \
   --port 8080 \
   --backend llamacpp

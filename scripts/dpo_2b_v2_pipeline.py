@@ -13,7 +13,7 @@ import sys
 import time
 from pathlib import Path
 
-os.chdir(r"C:\Users\User\Desktop\llm-forge")
+os.chdir(r"C:\Users\User\Desktop\pulsar-ai")
 sys.path.insert(0, os.path.join(os.getcwd(), "src"))
 
 logging.basicConfig(
@@ -35,9 +35,9 @@ EVAL_OUTPUT = "outputs/eval_cam-dpo-qwen3.5-2b-v2.json"
 
 def step_train():
     """Step 1: Run DPO training."""
-    from llm_forge.config import load_config
-    from llm_forge.training.dpo import train_dpo
-    from llm_forge.ui.experiment_store import ExperimentStore
+    from pulsar_ai.config import load_config
+    from pulsar_ai.training.dpo import train_dpo
+    from pulsar_ai.ui.experiment_store import ExperimentStore
 
     store = ExperimentStore()
     config = load_config(CONFIG_PATH)
@@ -77,7 +77,7 @@ def step_train():
 def step_eval():
     """Step 2: Run evaluation."""
     import torch
-    from llm_forge.ui.experiment_store import ExperimentStore
+    from pulsar_ai.ui.experiment_store import ExperimentStore
 
     # Free GPU memory from training
     torch.cuda.empty_cache()
@@ -105,8 +105,8 @@ def run_eval_inline(base_model: str, adapter_path: str, output_path: str, exp_id
     # Import eval components
     sys.path.insert(0, str(Path("scripts").resolve()))
 
-    from llm_forge.ui.experiment_store import ExperimentStore
-    from llm_forge.evaluation.metrics import compute_metrics as _compute, compute_f1
+    from pulsar_ai.ui.experiment_store import ExperimentStore
+    from pulsar_ai.evaluation.metrics import compute_metrics as _compute, compute_f1
 
     SYSTEM_PROMPT_FILE = "prompts/cam_taxonomy.txt"
     TEST_DATA = "data/cam_intents_test.csv"

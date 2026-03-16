@@ -170,12 +170,12 @@ graph TB
 !!! warning "Ограничения Unsloth"
     - Работает **только на Linux** (нет поддержки Windows/macOS).
     - Поддерживает ограниченный набор моделей (Qwen, Llama, Mistral -- основные).
-    - llm-forge автоматически определяет доступность Unsloth и использует его, если возможно.
+    - pulsar-ai автоматически определяет доступность Unsloth и использует его, если возможно.
 
 Конфигурация:
 
 ```yaml
-# llm-forge автоматически выбирает Unsloth на Linux,
+# pulsar-ai автоматически выбирает Unsloth на Linux,
 # но можно задать стратегию вручную:
 strategy: unsloth   # Принудительно использовать Unsloth
 # strategy: qlora   # Стандартный QLoRA без Unsloth
@@ -183,9 +183,9 @@ strategy: unsloth   # Принудительно использовать Unslot
 
 ---
 
-## LoRA в llm-forge
+## LoRA в pulsar-ai
 
-По умолчанию llm-forge использует QLoRA для всех моделей. Конфигурация задаётся в YAML:
+По умолчанию pulsar-ai использует QLoRA для всех моделей. Конфигурация задаётся в YAML:
 
 === "Стандартная конфигурация"
 
@@ -243,4 +243,4 @@ strategy: unsloth   # Принудительно использовать Unslot
 - [LoRA: Low-Rank Adaptation of Large Language Models](https://arxiv.org/abs/2106.09685) -- оригинальная статья
 - [QLoRA: Efficient Finetuning of Quantized LLMs](https://arxiv.org/abs/2305.14314) -- статья QLoRA
 - [PEFT documentation](https://huggingface.co/docs/peft) -- библиотека HuggingFace
-- [Стратегии обучения](training-strategies.md) -- сравнение всех стратегий в llm-forge
+- [Стратегии обучения](training-strategies.md) -- сравнение всех стратегий в pulsar-ai

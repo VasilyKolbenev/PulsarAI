@@ -35,12 +35,12 @@
 
 Файлы-ориентиры:
 
-- `src/llm_forge/ui/experiment_store.py`
-- `src/llm_forge/ui/workflow_store.py`
-- `src/llm_forge/prompts/store.py`
-- `src/llm_forge/tracking.py`
-- `src/llm_forge/ui/auth.py`
-- `src/llm_forge/compute/manager.py`
+- `src/pulsar_ai/ui/experiment_store.py`
+- `src/pulsar_ai/ui/workflow_store.py`
+- `src/pulsar_ai/prompts/store.py`
+- `src/pulsar_ai/tracking.py`
+- `src/pulsar_ai/ui/auth.py`
+- `src/pulsar_ai/compute/manager.py`
 
 ### 2. Runtime state живет только в памяти процесса
 
@@ -48,11 +48,11 @@ Jobs, assistant sessions, site chat sessions, protocol state и часть run-�
 
 Файлы-ориентиры:
 
-- `src/llm_forge/ui/jobs.py`
-- `src/llm_forge/ui/assistant.py`
-- `src/llm_forge/ui/routes/site_chat.py`
-- `src/llm_forge/ui/routes/pipeline_run.py`
-- `src/llm_forge/ui/routes/protocols.py`
+- `src/pulsar_ai/ui/jobs.py`
+- `src/pulsar_ai/ui/assistant.py`
+- `src/pulsar_ai/ui/routes/site_chat.py`
+- `src/pulsar_ai/ui/routes/pipeline_run.py`
+- `src/pulsar_ai/ui/routes/protocols.py`
 
 ### 3. Security debt вокруг API keys и auth flow
 
@@ -65,8 +65,8 @@ Jobs, assistant sessions, site chat sessions, protocol state и часть run-�
 
 Файлы-ориентиры:
 
-- `src/llm_forge/ui/app.py`
-- `src/llm_forge/ui/auth.py`
+- `src/pulsar_ai/ui/app.py`
+- `src/pulsar_ai/ui/auth.py`
 - `ui/src/api/client.ts`
 
 ### 4. Дублирование логики pipeline execution
@@ -75,8 +75,8 @@ Jobs, assistant sessions, site chat sessions, protocol state и часть run-�
 
 Файлы-ориентиры:
 
-- `src/llm_forge/pipeline/executor.py`
-- `src/llm_forge/ui/routes/pipeline_run.py`
+- `src/pulsar_ai/pipeline/executor.py`
+- `src/pulsar_ai/ui/routes/pipeline_run.py`
 
 ### 5. Remote compute еще не production-hardened
 
@@ -89,9 +89,9 @@ Jobs, assistant sessions, site chat sessions, protocol state и часть run-�
 
 Файлы-ориентиры:
 
-- `src/llm_forge/compute/ssh.py`
-- `src/llm_forge/compute/remote_runner.py`
-- `src/llm_forge/compute/manager.py`
+- `src/pulsar_ai/compute/ssh.py`
+- `src/pulsar_ai/compute/remote_runner.py`
+- `src/pulsar_ai/compute/manager.py`
 
 ### 6. Frontend быстро растет в монолит
 
@@ -148,12 +148,12 @@ Jobs, assistant sessions, site chat sessions, protocol state и часть run-�
 
 ### Файлы-ориентиры
 
-- `src/llm_forge/ui/experiment_store.py`
-- `src/llm_forge/ui/workflow_store.py`
-- `src/llm_forge/prompts/store.py`
-- `src/llm_forge/tracking.py`
-- `src/llm_forge/ui/auth.py`
-- `src/llm_forge/compute/manager.py`
+- `src/pulsar_ai/ui/experiment_store.py`
+- `src/pulsar_ai/ui/workflow_store.py`
+- `src/pulsar_ai/prompts/store.py`
+- `src/pulsar_ai/tracking.py`
+- `src/pulsar_ai/ui/auth.py`
+- `src/pulsar_ai/compute/manager.py`
 
 ## Фаза 2. Durable jobs, sessions и recovery
 
@@ -176,11 +176,11 @@ Jobs, assistant sessions, site chat sessions, protocol state и часть run-�
 
 ### Файлы-ориентиры
 
-- `src/llm_forge/ui/jobs.py`
-- `src/llm_forge/ui/assistant.py`
-- `src/llm_forge/ui/routes/site_chat.py`
-- `src/llm_forge/ui/routes/pipeline_run.py`
-- `src/llm_forge/tracking.py`
+- `src/pulsar_ai/ui/jobs.py`
+- `src/pulsar_ai/ui/assistant.py`
+- `src/pulsar_ai/ui/routes/site_chat.py`
+- `src/pulsar_ai/ui/routes/pipeline_run.py`
+- `src/pulsar_ai/tracking.py`
 
 ## Фаза 3. Security hardening
 
@@ -206,8 +206,8 @@ Jobs, assistant sessions, site chat sessions, protocol state и часть run-�
 
 ### Файлы-ориентиры
 
-- `src/llm_forge/ui/app.py`
-- `src/llm_forge/ui/auth.py`
+- `src/pulsar_ai/ui/app.py`
+- `src/pulsar_ai/ui/auth.py`
 - `ui/src/api/client.ts`
 - `tests/test_auth.py`
 - `tests/test_security.py`
@@ -233,8 +233,8 @@ Jobs, assistant sessions, site chat sessions, protocol state и часть run-�
 
 ### Файлы-ориентиры
 
-- `src/llm_forge/pipeline/executor.py`
-- `src/llm_forge/ui/routes/pipeline_run.py`
+- `src/pulsar_ai/pipeline/executor.py`
+- `src/pulsar_ai/ui/routes/pipeline_run.py`
 - `tests/test_pipeline_executor.py`
 
 ## Фаза 5. Remote compute hardening
@@ -259,9 +259,9 @@ Jobs, assistant sessions, site chat sessions, protocol state и часть run-�
 
 ### Файлы-ориентиры
 
-- `src/llm_forge/compute/ssh.py`
-- `src/llm_forge/compute/remote_runner.py`
-- `src/llm_forge/ui/routes/compute.py`
+- `src/pulsar_ai/compute/ssh.py`
+- `src/pulsar_ai/compute/remote_runner.py`
+- `src/pulsar_ai/ui/routes/compute.py`
 - `tests/test_compute.py`
 
 ## Фаза 6. Frontend decomposition, UX и tests
@@ -314,9 +314,9 @@ Jobs, assistant sessions, site chat sessions, protocol state и часть run-�
 
 ### Файлы-ориентиры
 
-- `src/llm_forge/ui/routes/protocols.py`
-- `src/llm_forge/ui/assistant.py`
-- `src/llm_forge/ui/routes/site_chat.py`
+- `src/pulsar_ai/ui/routes/protocols.py`
+- `src/pulsar_ai/ui/assistant.py`
+- `src/pulsar_ai/ui/routes/site_chat.py`
 - `tests/test_protocols.py`
 - `tests/test_site_chat.py`
 

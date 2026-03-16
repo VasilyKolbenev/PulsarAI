@@ -19,15 +19,15 @@ if (-not (Test-Path $EnvFile)) {
 }
 
 $env:PYTHONPATH = "src"
-$env:FORGE_ENV_FILE = (Resolve-Path $EnvFile).Path
-$env:FORGE_STAND_MODE = "prod-ready-dev"
-$env:FORGE_AUTH_ENABLED = "true"
-if (-not $env:FORGE_CORS_ORIGINS) {
-    $env:FORGE_CORS_ORIGINS = "http://$BindHost`:$Port"
+$env:PULSAR_ENV_FILE = (Resolve-Path $EnvFile).Path
+$env:PULSAR_STAND_MODE = "prod-ready-dev"
+$env:PULSAR_AUTH_ENABLED = "true"
+if (-not $env:PULSAR_CORS_ORIGINS) {
+    $env:PULSAR_CORS_ORIGINS = "http://$BindHost`:$Port"
 }
 
 Write-Host "[1/3] Preparing API key for prod-ready dev stand..."
-$apiKey = (& $PythonExe -c "from llm_forge.ui.auth import ApiKeyStore; s=ApiKeyStore(); s.revoke('$ApiKeyName'); print(s.generate_key('$ApiKeyName'))").Trim()
+$apiKey = (& $PythonExe -c "from pulsar_ai.ui.auth import ApiKeyStore; s=ApiKeyStore(); s.revoke('$ApiKeyName'); print(s.generate_key('$ApiKeyName'))").Trim()
 if (-not $apiKey) {
     throw "Failed to generate API key"
 }

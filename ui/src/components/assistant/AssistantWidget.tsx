@@ -49,7 +49,7 @@ export function AssistantWidget() {
       <button
         onClick={toggle}
         className="fixed bottom-6 right-6 w-12 h-12 bg-primary text-primary-foreground rounded-full shadow-lg shadow-primary/25 flex items-center justify-center hover:bg-primary/90 transition-all hover:scale-105 z-50"
-        title="Forge Co-pilot"
+        title="Pulsar Co-pilot"
       >
         <Bot size={22} />
         {notifications > 0 && (
@@ -71,7 +71,7 @@ export function AssistantWidget() {
             <Bot size={14} className="text-primary" />
           </div>
           <div>
-            <div className="text-sm font-semibold">Forge Co-pilot</div>
+            <div className="text-sm font-semibold">Pulsar Co-pilot</div>
             <div className="text-[10px] text-muted-foreground flex items-center gap-1">
               {status?.llm_available ? (
                 <>

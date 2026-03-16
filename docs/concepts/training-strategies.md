@@ -1,6 +1,6 @@
 # Стратегии обучения
 
-Сравнение стратегий файнтюнинга в llm-forge: QLoRA, LoRA, Full Fine-Tuning, Distributed.
+Сравнение стратегий файнтюнинга в pulsar-ai: QLoRA, LoRA, Full Fine-Tuning, Distributed.
 
 ---
 
@@ -40,7 +40,7 @@ target_modules: [q_proj, k_proj, v_proj, o_proj]
 - Невозможно обучить все параметры
 
 !!! tip "Рекомендация"
-    QLoRA -- **стратегия по умолчанию** в llm-forge. Подходит для 90% задач
+    QLoRA -- **стратегия по умолчанию** в pulsar-ai. Подходит для 90% задач
     на потребительских GPU.
 
 ---
@@ -180,18 +180,18 @@ lora_alpha: 32
 | Платформа | Все | **Только Linux** |
 
 !!! info "Автодетекция"
-    llm-forge автоматически выбирает Unsloth, если он установлен и запуск на Linux.
+    pulsar-ai автоматически выбирает Unsloth, если он установлен и запуск на Linux.
     На Windows/macOS автоматически используется стандартный QLoRA.
 
 ---
 
 ## Автовыбор стратегии
 
-llm-forge автоматически определяет оптимальную стратегию на основе hardware:
+pulsar-ai автоматически определяет оптимальную стратегию на основе hardware:
 
 ```mermaid
 graph TD
-    A[forge info] --> B{Кол-во GPU}
+    A[pulsar info] --> B{Кол-во GPU}
     B -->|1 GPU| C{VRAM}
     B -->|2+ GPU| H[Distributed<br/>FSDP / DeepSpeed]
 
@@ -214,7 +214,7 @@ graph TD
 Проверьте рекомендацию для вашего оборудования:
 
 ```bash
-forge info
+pulsar info
 ```
 
 ```
@@ -243,12 +243,12 @@ forge info
 === "Через CLI"
 
     ```bash
-    forge train config.yaml strategy=lora load_in_4bit=false
+    pulsar train config.yaml strategy=lora load_in_4bit=false
     ```
 
 !!! warning "Нехватка VRAM"
     Если вы вручную выберете стратегию, требующую больше VRAM, чем доступно,
-    llm-forge выдаст предупреждение и предложит уменьшить batch_size
+    pulsar-ai выдаст предупреждение и предложит уменьшить batch_size
     или включить gradient checkpointing.
 
 ---
@@ -269,5 +269,5 @@ forge info
 ## Полезные ссылки
 
 - [LoRA и QLoRA](lora-qlora.md) -- подробное объяснение механизма
-- [Архитектура](architecture.md) -- общая схема llm-forge
+- [Архитектура](architecture.md) -- общая схема pulsar-ai
 - [Установка](../getting-started/installation.md) -- таблица extras для distributed training

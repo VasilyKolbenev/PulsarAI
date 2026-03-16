@@ -20,7 +20,7 @@ Prompt Lab -- встроенный инструмент для создания,
 === "CLI"
 
     ```bash
-    forge prompt create \
+    pulsar prompt create \
       --name "customer-support" \
       --system-prompt "Ты — помощник службы поддержки компании {{company}}." \
       --description "Промпт для бота поддержки" \
@@ -62,11 +62,11 @@ customer-support v3  →  добавлены параметры модели
 
     ```bash
     # Обновить промпт (автоматически создаст v2)
-    forge prompt update customer-support \
+    pulsar prompt update customer-support \
       --system-prompt "Ты — вежливый помощник компании {{company}}. Отвечай на {{language}}."
 
     # Список версий
-    forge prompt versions customer-support
+    pulsar prompt versions customer-support
     ```
 
 === "API"
@@ -98,13 +98,13 @@ customer-support v3  →  добавлены параметры модели
 При рендеринге переменные заменяются на переданные значения:
 
 ```python
-from llm_forge.prompts import PromptRegistry
+from pulsar_ai.prompts import PromptRegistry
 
 registry = PromptRegistry()
 prompt = registry.get("customer-support", version=2)
 
 rendered = prompt.render(
-    company="Forge Inc.",
+    company="Pulsar AI Inc.",
     language="русский",
     max_length=200
 )
@@ -124,8 +124,8 @@ rendered = prompt.render(
 === "CLI"
 
     ```bash
-    forge prompt test customer-support \
-      --var company="Forge Inc." \
+    pulsar prompt test customer-support \
+      --var company="Pulsar AI Inc." \
       --var language="русский" \
       --var max_length=200
     ```
@@ -137,7 +137,7 @@ rendered = prompt.render(
       -H "Content-Type: application/json" \
       -d '{
         "variables": {
-          "company": "Forge Inc.",
+          "company": "Pulsar AI Inc.",
           "language": "русский",
           "max_length": "200"
         },
@@ -149,7 +149,7 @@ rendered = prompt.render(
 
 ```json
 {
-  "rendered": "Ты — вежливый помощник компании Forge Inc. Отвечай на русский.",
+  "rendered": "Ты — вежливый помощник компании Pulsar AI Inc. Отвечай на русский.",
   "variables_used": ["company", "language", "max_length"],
   "version": 2
 }
@@ -204,7 +204,7 @@ curl "http://localhost:8000/prompts/customer-support/diff?v1=1&v2=3"
 === "CLI"
 
     ```bash
-    forge prompt update customer-support \
+    pulsar prompt update customer-support \
       --model gpt-4o-mini \
       --temperature 0.7 \
       --max-tokens 1024 \

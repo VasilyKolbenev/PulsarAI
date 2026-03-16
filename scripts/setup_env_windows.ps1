@@ -22,5 +22,5 @@ cmd /c npm --prefix ui install
 
 Write-Host "[5/5] Sanity checks"
 & $PythonExe -c "import torch, transformers, trl, peft, datasets; print('torch', torch.__version__)"
-forge --help | Out-Null
+pulsar --help | Out-Null
 Write-Host "Environment setup complete."

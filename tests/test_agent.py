@@ -1,14 +1,12 @@
 """Tests for BaseAgent ReAct loop."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-import pytest
 
-from llm_forge.agent.base import BaseAgent
-from llm_forge.agent.client import ModelClient
-from llm_forge.agent.guardrails import GuardrailsConfig
-from llm_forge.agent.memory import ShortTermMemory
-from llm_forge.agent.tool import Tool, ToolRegistry
+from pulsar_ai.agent.base import BaseAgent
+from pulsar_ai.agent.client import ModelClient
+from pulsar_ai.agent.guardrails import GuardrailsConfig
+from pulsar_ai.agent.tool import Tool, ToolRegistry
 
 
 def _make_registry_with_search() -> ToolRegistry:
@@ -99,9 +97,7 @@ class TestBaseAgentReact:
         client = _mock_client_responses(
             {
                 "content": (
-                    "Thought: Let me search.\n"
-                    "Action: search\n"
-                    'Action Input: {"query": "test"}'
+                    "Thought: Let me search.\n" "Action: search\n" 'Action Input: {"query": "test"}'
                 )
             },
             {"content": "Final Answer: Could not search, tool is banned."},
@@ -140,9 +136,7 @@ class TestBaseAgentReact:
         client = _mock_client_responses(
             {
                 "content": (
-                    "Thought: Search time.\n"
-                    "Action: search\n"
-                    'Action Input: {"query": "hello"}'
+                    "Thought: Search time.\n" "Action: search\n" 'Action Input: {"query": "hello"}'
                 )
             },
             {"content": "Final Answer: Done."},
@@ -169,9 +163,7 @@ class TestBaseAgentNative:
         client = _mock_client_responses(
             {
                 "content": "",
-                "tool_calls": [
-                    {"name": "search", "arguments": {"query": "test"}}
-                ],
+                "tool_calls": [{"name": "search", "arguments": {"query": "test"}}],
             },
             {"content": "Found the result: test"},
         )
@@ -185,9 +177,7 @@ class TestBaseAgentNative:
         assert result == "Found the result: test"
 
     def test_native_direct_answer(self) -> None:
-        client = _mock_client_responses(
-            {"content": "Hello! I can help you."}
-        )
+        client = _mock_client_responses({"content": "Hello! I can help you."})
         agent = BaseAgent(
             client=client,
             tools=ToolRegistry(),

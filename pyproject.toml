@@ -3,11 +3,11 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "llm-forge"
+name = "pulsar-ai"
 version = "0.1.0"
-description = "Universal LLM training pipeline & agent framework: SFT -> DPO -> Eval -> Export -> Serving -> Agents"
+description = "Pulsar AI — closed-loop LLM platform: SFT -> DPO -> Eval -> Export -> Serving -> Agents"
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = {text = "Apache-2.0"}
 dependencies = [
     "torch>=2.4",
     "transformers>=4.45",
@@ -36,18 +36,43 @@ agent-memory = ["chromadb>=0.5"]
 hpo = ["optuna>=3.6"]
 tracking-clearml = ["clearml>=1.16"]
 tracking-wandb = ["wandb>=0.17"]
-ui = ["fastapi>=0.115", "uvicorn>=0.32", "websockets>=12.0", "python-multipart>=0.0.9", "psutil>=5.9", "nvidia-ml-py>=12.0", "paramiko>=3.0", "slowapi>=0.1.9"]
+ui = ["fastapi>=0.115", "uvicorn>=0.32", "websockets>=12.0", "python-multipart>=0.0.9", "psutil>=5.9", "nvidia-ml-py>=12.0", "paramiko>=3.0", "slowapi>=0.1.9", "python-dotenv>=1.0"]
 docs = ["mkdocs>=1.6", "mkdocs-material>=9.5", "mkdocs-minify-plugin>=0.8"]
-dev = ["pytest>=8.0", "pytest-cov>=5.0"]
-all = ["llm-forge[unsloth,vllm,llamacpp,deepspeed,eval,agent-serve,agent-memory,hpo,ui,docs,dev]"]
+dev = ["pytest>=8.0", "pytest-cov>=5.0", "pytest-timeout>=2.3"]
+all = ["pulsar-ai[unsloth,vllm,llamacpp,deepspeed,eval,agent-serve,agent-memory,hpo,ui,docs,dev]"]
 
 [project.scripts]
-forge = "llm_forge.cli:main"
+pulsar = "pulsar_ai.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/llm_forge"]
+packages = ["src/pulsar_ai"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+addopts = "-q --tb=short --strict-markers"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests requiring external services",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["pulsar_ai"]
+omit = ["*/tests/*", "*/cli.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+
+[tool.black]
+target-version = ["py311"]
+line-length = 100
 

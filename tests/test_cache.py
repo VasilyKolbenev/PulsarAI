@@ -1,15 +1,14 @@
-"""Tests for llm_forge.cache module.
+"""Tests for pulsar_ai.cache module.
 
 Tests SemanticCache put/get, TTL expiry, invalidate, clear,
 cleanup_expired, LRU eviction, stats, and model-partitioned caching.
 """
 
 import time
-from unittest.mock import patch
 
 import pytest
 
-from llm_forge.cache import CacheEntry, SemanticCache
+from pulsar_ai.cache import CacheEntry, SemanticCache
 
 
 class TestCacheEntry:
@@ -30,16 +29,22 @@ class TestCacheEntry:
     def test_cache_entry_expired(self) -> None:
         """Entry with past created_at is expired."""
         entry = CacheEntry(
-            key="k", prompt_hash="h", response="r",
-            ttl=1.0, created_at=time.time() - 10,
+            key="k",
+            prompt_hash="h",
+            response="r",
+            ttl=1.0,
+            created_at=time.time() - 10,
         )
         assert entry.is_expired is True
 
     def test_cache_entry_no_expiry(self) -> None:
         """Entry with ttl=0 never expires."""
         entry = CacheEntry(
-            key="k", prompt_hash="h", response="r",
-            ttl=0, created_at=time.time() - 100000,
+            key="k",
+            prompt_hash="h",
+            response="r",
+            ttl=0,
+            created_at=time.time() - 100000,
         )
         assert entry.is_expired is False
 

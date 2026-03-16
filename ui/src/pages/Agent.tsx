@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react"
-import { Send } from "lucide-react"
+import { Send, MessageSquare } from "lucide-react"
+import { EmptyState } from "@/components/ui/EmptyState"
 
 interface Message {
   role: "user" | "assistant"
@@ -64,10 +65,12 @@ export function Agent() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto space-y-3 pr-2">
         {messages.length === 0 && (
-          <div className="text-muted-foreground text-sm text-center mt-20">
-            Start a conversation with your agent.<br />
-            Make sure the agent server is running (<code>forge agent serve</code>).
-          </div>
+          <EmptyState
+            icon={MessageSquare}
+            title="Start a conversation"
+            description="Chat with your fine-tuned agent. Make sure the agent server is running (pulsar agent serve)."
+            className="mt-12"
+          />
         )}
         {messages.map((msg, i) => (
           <div

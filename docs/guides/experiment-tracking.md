@@ -1,7 +1,7 @@
 # Experiment Tracking
 
 Отслеживание экспериментов позволяет фиксировать конфигурации, метрики и результаты
-каждого запуска обучения. LLM Forge предоставляет встроенный трекер, а также интеграции
+каждого запуска обучения. Pulsar AI предоставляет встроенный трекер, а также интеграции
 с ClearML и Weights & Biases.
 
 ---
@@ -40,25 +40,25 @@
 
     ```bash
     # Все эксперименты
-    forge runs list
+    pulsar runs list
 
     # С фильтрацией по статусу
-    forge runs list --status completed
+    pulsar runs list --status completed
 
     # Последние 5
-    forge runs list --limit 5
+    pulsar runs list --limit 5
     ```
 
 === "Детали эксперимента"
 
     ```bash
-    forge runs show exp_20260301_143052
+    pulsar runs show exp_20260301_143052
     ```
 
 === "Сравнение экспериментов"
 
     ```bash
-    forge runs compare exp_20260301_143052 exp_20260302_091015
+    pulsar runs compare exp_20260301_143052 exp_20260302_091015
     ```
 
     Вывод:
@@ -167,7 +167,7 @@ clearml-init
 ```yaml
 tracking:
   backend: clearml
-  project: "LLM Forge"
+  project: "Pulsar AI"
   task_name: "sft-llama3-experiment"
 ```
 
@@ -191,7 +191,7 @@ pip install -e ".[tracking-wandb]"
 
 ```bash
 export WANDB_API_KEY=your_api_key
-export WANDB_PROJECT=llm-forge     # опционально
+export WANDB_PROJECT=pulsar-ai     # опционально
 export WANDB_ENTITY=your-team      # опционально
 ```
 
@@ -206,7 +206,7 @@ wandb login
 ```yaml
 tracking:
   backend: wandb
-  project: "llm-forge"
+  project: "pulsar-ai"
   run_name: "sft-llama3-v2"
   tags: ["sft", "llama3", "production"]
 ```
@@ -224,7 +224,7 @@ tracking:
 |-----------------------|---------------|-----------------|-------------------|
 | Установка             | Включён       | `.[tracking-clearml]` | `.[tracking-wandb]` |
 | Хранение              | Локальный JSON | Сервер ClearML  | Облако / self-host |
-| Веб-интерфейс         | Forge UI      | ClearML UI      | W&B Dashboard     |
+| Веб-интерфейс         | Pulsar UI      | ClearML UI      | W&B Dashboard     |
 | Сравнение экспериментов| CLI + API    | Есть            | Есть              |
 | Артефакты             | Нет           | Есть            | Есть              |
 | Командная работа      | Нет           | Есть            | Есть              |

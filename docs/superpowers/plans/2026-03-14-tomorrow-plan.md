@@ -6,12 +6,12 @@
 
 **Task 1: env.py helper** (15 мин)
 - [ ] Написать тест `tests/test_env.py` (5 тестов включая reset _warned)
-- [ ] Реализовать `src/llm_forge/env.py` (get_env с FORGE_ fallback)
+- [ ] Реализовать `src/pulsar_ai/env.py` (get_env с PULSAR_ fallback)
 - [ ] Прогнать тесты, коммит
 
 **Task 2: Rename Python package** (45 мин)
-- [ ] `git mv src/llm_forge src/pulsar_ai`
-- [ ] Bulk rename imports в ~111 .py файлах (`from llm_forge` → `from pulsar_ai`)
+- [ ] `git mv src/pulsar_ai src/pulsar_ai`
+- [ ] Bulk rename imports в ~111 .py файлах (`from pulsar_ai` → `from pulsar_ai`)
 - [ ] Обновить `pyproject.toml` (name, packages, entry points, license)
 - [ ] Обновить `storage/database.py` — DEFAULT_DB_PATH → `pulsar.db`
 - [ ] Обновить `storage/schema.py` — project DEFAULT → `pulsar-ai`
@@ -30,11 +30,11 @@
 **Task 4: Rename Docker/scripts/docs/configs** (30 мин)
 - [ ] `Dockerfile` — paths, labels, env vars, CMD
 - [ ] `docker-compose.yml` — service name, volumes, env vars
-- [ ] Все `.env*` файлы — FORGE_* → PULSAR_*
+- [ ] Все `.env*` файлы — PULSAR_* → PULSAR_*
 - [ ] `scripts/*.py`, `scripts/*.ps1` — env vars + imports
-- [ ] `docs/*.md` (~47 файлов) — все упоминания forge/llm-forge
+- [ ] `docs/*.md` (~47 файлов) — все упоминания forge/pulsar-ai
 - [ ] `configs/*.yaml` — все ссылки
-- [ ] `site_chat.py` — system prompt ("LLM Forge" → "Pulsar AI", "MIT" → "Apache 2.0")
+- [ ] `site_chat.py` — system prompt ("Pulsar AI" → "Pulsar AI", "MIT" → "Apache 2.0")
 - [ ] Создать Apache 2.0 LICENSE файл
 - [ ] AGENTS.md, PRESENTATION.md, README.md — все ссылки
 - [ ] Коммит
@@ -84,18 +84,18 @@
 - [ ] Task 13d: Remote compute hardening (shlex, retry)
 
 ### Chunk 3: UI (Tasks 14-16d) — Дни 3-5
-- [ ] Task 14: Toast notification system
-- [ ] Task 15: Empty states
-- [ ] Task 16: Dashboard upgrade (metrics, activity feed)
-- [ ] Task 16b: Design system components (Card, Badge, MetricCard, StatusDot)
-- [ ] Task 16c: Page decomposition (Experiments, PromptLab)
-- [ ] Task 16d: UX improvements (Breadcrumbs, Skeletons)
+- [x] Task 14: Toast notification system
+- [x] Task 15: Empty states
+- [x] Task 16: Dashboard upgrade (metrics, activity feed)
+- [x] Task 16b: Design system components (Card, Badge, MetricCard, StatusDot)
+- [x] Task 16c: Page decomposition (Experiments, PromptLab)
+- [x] Task 16d: UX improvements (Breadcrumbs, Skeletons)
 
 ### Chunk 4: Quality (Tasks 17-20) — Дни 5-6
-- [ ] Task 17: Test infrastructure (conftest.py, pytest config)
-- [ ] Task 18: Docker verification
-- [ ] Task 19: GitHub Actions CI (lint + test + build + docker)
-- [ ] Task 20: DX files (Makefile, .env.example, CONTRIBUTING.md)
+- [x] Task 17: Test infrastructure (conftest.py, pytest config)
+- [x] Task 18: Docker verification
+- [x] Task 19: GitHub Actions CI (lint + test + build + docker)
+- [x] Task 20: DX files (Makefile, .env.example, CONTRIBUTING.md)
 
 ---
 
@@ -103,13 +103,13 @@
 
 | Категория | Кол-во файлов | Что менять |
 |-----------|--------------|------------|
-| Python imports | ~111 | `from llm_forge` → `from pulsar_ai` |
+| Python imports | ~111 | `from pulsar_ai` → `from pulsar_ai` |
 | TypeScript | ~11 | localStorage keys, UI text |
-| Markdown docs | ~47 | forge/llm-forge/LLM Forge → pulsar/pulsar-ai/Pulsar AI |
+| Markdown docs | ~47 | forge/pulsar-ai/Pulsar AI → pulsar/pulsar-ai/Pulsar AI |
 | Scripts | 5+ | env vars + imports |
-| Configs (YAML) | 10+ | ссылки на llm-forge |
+| Configs (YAML) | 10+ | ссылки на pulsar-ai |
 | Docker | 2 | paths, labels, env vars, CMD |
-| Env files | 4 | FORGE_* → PULSAR_* |
+| Env files | 4 | PULSAR_* → PULSAR_* |
 | vite.config.ts | 1 | outDir path |
 | pyproject.toml | 1 | name, packages, entry points, deps, license |
 

@@ -28,7 +28,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: '../src/llm_forge/ui/static',
+    outDir: '../src/pulsar_ai/ui/static',
     emptyOutDir: true,
   },
 })

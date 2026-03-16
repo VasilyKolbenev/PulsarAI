@@ -35,20 +35,20 @@
 
 ```bash
 # Квантизация q4_k_m (рекомендуется)
-forge export \
+pulsar export \
   --model ./outputs/cam-sft/lora \
   --format gguf \
   --quant q4_k_m \
   --output ./exports/cam-model.gguf
 
 # Квантизация q8_0 (более высокое качество)
-forge export \
+pulsar export \
   --model ./outputs/cam-sft/lora \
   --format gguf \
   --quant q8_0
 
 # Без квантизации (f16)
-forge export \
+pulsar export \
   --model ./outputs/cam-sft/lora \
   --format gguf \
   --quant f16
@@ -57,7 +57,7 @@ forge export \
 ### Merged (полная модель)
 
 ```bash
-forge export \
+pulsar export \
   --model ./outputs/cam-sft/lora \
   --format merged \
   --output ./exports/cam-merged/
@@ -66,7 +66,7 @@ forge export \
 ### Hub (HuggingFace)
 
 ```bash
-forge export \
+pulsar export \
   --model ./outputs/cam-sft/lora \
   --format hub
 ```

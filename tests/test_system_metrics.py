@@ -6,14 +6,13 @@ from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-from llm_forge.ui.metrics import (
+from pulsar_ai.ui.metrics import (
     collect_metrics,
     SystemMetrics,
     GPUMetrics,
     _collect_gpu_metrics,
 )
-from llm_forge.ui.app import create_app
-
+from pulsar_ai.ui.app import create_app
 
 # ──────────────────────────────────────────────────────────
 # Metrics Collection
@@ -92,7 +91,7 @@ class TestGPUMetrics:
 
     def test_collect_with_mocked_gpus(self):
         """Test collect_metrics with mocked GPU data."""
-        import llm_forge.ui.metrics as metrics_mod
+        import pulsar_ai.ui.metrics as metrics_mod
 
         fake_gpus = [
             GPUMetrics(
@@ -134,10 +133,12 @@ class TestGPUMetrics:
 @pytest.fixture
 def client():
     """Create test client."""
-    with patch("llm_forge.ui.routes.training._store"), \
-         patch("llm_forge.ui.routes.experiments._store"), \
-         patch("llm_forge.ui.routes.evaluation._store"), \
-         patch("llm_forge.ui.routes.export_routes._store"):
+    with (
+        patch("pulsar_ai.ui.routes.training._store"),
+        patch("pulsar_ai.ui.routes.experiments._store"),
+        patch("pulsar_ai.ui.routes.evaluation._store"),
+        patch("pulsar_ai.ui.routes.export_routes._store"),
+    ):
         app = create_app()
         yield TestClient(app)
 
@@ -174,7 +175,7 @@ class TestMetricsAPI:
     def test_metrics_stream_function(self):
         """Test metrics_stream yields valid SSE events."""
         import asyncio
-        from llm_forge.ui.metrics import metrics_stream
+        from pulsar_ai.ui.metrics import metrics_stream
 
         async def read_first():
             async for event in metrics_stream(interval=0.1):

@@ -6,7 +6,7 @@ hide:
 
 <div class="hero" markdown>
 
-# llm-forge
+# pulsar-ai
 
 **Универсальный пайплайн файнтюнинга LLM**
 
@@ -188,7 +188,7 @@ graph LR
 
 ### [:material-console: CLI справочник](reference/cli.md)
 
-Все команды `forge` с примерами.
+Все команды `pulsar` с примерами.
 
 </div>
 

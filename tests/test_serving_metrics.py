@@ -4,7 +4,7 @@ import time
 import threading
 import pytest
 
-from llm_forge.serving.metrics import ServingMetrics, _percentile
+from pulsar_ai.serving.metrics import ServingMetrics, _percentile
 
 
 class TestServingMetrics:
@@ -53,7 +53,8 @@ class TestServingMetrics:
     def test_window_filtering(self):
         m = ServingMetrics()
         # Add an old request by manually setting timestamp
-        from llm_forge.serving.metrics import RequestMetric
+        from pulsar_ai.serving.metrics import RequestMetric
+
         old = RequestMetric(
             timestamp=time.time() - 120,  # 2 minutes ago
             latency_ms=500,

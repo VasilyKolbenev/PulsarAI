@@ -5,9 +5,9 @@ import pytest
 # Skip all tests if fastapi is not installed
 fastapi = pytest.importorskip("fastapi")
 
-from fastapi.testclient import TestClient
+from fastapi.testclient import TestClient  # noqa: E402
 
-from llm_forge.agent.server import create_agent_app
+from pulsar_ai.agent.server import create_agent_app  # noqa: E402
 
 
 @pytest.fixture

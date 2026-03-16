@@ -2,10 +2,10 @@
 
 ## Диагностика оборудования
 
-Команда `forge info` показывает обнаруженное оборудование и рекомендуемую стратегию:
+Команда `pulsar info` показывает обнаруженное оборудование и рекомендуемую стратегию:
 
 ```bash
-forge info
+pulsar info
 ```
 
 Пример вывода:
@@ -31,7 +31,7 @@ forge info
 
 ## Автоматический выбор стратегии
 
-При `strategy: auto` (по умолчанию в `base.yaml`) llm-forge автоматически определяет оптимальную стратегию по VRAM и количеству GPU:
+При `strategy: auto` (по умолчанию в `base.yaml`) pulsar-ai автоматически определяет оптимальную стратегию по VRAM и количеству GPU:
 
 ### Один GPU
 
@@ -128,7 +128,7 @@ inherit:
 | **Стабильность обучения** | Высокая | Может потребовать loss scaling |
 | **Рекомендация** | Используйте при Compute Capability >= 8.0 | Fallback для старых GPU |
 
-llm-forge автоматически определяет поддержку bf16 по Compute Capability GPU.
+pulsar-ai автоматически определяет поддержку bf16 по Compute Capability GPU.
 
 ```yaml
 # Автоматически устанавливается при strategy: auto
@@ -153,7 +153,7 @@ training:
 | **Простота настройки** | Проще (нет JSON-конфига) | Требует ds_config.json |
 | **Рекомендация** | 2-4 GPU | 8+ GPU, большие модели (70B+) |
 
-### FSDP в llm-forge
+### FSDP в pulsar-ai
 
 ```yaml
 strategy: fsdp_qlora   # или fsdp_lora, fsdp_full
@@ -164,7 +164,7 @@ fsdp_sharding_strategy: FULL_SHARD
 fsdp_cpu_offload: true  # для fsdp_qlora
 ```
 
-### DeepSpeed в llm-forge
+### DeepSpeed в pulsar-ai
 
 ```yaml
 strategy: deepspeed_zero3

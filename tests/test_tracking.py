@@ -1,12 +1,10 @@
 """Tests for experiment tracking, fingerprinting, and run comparison."""
 
 import json
-import os
 import pytest
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-from llm_forge.tracking import (
+from pulsar_ai.tracking import (
     RunTracker,
     capture_environment,
     fingerprint_dataset,
@@ -21,7 +19,7 @@ from llm_forge.tracking import (
 @pytest.fixture
 def runs_dir(tmp_path):
     """Override RUNS_DIR to temp directory."""
-    with patch("llm_forge.tracking.RUNS_DIR", tmp_path):
+    with patch("pulsar_ai.tracking.RUNS_DIR", tmp_path):
         yield tmp_path
 
 
@@ -199,13 +197,15 @@ class TestCompareRuns:
 
     def test_compare_two_runs(self, runs_dir):
         t1 = RunTracker(
-            backend="local", run_name="r1",
+            backend="local",
+            run_name="r1",
             config={"training": {"learning_rate": 1e-4, "epochs": 3}},
         )
         t1.finish(status="completed", results={"training_loss": 0.2})
 
         t2 = RunTracker(
-            backend="local", run_name="r2",
+            backend="local",
+            run_name="r2",
             config={"training": {"learning_rate": 5e-5, "epochs": 5}},
         )
         t2.finish(status="completed", results={"training_loss": 0.15})
@@ -239,7 +239,7 @@ class TestTrackExperiment:
 
     def test_context_manager_failure(self, sample_config, runs_dir):
         with pytest.raises(ValueError):
-            with track_experiment(sample_config, task="sft") as tracker:
+            with track_experiment(sample_config, task="sft") as _tracker:
                 raise ValueError("Training error")
 
         runs = list_runs()

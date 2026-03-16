@@ -1,22 +1,20 @@
 """Tests for SQLite persistence layer: bootstrap, queries, migration."""
 
 import json
-import sqlite3
 import threading
 from pathlib import Path
 
 import pytest
 
-from llm_forge.storage.database import Database, get_database, reset_database
-from llm_forge.storage.migration import (
+from pulsar_ai.storage.database import Database, get_database, reset_database
+from pulsar_ai.storage.migration import (
     migrate_all,
     migrate_experiments,
     migrate_prompts,
     migrate_runs,
     migrate_workflows,
 )
-from llm_forge.storage.schema import SCHEMA_VERSION
-
+from pulsar_ai.storage.schema import SCHEMA_VERSION
 
 # ── Fixtures ────────────────────────────────────────────────────────────
 
@@ -63,10 +61,7 @@ class TestBootstrap:
 
     def test_tables_exist(self, db: Database) -> None:
         tables = {
-            row["name"]
-            for row in db.fetch_all(
-                "SELECT name FROM sqlite_master WHERE type='table'"
-            )
+            row["name"] for row in db.fetch_all("SELECT name FROM sqlite_master WHERE type='table'")
         }
         expected = {
             "_schema_meta",
@@ -92,12 +87,10 @@ class TestBootstrap:
     def test_bootstrap_idempotent(self, tmp_path: Path) -> None:
         db_path = tmp_path / "idem.db"
         db1 = Database(db_path=db_path)
-        db1.execute(
-            """INSERT INTO experiments
+        db1.execute("""INSERT INTO experiments
                 (id, name, status, task, created_at, last_update_at)
             VALUES ('x1', 'exp', 'queued', 'sft', '2024-01-01', '2024-01-01')
-            """
-        )
+            """)
         db1.commit()
         db1.close()
 
@@ -144,22 +137,18 @@ class TestQueryHelpers:
 
     def test_transaction_commit(self, db: Database) -> None:
         with db.transaction():
-            db.execute(
-                """INSERT INTO experiments
+            db.execute("""INSERT INTO experiments
                     (id, name, status, task, created_at, last_update_at)
-                VALUES ('tx1', 'txn', 'queued', 'sft', '2024-01-01', '2024-01-01')"""
-            )
+                VALUES ('tx1', 'txn', 'queued', 'sft', '2024-01-01', '2024-01-01')""")
 
         assert db.fetch_one("SELECT * FROM experiments WHERE id = 'tx1'") is not None
 
     def test_transaction_rollback(self, db: Database) -> None:
         with pytest.raises(ValueError):
             with db.transaction():
-                db.execute(
-                    """INSERT INTO experiments
+                db.execute("""INSERT INTO experiments
                         (id, name, status, task, created_at, last_update_at)
-                    VALUES ('tx2', 'fail', 'queued', 'sft', '2024-01-01', '2024-01-01')"""
-                )
+                    VALUES ('tx2', 'fail', 'queued', 'sft', '2024-01-01', '2024-01-01')""")
                 raise ValueError("rollback me")
 
         assert db.fetch_one("SELECT * FROM experiments WHERE id = 'tx2'") is None
@@ -318,9 +307,7 @@ class TestMigrateExperiments:
 
 
 class TestMigratePrompts:
-    def test_migrate_prompts_with_versions(
-        self, db: Database, data_dir: Path
-    ) -> None:
+    def test_migrate_prompts_with_versions(self, db: Database, data_dir: Path) -> None:
         prompts = [
             {
                 "id": "p1",
@@ -352,9 +339,7 @@ class TestMigratePrompts:
                 "updated_at": "2024-05-15",
             }
         ]
-        (data_dir / "prompts.json").write_text(
-            json.dumps(prompts), encoding="utf-8"
-        )
+        (data_dir / "prompts.json").write_text(json.dumps(prompts), encoding="utf-8")
 
         count = migrate_prompts(db, data_dir / "prompts.json")
         assert count == 1
@@ -391,9 +376,7 @@ class TestMigrateWorkflows:
                 "run_count": 0,
             }
         ]
-        (data_dir / "workflows.json").write_text(
-            json.dumps(workflows), encoding="utf-8"
-        )
+        (data_dir / "workflows.json").write_text(json.dumps(workflows), encoding="utf-8")
 
         count = migrate_workflows(db, data_dir / "workflows.json")
         assert count == 1
@@ -413,7 +396,7 @@ class TestMigrateRuns:
         run = {
             "run_id": "r1abc",
             "name": "sft-run",
-            "project": "llm-forge",
+            "project": "pulsar-ai",
             "backend": "local",
             "status": "completed",
             "config": {"lr": 1e-4},
@@ -426,9 +409,7 @@ class TestMigrateRuns:
             "duration_s": 3600.0,
             "environment": {"python_version": "3.11"},
         }
-        (runs_dir / "r1abc.json").write_text(
-            json.dumps(run), encoding="utf-8"
-        )
+        (runs_dir / "r1abc.json").write_text(json.dumps(run), encoding="utf-8")
 
         count = migrate_runs(db, runs_dir)
         assert count == 1
@@ -443,9 +424,7 @@ class TestMigrateRuns:
 
 
 class TestMigrateAll:
-    def test_migrate_all_from_data_dir(
-        self, db: Database, data_dir: Path
-    ) -> None:
+    def test_migrate_all_from_data_dir(self, db: Database, data_dir: Path) -> None:
         # Create minimal JSON fixtures.
         (data_dir / "experiments.json").write_text(
             json.dumps(
@@ -479,8 +458,6 @@ class TestMigrateAll:
         assert report["workflows"] == 0
         assert report["runs"] == 0
 
-    def test_migrate_all_missing_files(
-        self, db: Database, data_dir: Path
-    ) -> None:
+    def test_migrate_all_missing_files(self, db: Database, data_dir: Path) -> None:
         report = migrate_all(db, data_dir=data_dir)
         assert all(v == 0 for v in report.values())

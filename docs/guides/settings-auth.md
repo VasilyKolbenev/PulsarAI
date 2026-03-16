@@ -1,6 +1,6 @@
 # Settings & Auth
 
-Настройки безопасности, аутентификации и ограничения доступа к API LLM Forge.
+Настройки безопасности, аутентификации и ограничения доступа к API Pulsar AI.
 
 ---
 
@@ -9,11 +9,11 @@
 По умолчанию аутентификация отключена. Для включения задайте переменную окружения:
 
 ```bash
-export FORGE_AUTH_ENABLED=true
+export PULSAR_AUTH_ENABLED=true
 ```
 
 !!! warning "Продакшен"
-    Всегда включайте аутентификацию при развёртывании Forge в сети.
+    Всегда включайте аутентификацию при развёртывании Pulsar AI в сети.
     Без неё все эндпоинты доступны без ограничений.
 
 ---
@@ -35,7 +35,7 @@ export FORGE_AUTH_ENABLED=true
 
     ```json
     {
-      "key": "forge_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+      "key": "pulsar_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
       "name": "my-app",
       "created_at": "2026-03-01T10:00:00",
       "description": "Key for production app"
@@ -45,10 +45,10 @@ export FORGE_AUTH_ENABLED=true
 === "CLI"
 
     ```bash
-    forge settings create-key --name my-app --description "Key for production app"
+    pulsar settings create-key --name my-app --description "Key for production app"
     ```
 
-Формат ключа: `forge_` + 32 символа (буквы и цифры).
+Формат ключа: `pulsar_` + 32 символа (буквы и цифры).
 
 !!! warning "Сохраните ключ"
     Ключ отображается только один раз при создании. Сохраните его в безопасном месте.
@@ -62,13 +62,13 @@ export FORGE_AUTH_ENABLED=true
 
 ```bash
 curl http://localhost:8000/runs \
-  -H "Authorization: Bearer forge_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+  -H "Authorization: Bearer pulsar_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
 ```
 
 Или через query-параметр (не рекомендуется):
 
 ```bash
-curl "http://localhost:8000/runs?api_key=forge_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+curl "http://localhost:8000/runs?api_key=pulsar_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
 ```
 
 !!! tip "Заголовок vs Query"
@@ -140,17 +140,17 @@ HTTP-код: `429 Too Many Requests`.
 
 ```bash
 # Один источник
-export FORGE_CORS_ORIGINS=http://localhost:3000
+export PULSAR_CORS_ORIGINS=http://localhost:3000
 
 # Несколько источников
-export FORGE_CORS_ORIGINS=http://localhost:3000,https://my-app.com
+export PULSAR_CORS_ORIGINS=http://localhost:3000,https://my-app.com
 
 # Все источники (только для разработки)
-export FORGE_CORS_ORIGINS=*
+export PULSAR_CORS_ORIGINS=*
 ```
 
 !!! warning "Wildcard в продакшене"
-    Никогда не используйте `FORGE_CORS_ORIGINS=*` в продакшене.
+    Никогда не используйте `PULSAR_CORS_ORIGINS=*` в продакшене.
     Указывайте конкретные домены вашего фронтенда.
 
 ---
@@ -165,7 +165,7 @@ export FORGE_CORS_ORIGINS=*
 | Статус аутентификации  | Текущий режим (включена/отключена)             |
 | Rate limit stats       | Статистика по ограничениям запросов            |
 | CORS-настройки         | Просмотр разрешённых источников                |
-| Системная информация   | Версия Forge, uptime, конфигурация             |
+| Системная информация   | Версия Pulsar AI, uptime, конфигурация             |
 
 ### Управление ключами в UI
 

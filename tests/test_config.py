@@ -1,12 +1,10 @@
 """Tests for config loading, merging, and resolution."""
 
-import tempfile
 from pathlib import Path
 
 import pytest
-import yaml
 
-from llm_forge.config import deep_merge, load_yaml, load_config, _set_nested, _parse_value
+from pulsar_ai.config import deep_merge, load_yaml, load_config, _set_nested, _parse_value
 
 
 class TestDeepMerge:
@@ -120,11 +118,7 @@ class TestLoadConfig:
 
     def test_load_config_simple(self, tmp_path: Path) -> None:
         config_file = tmp_path / "experiment.yaml"
-        config_file.write_text(
-            "strategy: qlora\n"
-            "training:\n"
-            "  epochs: 5\n"
-        )
+        config_file.write_text("strategy: qlora\n" "training:\n" "  epochs: 5\n")
         result = load_config(str(config_file), auto_hardware=False)
         assert result["strategy"] == "qlora"
         assert result["training"]["epochs"] == 5
@@ -146,10 +140,7 @@ class TestLoadConfig:
 
         # Create experiment config that inherits
         exp_file = tmp_path / "experiment.yaml"
-        exp_file.write_text(
-            f"inherit:\n  - {base_file}\n"
-            "training:\n  epochs: 5\n"
-        )
+        exp_file.write_text(f"inherit:\n  - {base_file}\n" "training:\n  epochs: 5\n")
         result = load_config(str(exp_file), auto_hardware=False)
         assert result["training"]["lr"] == 0.001
         assert result["training"]["epochs"] == 5

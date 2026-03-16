@@ -17,21 +17,21 @@ RUN apt-get update && \
 COPY pyproject.toml README.md ./
 COPY src/ src/
 
-# Copy built frontend static files (vite outputs to src/llm_forge/ui/static)
-COPY --from=frontend /app/src/llm_forge/ui/static src/llm_forge/ui/static/
+# Copy built frontend static files (vite outputs to src/pulsar_ai/ui/static)
+COPY --from=frontend /app/src/pulsar_ai/ui/static src/pulsar_ai/ui/static/
 
 # Install Python package with UI dependencies
 RUN pip install --no-cache-dir ".[ui]"
 
-# Create data directory for JSON stores
+# Create data directory for SQLite database
 RUN mkdir -p /app/data
 
 EXPOSE 8888
 
-ENV FORGE_CORS_ORIGINS="http://localhost:8888"
-ENV FORGE_AUTH_ENABLED="false"
+ENV PULSAR_CORS_ORIGINS="http://localhost:8888"
+ENV PULSAR_AUTH_ENABLED="false"
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
     CMD curl -f http://localhost:8888/api/v1/health || exit 1
 
-CMD ["python", "-m", "uvicorn", "llm_forge.ui.app:create_app", "--factory", "--host", "0.0.0.0", "--port", "8888"]
+CMD ["python", "-m", "uvicorn", "pulsar_ai.ui.app:create_app", "--factory", "--host", "0.0.0.0", "--port", "8888"]

@@ -1,6 +1,6 @@
-# llm-forge: Полное руководство
+# pulsar-ai: Полное руководство
 
-Пошаговая инструкция по установке и использованию платформы llm-forge для файнтюнинга LLM.
+Пошаговая инструкция по установке и использованию платформы pulsar-ai для файнтюнинга LLM.
 
 ## Требования
 
@@ -21,8 +21,8 @@
 ## 1. Клонирование репозитория
 
 ```bash
-git clone https://github.com/<your-org>/llm-forge.git
-cd llm-forge
+git clone https://github.com/<your-org>/pulsar-ai.git
+cd pulsar-ai
 ```
 
 ---
@@ -92,10 +92,10 @@ cd ..
 OPENAI_API_KEY=sk-your-key-here
 
 # (Опционально) Кастомные CORS origins
-# FORGE_CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+# PULSAR_CORS_ORIGINS=http://localhost:3000,http://localhost:5173
 
 # (Опционально) Включить аутентификацию API
-# FORGE_AUTH_ENABLED=true
+# PULSAR_AUTH_ENABLED=true
 
 # (Опционально) HuggingFace токен для gated-моделей (Llama и др.)
 # HF_TOKEN=hf_your_token_here
@@ -108,17 +108,17 @@ OPENAI_API_KEY=sk-your-key-here
 ### 5.1 Backend (API сервер)
 
 ```bash
-python -c "from llm_forge.ui.app import create_app; import uvicorn; uvicorn.run(create_app(), host='0.0.0.0', port=8888)"
+python -c "from pulsar_ai.ui.app import create_app; import uvicorn; uvicorn.run(create_app(), host='0.0.0.0', port=8888)"
 ```
 
 Или короче:
 ```bash
-python -m llm_forge.ui.app
+python -m pulsar_ai.ui.app
 ```
 
 Или через CLI:
 ```bash
-forge ui
+pulsar ui
 ```
 
 Backend доступен на `http://localhost:8888`.
@@ -146,7 +146,7 @@ UI доступен на `http://localhost:5173`.
 
 ### Формат датасета
 
-llm-forge поддерживает CSV, JSONL, JSON, Parquet, Excel. Минимальный CSV:
+pulsar-ai поддерживает CSV, JSONL, JSON, Parquet, Excel. Минимальный CSV:
 
 ```csv
 phrase,domain,skill
@@ -273,7 +273,7 @@ output:
 ### Быстрое создание конфига через CLI:
 
 ```bash
-forge init my-experiment --task sft --model qwen3.5-0.8b
+pulsar init my-experiment --task sft --model qwen3.5-0.8b
 ```
 
 Это создаст готовый YAML в `configs/examples/`.
@@ -295,17 +295,17 @@ forge init my-experiment --task sft --model qwen3.5-0.8b
 ### Через CLI:
 
 ```bash
-forge train configs/examples/my-experiment.yaml
+pulsar train configs/examples/my-experiment.yaml
 ```
 
 С переопределением параметров:
 ```bash
-forge train configs/examples/my-experiment.yaml epochs=5 learning_rate=1e-4
+pulsar train configs/examples/my-experiment.yaml epochs=5 learning_rate=1e-4
 ```
 
 Возобновление с чекпоинта:
 ```bash
-forge train configs/examples/my-experiment.yaml --resume outputs/my-experiment/checkpoint-500
+pulsar train configs/examples/my-experiment.yaml --resume outputs/my-experiment/checkpoint-500
 ```
 
 ### Через Web UI:
@@ -319,7 +319,7 @@ forge train configs/examples/my-experiment.yaml --resume outputs/my-experiment/c
 
 ```python
 import requests
-from llm_forge.config import load_config
+from pulsar_ai.config import load_config
 
 config = load_config('configs/examples/my-experiment.yaml')
 resp = requests.post('http://localhost:8888/api/v1/training/start', json={
@@ -356,7 +356,7 @@ python scripts/run_eval.py \
 
 Или через CLI:
 ```bash
-forge eval --model outputs/my-experiment/lora --test-data data/my_intents_test.csv
+pulsar eval --model outputs/my-experiment/lora --test-data data/my_intents_test.csv
 ```
 
 Результаты:
@@ -403,7 +403,7 @@ output:
 ```
 
 ```bash
-forge train configs/examples/my-dpo.yaml
+pulsar train configs/examples/my-dpo.yaml
 ```
 
 ---
@@ -413,19 +413,19 @@ forge train configs/examples/my-dpo.yaml
 ### GGUF (для llama.cpp, Ollama):
 
 ```bash
-forge export --model ./outputs/my-experiment/lora --format gguf --quant q4_k_m
+pulsar export --model ./outputs/my-experiment/lora --format gguf --quant q4_k_m
 ```
 
 ### Merge LoRA + Base:
 
 ```bash
-forge export --model ./outputs/my-experiment/lora --format merged
+pulsar export --model ./outputs/my-experiment/lora --format merged
 ```
 
 ### Push на HuggingFace Hub:
 
 ```bash
-forge export --model ./outputs/my-experiment/lora --format hub
+pulsar export --model ./outputs/my-experiment/lora --format hub
 ```
 
 ### Через API:
@@ -444,13 +444,13 @@ curl -X POST http://localhost:8888/api/v1/export -H "Content-Type: application/j
 ### llama.cpp (GGUF файлы):
 
 ```bash
-forge serve --model ./outputs/model-q4_k_m.gguf --port 8080 --backend llamacpp
+pulsar serve --model ./outputs/model-q4_k_m.gguf --port 8080 --backend llamacpp
 ```
 
 ### vLLM (полные модели):
 
 ```bash
-forge serve --model ./outputs/my-merged-model --port 8080 --backend vllm
+pulsar serve --model ./outputs/my-merged-model --port 8080 --backend vllm
 ```
 
 API совместим с форматом OpenAI (`/v1/chat/completions`).
@@ -576,10 +576,10 @@ steps:
 
 ```bash
 # CLI
-forge pipeline run configs/pipelines/full-training.yaml
+pulsar pipeline run configs/pipelines/full-training.yaml
 
 # Просмотр прошлых запусков
-forge pipeline list
+pulsar pipeline list
 ```
 
 ### Переменные между шагами
@@ -738,19 +738,19 @@ registered → staging → production → archived
 
 ```bash
 # Зарегистрировать модель
-forge registry register my-classifier \
+pulsar registry register my-classifier \
   --model-path outputs/my-experiment/lora \
   --task sft \
   --base-model Qwen/Qwen3.5-0.8B \
   --tag production
 
 # Список моделей
-forge registry list
-forge registry list --status production
+pulsar registry list
+pulsar registry list --status production
 
 # Повышение статуса
-forge registry promote my-classifier-v1 staging
-forge registry promote my-classifier-v1 production
+pulsar registry promote my-classifier-v1 staging
+pulsar registry promote my-classifier-v1 production
 ```
 
 ### API:
@@ -823,7 +823,7 @@ hpo:
 ### Запуск:
 
 ```bash
-forge sweep configs/examples/my-experiment.yaml configs/sweeps/lr-sweep.yaml \
+pulsar sweep configs/examples/my-experiment.yaml configs/sweeps/lr-sweep.yaml \
   --n-trials 20 \
   --name my-lr-search
 ```
@@ -872,7 +872,7 @@ forge sweep configs/examples/my-experiment.yaml configs/sweeps/lr-sweep.yaml \
 ### Создание агента:
 
 ```bash
-forge agent init my-assistant
+pulsar agent init my-assistant
 ```
 
 Создаёт конфиг `configs/agents/my-assistant.yaml`:
@@ -914,13 +914,13 @@ guardrails:
 ### Тестирование (интерактивный REPL):
 
 ```bash
-forge agent test configs/agents/my-assistant.yaml
+pulsar agent test configs/agents/my-assistant.yaml
 ```
 
 ### Деплой агента как API:
 
 ```bash
-forge agent serve configs/agents/my-assistant.yaml --port 8081
+pulsar agent serve configs/agents/my-assistant.yaml --port 8081
 ```
 
 API: `POST /v1/agent/chat` с телом `{"message": "..."}`.
@@ -940,7 +940,7 @@ API: `POST /v1/agent/chat` с телом `{"message": "..."}`.
 ```bash
 curl -X POST http://localhost:8888/api/v1/protocols/mcp/configure \
   -d '{
-    "name": "forge-mcp",
+    "name": "pulsar-mcp",
     "transport": "sse",
     "host": "localhost",
     "port": 8890,
@@ -963,7 +963,7 @@ curl http://localhost:8888/api/v1/protocols/a2a/agent-card
 curl -X POST http://localhost:8888/api/v1/protocols/a2a/configure \
   -d '{
     "agent_card": {
-      "name": "forge-agent",
+      "name": "pulsar-agent",
       "description": "LLM training agent",
       "url": "http://localhost:8888",
       "skills": ["training", "evaluation", "export"],
@@ -981,7 +981,7 @@ curl -X POST http://localhost:8888/api/v1/protocols/a2a/configure \
 ```bash
 curl -X POST http://localhost:8888/api/v1/protocols/gateway/configure \
   -d '{
-    "name": "forge-gateway",
+    "name": "pulsar-gateway",
     "host": "0.0.0.0",
     "port": 9000,
     "protocols": ["rest"],
@@ -1031,7 +1031,7 @@ guardrails:
 ### Программное использование:
 
 ```python
-from llm_forge.guardrails.engine import create_input_guard, create_output_guard
+from pulsar_ai.guardrails.engine import create_input_guard, create_output_guard
 
 input_guard = create_input_guard(pii=True, injection=True, toxicity=True, pii_action="mask")
 output_guard = create_output_guard(pii=True, json_schema=True, required_keys=["domain", "skill"])
@@ -1050,14 +1050,14 @@ result = input_guard.check("my input text")
 
 ```bash
 # Список прошлых запусков
-forge runs list
-forge runs list --project my-project --status completed --limit 20
+pulsar runs list
+pulsar runs list --project my-project --status completed --limit 20
 
 # Детали запуска
-forge runs show <run_id>
+pulsar runs show <run_id>
 
 # Сравнение нескольких запусков
-forge runs compare <run_id_1> <run_id_2> <run_id_3>
+pulsar runs compare <run_id_1> <run_id_2> <run_id_3>
 ```
 
 ### API:
@@ -1088,7 +1088,7 @@ curl -X POST http://localhost:8888/api/v1/runs/compare \
 Встроенный трейсер в стиле OpenTelemetry для отслеживания LLM-вызовов:
 
 ```python
-from llm_forge.observability.tracer import get_tracer
+from pulsar_ai.observability.tracer import get_tracer
 
 tracer = get_tracer()
 with tracer.start_trace("my-pipeline") as trace:
@@ -1105,7 +1105,7 @@ with tracer.start_trace("my-pipeline") as trace:
 Отслеживание стоимости LLM-вызовов:
 
 ```python
-from llm_forge.cost import CostTracker
+from pulsar_ai.cost import CostTracker
 
 tracker = CostTracker(budget_usd=10.0)
 tracker.record(model="gpt-4o", input_tokens=1000, output_tokens=500, operation="eval")
@@ -1121,7 +1121,7 @@ summary = tracker.get_summary()
 LRU-кэш LLM-ответов для экономии токенов:
 
 ```python
-from llm_forge.cache import SemanticCache
+from pulsar_ai.cache import SemanticCache
 
 cache = SemanticCache(max_entries=10000, ttl=3600)
 cached = cache.get(model="qwen", prompt="classify: hello")
@@ -1137,7 +1137,7 @@ if not cached:
 ### Canary (постепенный деплой):
 
 ```python
-from llm_forge.deployment.canary import CanaryDeployer
+from pulsar_ai.deployment.canary import CanaryDeployer
 
 deployer = CanaryDeployer(
     primary_endpoint="http://model-v1:8080",
@@ -1153,7 +1153,7 @@ target = deployer.route()  # "primary" или "canary"
 ### A/B Testing:
 
 ```python
-from llm_forge.deployment.canary import ABTester
+from pulsar_ai.deployment.canary import ABTester
 
 tester = ABTester(variants={"model-a": 0.5, "model-b": 0.5})
 variant = tester.route()
@@ -1171,7 +1171,7 @@ results = tester.get_results()
 Сбор фидбэка от пользователей (thumbs up/down) с автоматической генерацией DPO-пар:
 
 ```python
-from llm_forge.feedback import FeedbackCollector
+from pulsar_ai.feedback import FeedbackCollector
 
 collector = FeedbackCollector()
 collector.record(prompt="...", response="...", rating="positive")  # или "negative"
@@ -1197,7 +1197,7 @@ dpo_pairs = collector.export_dpo_pairs()
 
 1. Установите в `.env`:
    ```bash
-   FORGE_AUTH_ENABLED=true
+   PULSAR_AUTH_ENABLED=true
    ```
 
 2. Перезапустите backend
@@ -1207,11 +1207,11 @@ dpo_pairs = collector.export_dpo_pairs()
    curl -X POST http://localhost:8888/api/v1/settings/keys \
      -d '{"name": "my-key"}'
    ```
-   Ответ содержит plaintext ключ (показывается только раз): `forge_<32-символа>`.
+   Ответ содержит plaintext ключ (показывается только раз): `pulsar_<32-символа>`.
 
 4. Используйте ключ в запросах:
    ```bash
-   curl -H "Authorization: Bearer forge_xxxxx" http://localhost:8888/api/v1/experiments
+   curl -H "Authorization: Bearer pulsar_xxxxx" http://localhost:8888/api/v1/experiments
    ```
 
 Публичные эндпоинты (не требуют ключа): `/api/v1/health`, `/docs`, `/openapi.json`, `/redoc`.
@@ -1225,47 +1225,47 @@ dpo_pairs = collector.export_dpo_pairs()
 ## Полный справочник CLI
 
 ```
-forge train <config.yaml> [key=val ...]     Обучение (SFT/DPO)
+pulsar train <config.yaml> [key=val ...]     Обучение (SFT/DPO)
   --task sft|dpo|auto                        Тип задачи
   --base-model PATH                          Базовая модель
   --resume PATH                              Продолжить с чекпоинта
 
-forge eval --model PATH --test-data PATH    Оценка модели
+pulsar eval --model PATH --test-data PATH    Оценка модели
   --batch-size N                             Размер батча
   --output PATH                              Путь для результатов
 
-forge export --model PATH --format FMT      Экспорт модели
+pulsar export --model PATH --format FMT      Экспорт модели
   --format gguf|merged|hub                   Формат экспорта
   --quant q4_k_m|q8_0|f16                    Квантизация (для GGUF)
 
-forge serve --model PATH --port PORT        Запуск inference API
+pulsar serve --model PATH --port PORT        Запуск inference API
   --backend llamacpp|vllm                    Бэкенд
 
-forge init <name>                           Создать конфиг эксперимента
+pulsar init <name>                           Создать конфиг эксперимента
   --task sft|dpo                              Тип задачи
   --model qwen3.5-0.8b|llama3.2-1b|...       Модель
 
-forge info                                  Информация о hardware
-forge ui [--port 8888]                      Запуск Web UI
+pulsar info                                  Информация о hardware
+pulsar ui [--port 8888]                      Запуск Web UI
 
-forge sweep <config> <sweep_config>         HPO sweep
+pulsar sweep <config> <sweep_config>         HPO sweep
   --n-trials N                               Кол-во trials
   --name NAME                                Имя study
 
-forge agent init <name>                     Создать конфиг агента
-forge agent test <config.yaml>              Тест агента (REPL)
-forge agent serve <config.yaml>             Деплой агента как API
+pulsar agent init <name>                     Создать конфиг агента
+pulsar agent test <config.yaml>              Тест агента (REPL)
+pulsar agent serve <config.yaml>             Деплой агента как API
 
-forge pipeline run <config.yaml>            Запуск pipeline
-forge pipeline list                         Список прошлых pipeline-запусков
+pulsar pipeline run <config.yaml>            Запуск pipeline
+pulsar pipeline list                         Список прошлых pipeline-запусков
 
-forge runs list [--project X] [--status Y]  Список запусков
-forge runs show <run_id>                    Детали запуска
-forge runs compare <id1> <id2> ...          Сравнение запусков
+pulsar runs list [--project X] [--status Y]  Список запусков
+pulsar runs show <run_id>                    Детали запуска
+pulsar runs compare <id1> <id2> ...          Сравнение запусков
 
-forge registry list [--status X]            Список моделей в реестре
-forge registry register <name> --model-path Зарегистрировать модель
-forge registry promote <id> <status>        Изменить статус модели
+pulsar registry list [--status X]            Список моделей в реестре
+pulsar registry register <name> --model-path Зарегистрировать модель
+pulsar registry promote <id> <status>        Изменить статус модели
 ```
 
 ---
@@ -1273,7 +1273,7 @@ forge registry promote <id> <status>        Изменить статус мод
 ## Структура проекта
 
 ```
-llm-forge/
+pulsar-ai/
   configs/
     base.yaml              # Дефолтные настройки
     models/                # Конфиги моделей (qwen, llama, mistral)
@@ -1290,7 +1290,7 @@ llm-forge/
     experiments.json       # Хранилище экспериментов
   prompts/                 # System prompts
   outputs/                 # Результаты обучения (адаптеры, модели, чекпоинты)
-  src/llm_forge/
+  src/pulsar_ai/
     training/              # SFT, DPO тренеры
     evaluation/            # Eval + LLM-as-Judge
     export/                # GGUF, merged, hub
@@ -1318,8 +1318,8 @@ llm-forge/
 | Переменная | По умолчанию | Описание |
 |-----------|-------------|----------|
 | `OPENAI_API_KEY` | — | Ключ для Co-pilot (LLM-режим) и Site Chat |
-| `FORGE_AUTH_ENABLED` | `false` | Включить аутентификацию API |
-| `FORGE_CORS_ORIGINS` | `localhost:3000,8888` | Разрешённые CORS origins |
+| `PULSAR_AUTH_ENABLED` | `false` | Включить аутентификацию API |
+| `PULSAR_CORS_ORIGINS` | `localhost:3000,8888` | Разрешённые CORS origins |
 | `HF_TOKEN` | — | HuggingFace токен (для gated-моделей) |
 
 ---
@@ -1341,7 +1341,7 @@ llm-forge/
 
 ### UI не подключается к backend
 - Убедитесь что backend запущен на порту 8888
-- Проверьте CORS: `FORGE_CORS_ORIGINS=http://localhost:5173`
+- Проверьте CORS: `PULSAR_CORS_ORIGINS=http://localhost:5173`
 
 ### Тренировка зависает
 - Проверьте `nvidia-smi` — GPU должен быть загружен
@@ -1352,8 +1352,8 @@ llm-forge/
 - Проверьте `depends_on` — все зависимости должны завершиться успешно
 
 ### API возвращает 401 Unauthorized
-- Проверьте что `FORGE_AUTH_ENABLED=true` в `.env`
-- Убедитесь что передаёте заголовок `Authorization: Bearer forge_xxxxx`
+- Проверьте что `PULSAR_AUTH_ENABLED=true` в `.env`
+- Убедитесь что передаёте заголовок `Authorization: Bearer pulsar_xxxxx`
 - Сгенерируйте новый ключ если старый утерян
 
 ### HPO sweep не запускается

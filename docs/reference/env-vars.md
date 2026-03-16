@@ -1,6 +1,6 @@
 # Переменные окружения
 
-llm-forge использует переменные окружения для конфигурации секретов, интеграций и рантайм-поведения. Рекомендуется хранить их в файле `.env` в корне проекта.
+pulsar-ai использует переменные окружения для конфигурации секретов, интеграций и рантайм-поведения. Рекомендуется хранить их в файле `.env` в корне проекта.
 
 !!! warning "Безопасность"
     Файл `.env` **не должен** попадать в git. Убедитесь, что он добавлен в `.gitignore`.
@@ -12,9 +12,9 @@ llm-forge использует переменные окружения для к
 | Переменная | Тип | По умолчанию | Описание |
 |------------|-----|-------------|----------|
 | `OPENAI_API_KEY` | string | -- | API-ключ OpenAI. Включает режим Co-pilot (LLM-ассистент в UI) и чат на сайте |
-| `FORGE_AUTH_ENABLED` | bool | `false` | Включить аутентификацию по API-ключам для REST API |
-| `FORGE_CORS_ORIGINS` | string | `http://localhost:3000,http://localhost:8888` | Разрешённые CORS-источники (через запятую) |
-| `HF_TOKEN` | string | -- | Токен HuggingFace Hub. Требуется для гейтовых моделей (Llama, Gemma) и публикации через `forge export --format hub` |
+| `PULSAR_AUTH_ENABLED` | bool | `false` | Включить аутентификацию по API-ключам для REST API |
+| `PULSAR_CORS_ORIGINS` | string | `http://localhost:3000,http://localhost:8888` | Разрешённые CORS-источники (через запятую) |
+| `HF_TOKEN` | string | -- | Токен HuggingFace Hub. Требуется для гейтовых моделей (Llama, Gemma) и публикации через `pulsar export --format hub` |
 | `WANDB_API_KEY` | string | -- | API-ключ Weights & Biases для трекинга экспериментов |
 | `CLEARML_WEB_HOST` | string | -- | URL веб-интерфейса ClearML (включает ClearML-трекинг) |
 
@@ -37,23 +37,23 @@ llm-forge использует переменные окружения для к
 OPENAI_API_KEY=sk-proj-...
 ```
 
-### FORGE_AUTH_ENABLED
+### PULSAR_AUTH_ENABLED
 
 Когда `true`, все REST API эндпоинты требуют заголовок `X-API-Key`. API-ключи управляются через:
 
-- CLI: `forge ui` -> раздел Settings
+- CLI: `pulsar ui` -> раздел Settings
 - REST API: `POST /api/v1/settings/keys`
 
 ```bash
-FORGE_AUTH_ENABLED=true
+PULSAR_AUTH_ENABLED=true
 ```
 
-### FORGE_CORS_ORIGINS
+### PULSAR_CORS_ORIGINS
 
 Список допустимых CORS-origins через запятую. Необходим, если фронтенд и бэкенд работают на разных портах или доменах.
 
 ```bash
-FORGE_CORS_ORIGINS=http://localhost:3000,http://localhost:8888,https://my-domain.com
+PULSAR_CORS_ORIGINS=http://localhost:3000,http://localhost:8888,https://my-domain.com
 ```
 
 ### HF_TOKEN
@@ -90,17 +90,17 @@ CLEARML_WEB_HOST=https://app.clear.ml
 
 ```bash
 # ──────────────────────────────────────────────
-# llm-forge Environment Configuration
+# pulsar-ai Environment Configuration
 # ──────────────────────────────────────────────
 
 # OpenAI API (Co-pilot и Site Chat)
 OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxx
 
 # Аутентификация REST API
-FORGE_AUTH_ENABLED=false
+PULSAR_AUTH_ENABLED=false
 
 # CORS (фронтенд-источники через запятую)
-FORGE_CORS_ORIGINS=http://localhost:3000,http://localhost:8888
+PULSAR_CORS_ORIGINS=http://localhost:3000,http://localhost:8888
 
 # HuggingFace Hub (для гейтовых моделей и публикации)
 HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxx
@@ -113,27 +113,27 @@ HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxx
 ```
 
 !!! info "Загрузка .env"
-    llm-forge автоматически загружает `.env` из текущей рабочей директории
-    при запуске `forge ui`. Для CLI-команд (`forge train`, `forge eval` и т.д.)
+    pulsar-ai автоматически загружает `.env` из текущей рабочей директории
+    при запуске `pulsar ui`. Для CLI-команд (`pulsar train`, `pulsar eval` и т.д.)
     можно использовать `dotenv` или экспортировать переменные вручную:
 
     === "Linux / macOS"
 
         ```bash
         export HF_TOKEN=hf_...
-        forge train config.yaml
+        pulsar train config.yaml
         ```
 
     === "Windows (PowerShell)"
 
         ```powershell
         $env:HF_TOKEN = "hf_..."
-        forge train config.yaml
+        pulsar train config.yaml
         ```
 
     === "Windows (cmd)"
 
         ```cmd
         set HF_TOKEN=hf_...
-        forge train config.yaml
+        pulsar train config.yaml
         ```

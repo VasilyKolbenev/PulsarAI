@@ -160,7 +160,7 @@ condition: ${evaluation.metrics.accuracy} >= ${variables.min_accuracy}
 ## 3. Запуск пайплайна
 
 ```bash
-forge pipeline run configs/pipelines/full.yaml
+pulsar pipeline run configs/pipelines/full.yaml
 ```
 
 Ожидаемый вывод:
@@ -271,7 +271,7 @@ Pipeline finished: completed (992s)
 ### Список запусков пайплайнов
 
 ```bash
-forge pipeline list
+pulsar pipeline list
 ```
 
 ```
@@ -287,7 +287,7 @@ forge pipeline list
 ### Реестр моделей
 
 ```bash
-forge registry list --name cam-intent-classifier
+pulsar registry list --name cam-intent-classifier
 ```
 
 ```
@@ -302,10 +302,10 @@ forge registry list --name cam-intent-classifier
 
 ```bash
 # В staging для тестирования
-forge registry promote cam-intent-classifier staging
+pulsar registry promote cam-intent-classifier staging
 
 # После проверки -- в production
-forge registry promote cam-intent-classifier production
+pulsar registry promote cam-intent-classifier production
 ```
 
 ---

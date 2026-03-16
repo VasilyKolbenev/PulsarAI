@@ -12,7 +12,7 @@ export function AssistantMessages({ messages, isLoading }: Props) {
       {messages.length === 0 && (
         <div className="text-center py-8 text-muted-foreground text-xs">
           <Bot className="mx-auto mb-2 opacity-50" size={24} />
-          <p>Forge Co-pilot ready.</p>
+          <p>Pulsar Co-pilot ready.</p>
           <p className="mt-1">Try <code className="text-primary">/help</code> or ask a question.</p>
         </div>
       )}

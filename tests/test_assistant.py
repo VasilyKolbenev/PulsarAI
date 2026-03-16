@@ -1,53 +1,60 @@
 """Tests for Forge Co-pilot assistant: tools, command parser, and API."""
 
 import json
-import os
 import pytest
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-from llm_forge.ui.assistant import (
-    _get_forge_tools,
+from pulsar_ai.ui.assistant import (
+    _get_pulsar_tools,
     _check_llm_available,
     parse_command,
     HELP_TEXT,
 )
-from llm_forge.ui.app import create_app
-
+from pulsar_ai.ui.app import create_app
 
 # ──────────────────────────────────────────────────────────
 # Forge Tools
 # ──────────────────────────────────────────────────────────
 
+
 class TestForgeTools:
-    """Test that forge tools are properly registered."""
+    """Test that pulsar tools are properly registered."""
 
     def test_registry_has_all_tools(self):
-        """Test all 14 forge tools are registered."""
-        tools = _get_forge_tools()
+        """Test all 14 pulsar tools are registered."""
+        tools = _get_pulsar_tools()
         expected = {
-            "list_experiments", "get_experiment", "start_training",
-            "check_training", "cancel_training", "list_datasets",
-            "preview_dataset", "recommend_params", "get_hardware",
-            "run_evaluation", "list_workflows", "get_workflow",
-            "estimate_training_cost", "suggest_config",
+            "list_experiments",
+            "get_experiment",
+            "start_training",
+            "check_training",
+            "cancel_training",
+            "list_datasets",
+            "preview_dataset",
+            "recommend_params",
+            "get_hardware",
+            "run_evaluation",
+            "list_workflows",
+            "get_workflow",
+            "estimate_training_cost",
+            "suggest_config",
         }
         assert set(tools.list_tools()) == expected
 
     def test_list_experiments_empty(self):
         """Test list_experiments with no experiments."""
-        tools = _get_forge_tools()
-        with patch("llm_forge.ui.assistant._store") as mock_store:
+        tools = _get_pulsar_tools()
+        with patch("pulsar_ai.ui.assistant._store") as mock_store:
             mock_store.list_all.return_value = []
             result = tools.get("list_experiments").execute()
         assert "No experiments found" in result
 
     def test_list_experiments_with_data(self):
         """Test list_experiments returns formatted list."""
-        tools = _get_forge_tools()
-        with patch("llm_forge.ui.assistant._store") as mock_store:
+        tools = _get_pulsar_tools()
+        with patch("pulsar_ai.ui.assistant._store") as mock_store:
             mock_store.list_all.return_value = [
                 {"id": "abc", "name": "test-exp", "status": "completed", "final_loss": 0.5},
             ]
@@ -58,12 +65,17 @@ class TestForgeTools:
 
     def test_get_experiment_found(self):
         """Test get_experiment returns experiment details."""
-        tools = _get_forge_tools()
-        with patch("llm_forge.ui.assistant._store") as mock_store:
+        tools = _get_pulsar_tools()
+        with patch("pulsar_ai.ui.assistant._store") as mock_store:
             mock_store.get.return_value = {
-                "id": "abc", "name": "test", "status": "completed",
-                "task": "sft", "model": "qwen", "final_loss": 0.3,
-                "created_at": "2024-01-01", "artifacts": {},
+                "id": "abc",
+                "name": "test",
+                "status": "completed",
+                "task": "sft",
+                "model": "qwen",
+                "final_loss": 0.3,
+                "created_at": "2024-01-01",
+                "artifacts": {},
             }
             result = tools.get("get_experiment").execute(experiment_id="abc")
         parsed = json.loads(result)
@@ -72,24 +84,24 @@ class TestForgeTools:
 
     def test_get_experiment_not_found(self):
         """Test get_experiment returns error for missing experiment."""
-        tools = _get_forge_tools()
-        with patch("llm_forge.ui.assistant._store") as mock_store:
+        tools = _get_pulsar_tools()
+        with patch("pulsar_ai.ui.assistant._store") as mock_store:
             mock_store.get.return_value = None
             result = tools.get("get_experiment").execute(experiment_id="missing")
         assert "not found" in result
 
     def test_check_training_no_jobs(self):
         """Test check_training with no jobs."""
-        tools = _get_forge_tools()
-        with patch("llm_forge.ui.assistant.list_jobs") as mock_list:
+        tools = _get_pulsar_tools()
+        with patch("pulsar_ai.ui.assistant.list_jobs") as mock_list:
             mock_list.return_value = []
             result = tools.get("check_training").execute()
         assert "No training jobs" in result
 
     def test_check_training_with_jobs(self):
         """Test check_training shows job info."""
-        tools = _get_forge_tools()
-        with patch("llm_forge.ui.assistant.list_jobs") as mock_list:
+        tools = _get_pulsar_tools()
+        with patch("pulsar_ai.ui.assistant.list_jobs") as mock_list:
             mock_list.return_value = [
                 {"job_id": "j1", "status": "running", "experiment_id": "e1"},
             ]
@@ -99,49 +111,44 @@ class TestForgeTools:
 
     def test_recommend_params_default(self):
         """Test recommend_params returns recommendations."""
-        tools = _get_forge_tools()
-        result = tools.get("recommend_params").execute(
-            model="Qwen/Qwen2.5-3B-Instruct"
-        )
+        tools = _get_pulsar_tools()
+        result = tools.get("recommend_params").execute(model="Qwen/Qwen2.5-3B-Instruct")
         assert "Learning rate" in result
         assert "Batch size" in result
 
     def test_recommend_params_small_model(self):
         """Test recommend_params for small model."""
-        tools = _get_forge_tools()
-        result = tools.get("recommend_params").execute(
-            model="llama-1B", dataset_rows=50
-        )
+        tools = _get_pulsar_tools()
+        result = tools.get("recommend_params").execute(model="llama-1B", dataset_rows=50)
         assert "Epochs: 10" in result  # Small dataset → more epochs
 
     def test_get_hardware(self):
         """Test get_hardware returns info."""
-        tools = _get_forge_tools()
+        tools = _get_pulsar_tools()
         result = tools.get("get_hardware").execute()
         # Should return something (CPU or GPU info)
         assert "VRAM" in result or "CPU" in result or "detection failed" in result
 
     def test_start_training_no_dataset(self):
         """Test start_training without dataset returns error."""
-        tools = _get_forge_tools()
+        tools = _get_pulsar_tools()
         result = tools.get("start_training").execute(name="test")
         assert "dataset_path is required" in result
 
     def test_list_workflows_empty(self):
         """Test list_workflows with no workflows."""
-        tools = _get_forge_tools()
-        with patch("llm_forge.ui.workflow_store.WorkflowStore") as mock_cls:
+        tools = _get_pulsar_tools()
+        with patch("pulsar_ai.ui.workflow_store.WorkflowStore") as mock_cls:
             mock_cls.return_value.list_all.return_value = []
             result = tools.get("list_workflows").execute()
         assert "No saved workflows" in result
 
     def test_list_workflows_with_data(self):
         """Test list_workflows returns formatted list."""
-        tools = _get_forge_tools()
-        with patch("llm_forge.ui.workflow_store.WorkflowStore") as mock_cls:
+        tools = _get_pulsar_tools()
+        with patch("pulsar_ai.ui.workflow_store.WorkflowStore") as mock_cls:
             mock_cls.return_value.list_all.return_value = [
-                {"id": "w1", "name": "My Pipeline", "nodes": [1, 2], "edges": [1],
-                 "run_count": 3},
+                {"id": "w1", "name": "My Pipeline", "nodes": [1, 2], "edges": [1], "run_count": 3},
             ]
             result = tools.get("list_workflows").execute()
         assert "w1" in result
@@ -149,22 +156,22 @@ class TestForgeTools:
 
     def test_get_workflow_not_found(self):
         """Test get_workflow returns error for missing workflow."""
-        tools = _get_forge_tools()
-        with patch("llm_forge.ui.workflow_store.WorkflowStore") as mock_cls:
+        tools = _get_pulsar_tools()
+        with patch("pulsar_ai.ui.workflow_store.WorkflowStore") as mock_cls:
             mock_cls.return_value.get.return_value = None
             result = tools.get("get_workflow").execute(workflow_id="missing")
         assert "not found" in result
 
     def test_estimate_training_cost_default(self):
         """Test estimate_training_cost returns estimate."""
-        tools = _get_forge_tools()
+        tools = _get_pulsar_tools()
         result = tools.get("estimate_training_cost").execute()
         assert "Estimated time" in result
         assert "Estimated cost" in result
 
     def test_estimate_training_cost_large_model(self):
         """Test estimate_training_cost for 70B model."""
-        tools = _get_forge_tools()
+        tools = _get_pulsar_tools()
         result = tools.get("estimate_training_cost").execute(
             model="70B", dataset_rows=5000, epochs=2
         )
@@ -173,17 +180,15 @@ class TestForgeTools:
 
     def test_suggest_config_chatbot(self):
         """Test suggest_config for chatbot use case."""
-        tools = _get_forge_tools()
+        tools = _get_pulsar_tools()
         result = tools.get("suggest_config").execute(use_case="chatbot")
         assert "chatbot" in result
         assert "Model:" in result
 
     def test_suggest_config_low_budget(self):
         """Test suggest_config downgrades model for low budget."""
-        tools = _get_forge_tools()
-        result = tools.get("suggest_config").execute(
-            use_case="chatbot", budget="low"
-        )
+        tools = _get_pulsar_tools()
+        result = tools.get("suggest_config").execute(use_case="chatbot", budget="low")
         assert "3B" in result
 
     def test_check_llm_available_with_key(self):
@@ -206,6 +211,7 @@ class TestForgeTools:
 # Command Parser
 # ──────────────────────────────────────────────────────────
 
+
 class TestCommandParser:
     """Test slash command parsing."""
 
@@ -217,8 +223,10 @@ class TestCommandParser:
 
     def test_status_command(self):
         """Test /status calls check_training + list_experiments."""
-        with patch("llm_forge.ui.assistant._store") as mock_store, \
-             patch("llm_forge.ui.assistant.list_jobs") as mock_jobs:
+        with (
+            patch("pulsar_ai.ui.assistant._store") as mock_store,
+            patch("pulsar_ai.ui.assistant.list_jobs") as mock_jobs,
+        ):
             mock_store.list_all.return_value = []
             mock_jobs.return_value = []
             result = parse_command("/status")
@@ -244,7 +252,7 @@ class TestCommandParser:
 
     def test_experiments_command(self):
         """Test /experiments command."""
-        with patch("llm_forge.ui.assistant._store") as mock_store:
+        with patch("pulsar_ai.ui.assistant._store") as mock_store:
             mock_store.list_all.return_value = []
             result = parse_command("/experiments")
         assert result is not None
@@ -268,7 +276,7 @@ class TestCommandParser:
 
     def test_cancel_command(self):
         """Test /cancel command."""
-        with patch("llm_forge.ui.assistant.cancel_job") as mock_cancel:
+        with patch("pulsar_ai.ui.assistant.cancel_job") as mock_cancel:
             mock_cancel.return_value = True
             result = parse_command("/cancel job_id=j1")
         assert result is not None
@@ -276,7 +284,7 @@ class TestCommandParser:
 
     def test_workflows_command(self):
         """Test /workflows calls list_workflows."""
-        with patch("llm_forge.ui.workflow_store.WorkflowStore") as mock_cls:
+        with patch("pulsar_ai.ui.workflow_store.WorkflowStore") as mock_cls:
             mock_cls.return_value.list_all.return_value = []
             result = parse_command("/workflows")
         assert result is not None
@@ -300,13 +308,16 @@ class TestCommandParser:
 # API Endpoints
 # ──────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def client():
     """Create test client for assistant endpoints."""
-    with patch("llm_forge.ui.routes.training._store"), \
-         patch("llm_forge.ui.routes.experiments._store"), \
-         patch("llm_forge.ui.routes.evaluation._store"), \
-         patch("llm_forge.ui.routes.export_routes._store"):
+    with (
+        patch("pulsar_ai.ui.routes.training._store"),
+        patch("pulsar_ai.ui.routes.experiments._store"),
+        patch("pulsar_ai.ui.routes.evaluation._store"),
+        patch("pulsar_ai.ui.routes.export_routes._store"),
+    ):
         app = create_app()
         yield TestClient(app)
 
@@ -328,13 +339,16 @@ class TestAssistantAPI:
         assert resp.status_code == 200
         assert "session_id" in resp.json()
 
-    @patch("llm_forge.ui.assistant._check_llm_available")
+    @patch("pulsar_ai.ui.assistant._check_llm_available")
     def test_chat_no_llm_no_command(self, mock_llm, client):
         """Test chat without LLM and without command shows help."""
         mock_llm.return_value = False
-        resp = client.post("/api/v1/assistant/chat", json={
-            "message": "how do I train a model?",
-        })
+        resp = client.post(
+            "/api/v1/assistant/chat",
+            json={
+                "message": "how do I train a model?",
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["mode"] == "command"
@@ -342,9 +356,11 @@ class TestAssistantAPI:
 
     def test_status_endpoint(self, client):
         """Test GET /api/v1/assistant/status."""
-        with patch("llm_forge.ui.assistant.list_jobs") as mock_jobs, \
-             patch("llm_forge.ui.assistant._store") as mock_store, \
-             patch("llm_forge.ui.assistant._check_llm_available") as mock_llm:
+        with (
+            patch("pulsar_ai.ui.assistant.list_jobs") as mock_jobs,
+            patch("pulsar_ai.ui.assistant._store") as mock_store,
+            patch("pulsar_ai.ui.assistant._check_llm_available") as mock_llm,
+        ):
             mock_jobs.return_value = []
             mock_store.list_all.return_value = []
             mock_llm.return_value = False
@@ -360,10 +376,13 @@ class TestAssistantAPI:
         resp1 = client.post("/api/v1/assistant/chat", json={"message": "/help"})
         sid = resp1.json()["session_id"]
 
-        resp2 = client.post("/api/v1/assistant/chat", json={
-            "message": "/help",
-            "session_id": sid,
-        })
+        resp2 = client.post(
+            "/api/v1/assistant/chat",
+            json={
+                "message": "/help",
+                "session_id": sid,
+            },
+        )
         assert resp2.json()["session_id"] == sid
 
     def test_delete_session(self, client):
@@ -374,8 +393,11 @@ class TestAssistantAPI:
 
     def test_chat_with_context(self, client):
         """Test chat passes context through."""
-        resp = client.post("/api/v1/assistant/chat", json={
-            "message": "/status",
-            "context": {"page": "/new", "active_jobs": []},
-        })
+        resp = client.post(
+            "/api/v1/assistant/chat",
+            json={
+                "message": "/status",
+                "context": {"page": "/new", "active_jobs": []},
+            },
+        )
         assert resp.status_code == 200

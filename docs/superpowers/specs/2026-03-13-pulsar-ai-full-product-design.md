@@ -1,10 +1,10 @@
 # Pulsar AI — Full Product Design Spec
 
-> Rebrand llm-forge to **Pulsar AI** and bring the platform from demo-ready to production-capable in 1-2 weeks, positioning it as **OpenJarvis + ClearML** — the closed-loop LLM platform.
+> Rebrand pulsar-ai to **Pulsar AI** and bring the platform from demo-ready to production-capable in 1-2 weeks, positioning it as **OpenJarvis + ClearML** — the closed-loop LLM platform.
 
 ## Context
 
-llm-forge is a self-hosted MLOps platform for the full LLM lifecycle: data → training (SFT/DPO) → evaluation → export → serving → agent → data collection → retrain. It already has ~90 Python modules, 10 React pages, 26 workflow node types, MCP/A2A protocol support, and a ReAct agent framework.
+pulsar-ai is a self-hosted MLOps platform for the full LLM lifecycle: data → training (SFT/DPO) → evaluation → export → serving → agent → data collection → retrain. It already has ~90 Python modules, 10 React pages, 26 workflow node types, MCP/A2A protocol support, and a ReAct agent framework.
 
 **Current state**: strong demo base, but several subsystems use JSON file storage, runtime state is in-memory only, security has demo shortcuts, and the frontend needs polish.
 
@@ -25,19 +25,19 @@ Four parallel workstreams, each independently deliverable:
 
 ## Stream 1: Brand (2-3 days)
 
-### 1.1 Rename llm-forge → Pulsar AI
+### 1.1 Rename pulsar-ai → Pulsar AI
 
-**Python package**: `llm_forge` → `pulsar_ai`
+**Python package**: `pulsar_ai` → `pulsar_ai`
 
 Files to update:
-- `pyproject.toml` — name, packages, entry points (`forge` → `pulsar`)
-- All imports across `src/llm_forge/` → `src/pulsar_ai/`
-- `src/llm_forge/` directory → `src/pulsar_ai/`
+- `pyproject.toml` — name, packages, entry points (`pulsar` → `pulsar`)
+- All imports across `src/pulsar_ai/` → `src/pulsar_ai/`
+- `src/pulsar_ai/` directory → `src/pulsar_ai/`
 - `ui/package.json` — name field
 - `Dockerfile`, `docker-compose.yml` — paths and labels
 - `README.md`, `AGENTS.md`, `PRESENTATION.md` — all references
 - `docs/` — all documentation
-- `configs/` — any references to "forge" or "llm-forge"
+- `configs/` — any references to "forge" or "pulsar-ai"
 - `.gitignore`, `Makefile` (if created)
 - Test files — imports and fixtures
 
@@ -51,24 +51,24 @@ pulsar ui
 ```
 
 Environment variables to rename:
-- `FORGE_ENV_FILE` → `PULSAR_ENV_FILE`
-- `FORGE_STAND_MODE` → `PULSAR_STAND_MODE`
-- `FORGE_CORS_ORIGINS` → `PULSAR_CORS_ORIGINS`
-- `FORGE_AUTH_ENABLED` → `PULSAR_AUTH_ENABLED`
-- `FORGE_STALE_RUNNING_MINUTES` → `PULSAR_STALE_RUNNING_MINUTES`
-- `FORGE_PORT` → `PULSAR_PORT`
+- `PULSAR_ENV_FILE` → `PULSAR_ENV_FILE`
+- `PULSAR_STAND_MODE` → `PULSAR_STAND_MODE`
+- `PULSAR_CORS_ORIGINS` → `PULSAR_CORS_ORIGINS`
+- `PULSAR_AUTH_ENABLED` → `PULSAR_AUTH_ENABLED`
+- `PULSAR_STALE_RUNNING_MINUTES` → `PULSAR_STALE_RUNNING_MINUTES`
+- `PULSAR_PORT` → `PULSAR_PORT`
 
-**Deprecation mechanism**: Add a `get_env(name)` helper in a new `pulsar_ai/env.py` module that checks `PULSAR_{name}` first, falls back to `FORGE_{name}` with a one-time deprecation warning via `warnings.warn()`. All modules use this helper instead of raw `os.getenv()`.
+**Deprecation mechanism**: Add a `get_env(name)` helper in a new `pulsar_ai/env.py` module that checks `PULSAR_{name}` first, falls back to `PULSAR_{name}` with a one-time deprecation warning via `warnings.warn()`. All modules use this helper instead of raw `os.getenv()`.
 
 **Additional files needing env var updates** (beyond main source):
-- `scripts/run_ui_server.py` — sets `os.environ["FORGE_*"]` directly, CLI help strings reference old names
+- `scripts/run_ui_server.py` — sets `os.environ["PULSAR_*"]` directly, CLI help strings reference old names
 - `scripts/start_prod_ready_dev.ps1`, `scripts/start_investor_demo.ps1` — PowerShell env var setup
-- `routes/settings.py` — reads FORGE_* vars for settings display
-- `tests/test_security.py` — references `FORGE_CORS_ORIGINS` in assertions
+- `routes/settings.py` — reads PULSAR_* vars for settings display
+- `tests/test_security.py` — references `PULSAR_CORS_ORIGINS` in assertions
 
 Also update:
 - API key prefix: `forge_` → `pulsar_` in `auth.py` key generation
-- Site chat system prompt in `routes/site_chat.py` (references "LLM Forge" and "MIT license")
+- Site chat system prompt in `routes/site_chat.py` (references "Pulsar AI" and "MIT license")
 - Dockerfile comment: "JSON stores" → "SQLite database"
 
 ### 1.2 Landing Page
@@ -291,7 +291,7 @@ Current dashboard has basic stats. Upgrade to:
 
 ### 4.2 Docker Production Config
 
-**Note**: `docker-compose.yml` already exists but uses old `forge` naming (service name, volume, env vars). Rewrite with Pulsar naming.
+**Note**: `docker-compose.yml` already exists but uses old `pulsar` naming (service name, volume, env vars). Rewrite with Pulsar naming.
 
 ```yaml
 # docker-compose.yml (NEW FILE)
@@ -368,7 +368,7 @@ Within each stream, tasks are ordered by dependency:
 
 ## Success Criteria
 
-- [ ] All references to "llm-forge" replaced with "pulsar-ai" / "Pulsar AI"
+- [ ] All references to "pulsar-ai" replaced with "pulsar-ai" / "Pulsar AI"
 - [ ] CLI commands work as `pulsar train/eval/export/serve/ui`
 - [ ] Landing page renders at `/` with five pillars and comparison table
 - [ ] All stores (workflows, prompts, API keys, compute targets) use SQLite

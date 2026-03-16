@@ -11,6 +11,8 @@ import {
   X,
 } from "lucide-react"
 import { api } from "@/api/client"
+import { EmptyState } from "@/components/ui/EmptyState"
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs"
 
 interface ComputeTarget {
   id: string
@@ -119,6 +121,7 @@ export function Compute() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Compute" }]} />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -162,13 +165,19 @@ export function Compute() {
 
       {/* Remote targets */}
       {targets.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <Server className="mx-auto mb-3 opacity-30" size={48} />
-          <p className="text-sm">No remote targets configured</p>
-          <p className="text-xs mt-1">
-            Add a remote GPU machine to distribute training
-          </p>
-        </div>
+        <EmptyState
+          icon={Server}
+          title="No remote targets configured"
+          description="Add a remote GPU machine to distribute training across multiple nodes."
+          action={
+            <button
+              onClick={() => setShowAdd(true)}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90 transition-colors"
+            >
+              Add Target
+            </button>
+          }
+        />
       ) : (
         <div className="grid gap-4">
           {targets.map((t) => (

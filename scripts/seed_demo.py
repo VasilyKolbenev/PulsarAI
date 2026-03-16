@@ -200,7 +200,7 @@ def seed_datasets() -> None:
         ("What are your business hours?", "We're open Monday-Friday, 9 AM to 6 PM EST. Weekend support is available via email."),
         ("Can I get a refund?", "Yes, we offer a 30-day money-back guarantee. Contact support@example.com with your order ID."),
         ("How do I upgrade my plan?", "Navigate to Settings > Billing > Upgrade Plan. Choose your new tier and confirm payment."),
-        ("Is there a mobile app?", "Yes! Our mobile app is available on both iOS and Android. Search 'Forge' in your app store."),
+        ("Is there a mobile app?", "Yes! Our mobile app is available on both iOS and Android. Search 'Pulsar AI' in your app store."),
     ]
     for instruction, output in topics:
         for i in range(20):
@@ -381,7 +381,7 @@ def seed_workflows() -> None:
             {"id": "n1", "type": "dataSource", "position": {"x": 50, "y": 100}, "data": {"label": "Knowledge Base", "config": {"path": "data/docs.jsonl", "format": "jsonl"}}},
             {"id": "n2", "type": "model", "position": {"x": 50, "y": 300}, "data": {"label": "Qwen 3B", "config": {"model_id": "Qwen/Qwen2.5-3B-Instruct", "quantization": "4bit"}}},
             {"id": "n3", "type": "rag", "position": {"x": 300, "y": 100}, "data": {"label": "RAG Index", "config": {"embedding_model": "BAAI/bge-small-en-v1.5", "vector_store": "chroma", "chunk_size": 512, "top_k": 5}}},
-            {"id": "n4", "type": "agent", "position": {"x": 550, "y": 200}, "data": {"label": "Support Agent", "config": {"framework": "forge-react", "tools": ["search", "calculator"], "memory_type": "short_term", "max_iterations": 10}}},
+            {"id": "n4", "type": "agent", "position": {"x": 550, "y": 200}, "data": {"label": "Support Agent", "config": {"framework": "pulsar-react", "tools": ["search", "calculator"], "memory_type": "short_term", "max_iterations": 10}}},
             {"id": "n5", "type": "dataGen", "position": {"x": 800, "y": 200}, "data": {"label": "Generate SFT Data", "config": {"output_format": "sft", "num_samples": 500, "include_reasoning": True, "filter_quality": True}}},
             {"id": "n6", "type": "training", "position": {"x": 1050, "y": 200}, "data": {"label": "Fine-Tune on Traces", "config": {"task": "sft", "lr": 1e-4, "epochs": 2}}},
         ],
@@ -409,7 +409,7 @@ def seed_workflows() -> None:
             {"id": "n3", "type": "router", "position": {"x": 300, "y": 200}, "data": {"label": "Task Router", "config": {"strategy": "llm_classifier", "routes": ["code,docs,debug"], "fallback_route": "general"}}},
             {"id": "n4", "type": "agent", "position": {"x": 580, "y": 80}, "data": {"label": "Code Writer", "config": {"framework": "langgraph", "tools": ["code_exec", "file_read"], "max_iterations": 15}}},
             {"id": "n5", "type": "agent", "position": {"x": 580, "y": 220}, "data": {"label": "Doc Generator", "config": {"framework": "crewai", "tools": ["search", "write"], "max_iterations": 8}}},
-            {"id": "n6", "type": "agent", "position": {"x": 580, "y": 360}, "data": {"label": "Debugger", "config": {"framework": "forge-react", "tools": ["code_exec", "trace", "search"], "max_iterations": 20}}},
+            {"id": "n6", "type": "agent", "position": {"x": 580, "y": 360}, "data": {"label": "Debugger", "config": {"framework": "pulsar-react", "tools": ["code_exec", "trace", "search"], "max_iterations": 20}}},
             {"id": "n7", "type": "inference", "position": {"x": 850, "y": 220}, "data": {"label": "Merge Results", "config": {"max_tokens": 1024, "temperature": 0.3}}},
         ],
         "edges": [
@@ -435,7 +435,7 @@ def seed_workflows() -> None:
 
 def main() -> None:
     """Seed all demo data."""
-    print("Seeding demo data for LLM Forge...")
+    print("Seeding demo data for Pulsar AI...")
     print()
 
     seed_experiments()
@@ -445,7 +445,7 @@ def main() -> None:
 
     print()
     print("Done! Restart the server to see demo data in the UI.")
-    print("  forge ui  OR  uvicorn llm_forge.ui.app:create_app --factory --port 8888")
+    print("  pulsar ui  OR  uvicorn pulsar_ai.ui.app:create_app --factory --port 8888")
 
 
 if __name__ == "__main__":

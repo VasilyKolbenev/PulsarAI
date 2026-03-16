@@ -3,7 +3,7 @@ import { BaseNode } from "./BaseNode"
 import type { NodeProps } from "@xyflow/react"
 
 const FRAMEWORK_LABELS: Record<string, string> = {
-  "forge-react": "Forge ReAct",
+  "pulsar-react": "Pulsar ReAct",
   langgraph: "LangGraph",
   crewai: "CrewAI",
   autogen: "AutoGen",
@@ -20,7 +20,7 @@ const RISK_BADGE: Record<string, string> = {
 export function AgentNode({ data }: NodeProps) {
   const config = (data.config ?? {}) as Record<string, unknown>
   const tools = (config.tools ?? []) as string[]
-  const framework = String(config.framework || "forge-react")
+  const framework = String(config.framework || "pulsar-react")
   const agentRole = String(config.agent_role || "")
   const riskLevel = String(config.risk_level || "")
   const requiresApproval = Boolean(config.requires_approval)

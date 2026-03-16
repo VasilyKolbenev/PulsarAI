@@ -1,7 +1,7 @@
-site_name: llm-forge
-site_description: Универсальный пайплайн файнтюнинга LLM с Web UI
-repo_url: https://github.com/your-org/llm-forge
-repo_name: llm-forge
+site_name: pulsar-ai
+site_description: Универсальная платформа для полного жизненного цикла LLM с Web UI
+repo_url: https://github.com/your-org/pulsar-ai
+repo_name: pulsar-ai
 edit_uri: edit/main/docs/
 
 docs_dir: docs

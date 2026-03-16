@@ -1,18 +1,15 @@
 """Tests for compute target management and remote runner."""
 
-import json
 import pytest
-from pathlib import Path
-from unittest.mock import patch, MagicMock
-from dataclasses import asdict
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-from llm_forge.compute.manager import ComputeManager, ComputeTarget, ConnectionTestResult
-from llm_forge.compute.ssh import SSHConnection
-from llm_forge.compute.remote_runner import RemoteJobRunner, RemoteJobStatus
-from llm_forge.ui.app import create_app
-
+from pulsar_ai.compute.manager import ComputeManager, ComputeTarget, ConnectionTestResult
+from pulsar_ai.compute.ssh import SSHConnection
+from pulsar_ai.compute.remote_runner import RemoteJobRunner, RemoteJobStatus
+from pulsar_ai.storage.database import Database
+from pulsar_ai.ui.app import create_app
 
 # ──────────────────────────────────────────────────────────
 # ComputeManager
@@ -25,7 +22,7 @@ class TestComputeManager:
     @pytest.fixture
     def manager(self, tmp_path):
         """Create manager with temp store."""
-        return ComputeManager(store_path=tmp_path / "targets.json")
+        return ComputeManager(db=Database(tmp_path / "test.db"))
 
     def test_add_target(self, manager):
         """Test adding a compute target."""
@@ -85,11 +82,11 @@ class TestComputeManager:
 
     def test_targets_persist(self, tmp_path):
         """Test targets persist across manager instances."""
-        path = tmp_path / "targets.json"
-        m1 = ComputeManager(store_path=path)
+        db = Database(tmp_path / "persist.db")
+        m1 = ComputeManager(db=db)
         m1.add_target(name="persist", host="5.5.5.5", user="x")
 
-        m2 = ComputeManager(store_path=path)
+        m2 = ComputeManager(db=db)
         targets = m2.list_targets()
         assert len(targets) == 1
         assert targets[0].name == "persist"
@@ -113,16 +110,16 @@ class TestSSHConnection:
 
     def test_init_with_key(self):
         """Test SSH connection with key path."""
-        conn = SSHConnection(
-            host="10.0.0.1", user="root", key_path="/tmp/key"
-        )
+        conn = SSHConnection(host="10.0.0.1", user="root", key_path="/tmp/key")
         assert conn.key_path == "/tmp/key"
 
     def test_context_manager(self):
         """Test SSH connection as context manager."""
-        with patch.object(SSHConnection, "connect") as mock_connect, \
-             patch.object(SSHConnection, "close") as mock_close:
-            with SSHConnection(host="x", user="y") as conn:
+        with (
+            patch.object(SSHConnection, "connect") as mock_connect,
+            patch.object(SSHConnection, "close") as mock_close,
+        ):
+            with SSHConnection(host="x", user="y") as _conn:
                 mock_connect.assert_called_once()
             mock_close.assert_called_once()
 
@@ -170,11 +167,13 @@ class TestRemoteJobRunner:
 @pytest.fixture
 def client(tmp_path):
     """Create test client with patched stores."""
-    with patch("llm_forge.ui.routes.training._store"), \
-         patch("llm_forge.ui.routes.experiments._store"), \
-         patch("llm_forge.ui.routes.evaluation._store"), \
-         patch("llm_forge.ui.routes.export_routes._store"), \
-         patch("llm_forge.ui.routes.compute._manager") as mock_mgr:
+    with (
+        patch("pulsar_ai.ui.routes.training._store"),
+        patch("pulsar_ai.ui.routes.experiments._store"),
+        patch("pulsar_ai.ui.routes.evaluation._store"),
+        patch("pulsar_ai.ui.routes.export_routes._store"),
+        patch("pulsar_ai.ui.routes.compute._manager") as mock_mgr,
+    ):
         mock_mgr.list_targets.return_value = []
         mock_mgr.add_target.return_value = ComputeTarget(
             id="abc12345",
@@ -195,7 +194,9 @@ def client(tmp_path):
             success=True, message="OK", latency_ms=50.0
         )
         mock_mgr.detect_remote_hardware.return_value = {
-            "gpu_count": 2, "gpu_type": "RTX 4090", "vram_gb": 24.0
+            "gpu_count": 2,
+            "gpu_type": "RTX 4090",
+            "vram_gb": 24.0,
         }
         app = create_app()
         yield TestClient(app)
@@ -212,11 +213,14 @@ class TestComputeAPI:
 
     def test_add_target(self, client):
         """Test POST /api/v1/compute/targets."""
-        resp = client.post("/api/v1/compute/targets", json={
-            "name": "test-gpu",
-            "host": "10.0.0.1",
-            "user": "ubuntu",
-        })
+        resp = client.post(
+            "/api/v1/compute/targets",
+            json={
+                "name": "test-gpu",
+                "host": "10.0.0.1",
+                "user": "ubuntu",
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["name"] == "test-gpu"

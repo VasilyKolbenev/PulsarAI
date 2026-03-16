@@ -46,7 +46,7 @@ outputs/cam-sft-qwen3.5-0.8b/
 Запустите eval и сохраните подробный отчёт:
 
 ```bash
-forge eval \
+pulsar eval \
   --model outputs/cam-sft-qwen3.5-0.8b/lora \
   --test-data data/cam_intents_test.csv \
   --output reports/sft-eval/
@@ -159,7 +159,7 @@ output_dir: outputs/cam-dpo-qwen3.5-0.8b
 ## 5. Запуск DPO-обучения
 
 ```bash
-forge train configs/examples/cam-dpo-qwen3.5-0.8b.yaml
+pulsar train configs/examples/cam-dpo-qwen3.5-0.8b.yaml
 ```
 
 Ожидаемый вывод:
@@ -188,7 +188,7 @@ Training complete! DPO adapter saved to outputs/cam-dpo-qwen3.5-0.8b/lora
 ## 6. Оценка DPO-модели
 
 ```bash
-forge eval \
+pulsar eval \
   --model outputs/cam-dpo-qwen3.5-0.8b/lora \
   --test-data data/cam_intents_test.csv \
   --output reports/dpo-eval/
@@ -199,7 +199,7 @@ forge eval \
 ## 7. Сравнение SFT vs DPO
 
 ```bash
-forge runs compare <sft_run_id> <dpo_run_id>
+pulsar runs compare <sft_run_id> <dpo_run_id>
 ```
 
 Ожидаемый вывод:

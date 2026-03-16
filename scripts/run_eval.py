@@ -168,7 +168,7 @@ def run_inference(model, tokenizer, test_df: pd.DataFrame, system_prompt: str) -
 
 def compute_metrics(predictions: list[dict], test_df: pd.DataFrame) -> dict:
     """Compute accuracy, per-class metrics, confusion matrix, F1."""
-    from llm_forge.evaluation.metrics import compute_metrics as _compute, compute_f1
+    from pulsar_ai.evaluation.metrics import compute_metrics as _compute, compute_f1
 
     true_labels = []
     for _, row in test_df.iterrows():
@@ -190,7 +190,7 @@ def compute_metrics(predictions: list[dict], test_df: pd.DataFrame) -> dict:
 def update_experiment_store(experiment_id: str, results: dict) -> None:
     """Write eval results to ExperimentStore."""
     try:
-        from llm_forge.ui.experiment_store import ExperimentStore
+        from pulsar_ai.ui.experiment_store import ExperimentStore
 
         store = ExperimentStore()
         store.set_eval_results(experiment_id, results)

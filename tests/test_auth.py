@@ -3,19 +3,24 @@
 import pytest
 from pathlib import Path
 
-from llm_forge.ui.auth import ApiKeyStore
+from pulsar_ai.storage.database import Database
+from pulsar_ai.ui.auth import ApiKeyStore
 
 
 class TestApiKeyStore:
     """Tests for ApiKeyStore."""
 
     @pytest.fixture
-    def store(self, tmp_path: Path) -> ApiKeyStore:
-        return ApiKeyStore(store_path=tmp_path / "keys.json")
+    def db(self, tmp_path: Path) -> Database:
+        return Database(tmp_path / "test.db")
 
-    def test_generate_key_returns_forge_prefix(self, store: ApiKeyStore):
+    @pytest.fixture
+    def store(self, db: Database) -> ApiKeyStore:
+        return ApiKeyStore(db=db)
+
+    def test_generate_key_returns_pulsar_prefix(self, store: ApiKeyStore):
         key = store.generate_key("test")
-        assert key.startswith("forge_")
+        assert key.startswith("pulsar_")
         assert len(key) > 20
 
     def test_verify_valid_key(self, store: ApiKeyStore):
@@ -59,9 +64,9 @@ class TestApiKeyMiddleware:
     @pytest.fixture
     def auth_app(self, tmp_path: Path):
         from fastapi import FastAPI
-        from llm_forge.ui.auth import ApiKeyMiddleware, ApiKeyStore
+        from pulsar_ai.ui.auth import ApiKeyMiddleware, ApiKeyStore
 
-        key_store = ApiKeyStore(store_path=tmp_path / "keys.json")
+        key_store = ApiKeyStore(db=Database(tmp_path / "auth.db"))
         app = FastAPI()
         app.add_middleware(ApiKeyMiddleware, key_store=key_store, enabled=True)
 
@@ -113,9 +118,9 @@ class TestApiKeyMiddleware:
     def test_disabled_middleware_allows_all(self, tmp_path: Path):
         from fastapi import FastAPI
         from fastapi.testclient import TestClient
-        from llm_forge.ui.auth import ApiKeyMiddleware, ApiKeyStore
+        from pulsar_ai.ui.auth import ApiKeyMiddleware, ApiKeyStore
 
-        key_store = ApiKeyStore(store_path=tmp_path / "keys.json")
+        key_store = ApiKeyStore(db=Database(tmp_path / "disabled.db"))
         app = FastAPI()
         app.add_middleware(ApiKeyMiddleware, key_store=key_store, enabled=False)
 

@@ -2,7 +2,7 @@
 
 import pytest
 
-from llm_forge.agent.tool import Tool, ToolRegistry, tool
+from pulsar_ai.agent.tool import Tool, ToolRegistry, tool
 
 
 def _dummy_tool_func(query: str) -> str:

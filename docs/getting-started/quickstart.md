@@ -7,8 +7,8 @@
 ## 1. Установка
 
 ```bash
-git clone https://github.com/your-org/llm-forge.git
-cd llm-forge
+git clone https://github.com/your-org/pulsar-ai.git
+cd pulsar-ai
 
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
@@ -32,7 +32,7 @@ cd ui && npm install && cd ..
 ## 2. Запуск backend
 
 ```bash
-forge ui
+pulsar ui
 ```
 
 Ожидаемый вывод:
@@ -69,7 +69,7 @@ VITE v6.x.x  ready in 500 ms
 ## 4. Обучение модели
 
 ```bash
-forge train configs/examples/cam-sft-qwen3.5-0.8b.yaml
+pulsar train configs/examples/cam-sft-qwen3.5-0.8b.yaml
 ```
 
 Ожидаемый вывод:
@@ -92,7 +92,7 @@ Training complete! Adapter saved to outputs/cam-sft-qwen3.5-0.8b/lora
 ## 5. Оценка модели
 
 ```bash
-forge eval \
+pulsar eval \
   --model outputs/cam-sft-qwen3.5-0.8b/lora \
   --test-data data/cam_intents_test.csv
 ```
@@ -114,7 +114,7 @@ Results:
 ## 6. Экспорт в GGUF
 
 ```bash
-forge export \
+pulsar export \
   --model outputs/cam-sft-qwen3.5-0.8b/lora \
   --format gguf \
   --quant q4_k_m
@@ -133,13 +133,13 @@ Exported: outputs/cam-sft-qwen3.5-0.8b-q4_k_m.gguf (530 MB)
     === "Merged (полная модель)"
 
         ```bash
-        forge export --model outputs/cam-sft-qwen3.5-0.8b/lora --format merged
+        pulsar export --model outputs/cam-sft-qwen3.5-0.8b/lora --format merged
         ```
 
     === "HuggingFace Hub"
 
         ```bash
-        forge export --model outputs/cam-sft-qwen3.5-0.8b/lora --format hub
+        pulsar export --model outputs/cam-sft-qwen3.5-0.8b/lora --format hub
         ```
 
 ---
@@ -147,7 +147,7 @@ Exported: outputs/cam-sft-qwen3.5-0.8b-q4_k_m.gguf (530 MB)
 ## 7. Запуск модели как API
 
 ```bash
-forge serve \
+pulsar serve \
   --model outputs/cam-sft-qwen3.5-0.8b-q4_k_m.gguf \
   --port 8080
 ```
@@ -192,4 +192,4 @@ curl http://localhost:8080/v1/chat/completions \
 
 - [Первый эксперимент](first-experiment.md) -- подробное пошаговое руководство
 - [Установка](installation.md) -- полная настройка с extras и .env
-- [CLI справочник](../reference/cli.md) -- все команды `forge`
+- [CLI справочник](../reference/cli.md) -- все команды `pulsar`

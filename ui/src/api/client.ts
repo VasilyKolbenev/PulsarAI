@@ -1,24 +1,11 @@
 ﻿const BASE = "/api/v1"
 
-function bootstrapApiKeyFromUrl(): string | null {
-  const params = new URLSearchParams(window.location.search)
-  const key = params.get("api_key")
-  if (!key) return null
-
-  localStorage.setItem("forge_api_key", key)
-  params.delete("api_key")
-
-  const next = `${window.location.pathname}${params.toString() ? `?${params}` : ""}${window.location.hash}`
-  window.history.replaceState({}, "", next)
-  return key
-}
-
-let _apiKey: string | null = bootstrapApiKeyFromUrl() || localStorage.getItem("forge_api_key")
+let _apiKey: string | null = localStorage.getItem("pulsar_api_key")
 
 export function setApiKey(key: string | null) {
   _apiKey = key
-  if (key) localStorage.setItem("forge_api_key", key)
-  else localStorage.removeItem("forge_api_key")
+  if (key) localStorage.setItem("pulsar_api_key", key)
+  else localStorage.removeItem("pulsar_api_key")
 }
 
 export function getApiKey(): string | null {

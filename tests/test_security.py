@@ -1,6 +1,5 @@
 """Tests for security hardening: CORS, calculator, SSH, remote runner."""
 
-import ast
 import os
 from unittest.mock import patch, MagicMock
 
@@ -11,10 +10,10 @@ class TestCorsConfiguration:
     """Tests for CORS origin configuration."""
 
     def test_default_cors_allows_localhost(self):
-        """Without FORGE_CORS_ORIGINS, localhost origins get CORS headers."""
+        """Without PULSAR_CORS_ORIGINS, localhost origins get CORS headers."""
         with patch.dict(os.environ, {}, clear=True):
-            os.environ.pop("FORGE_CORS_ORIGINS", None)
-            from llm_forge.ui.app import create_app
+            os.environ.pop("PULSAR_CORS_ORIGINS", None)
+            from pulsar_ai.ui.app import create_app
             from fastapi.testclient import TestClient
 
             app = create_app()
@@ -31,8 +30,8 @@ class TestCorsConfiguration:
     def test_default_cors_blocks_unknown_origin(self):
         """Unknown origins should not get CORS allow header."""
         with patch.dict(os.environ, {}, clear=True):
-            os.environ.pop("FORGE_CORS_ORIGINS", None)
-            from llm_forge.ui.app import create_app
+            os.environ.pop("PULSAR_CORS_ORIGINS", None)
+            from pulsar_ai.ui.app import create_app
             from fastapi.testclient import TestClient
 
             app = create_app()
@@ -49,12 +48,12 @@ class TestCorsConfiguration:
             assert "evil.com" not in allow_origin
 
     def test_custom_cors_from_env(self):
-        """FORGE_CORS_ORIGINS overrides default origins."""
+        """PULSAR_CORS_ORIGINS overrides default origins."""
         with patch.dict(
             os.environ,
-            {"FORGE_CORS_ORIGINS": "https://app.example.com,https://admin.example.com"},
+            {"PULSAR_CORS_ORIGINS": "https://app.example.com,https://admin.example.com"},
         ):
-            from llm_forge.ui.app import create_app
+            from pulsar_ai.ui.app import create_app
             from fastapi.testclient import TestClient
 
             app = create_app()
@@ -73,7 +72,7 @@ class TestSafeCalculator:
     """Tests for AST-based safe calculator."""
 
     def test_basic_arithmetic(self):
-        from llm_forge.agent.builtin_tools import _calculate
+        from pulsar_ai.agent.builtin_tools import _calculate
 
         assert _calculate("2 + 3") == "5"
         assert _calculate("10 - 4") == "6"
@@ -81,57 +80,57 @@ class TestSafeCalculator:
         assert _calculate("15 / 3") == "5.0"
 
     def test_complex_expression(self):
-        from llm_forge.agent.builtin_tools import _calculate
+        from pulsar_ai.agent.builtin_tools import _calculate
 
         assert _calculate("(2 + 3) * 4") == "20"
 
     def test_power(self):
-        from llm_forge.agent.builtin_tools import _calculate
+        from pulsar_ai.agent.builtin_tools import _calculate
 
         assert _calculate("2 ** 10") == "1024"
 
     def test_modulo(self):
-        from llm_forge.agent.builtin_tools import _calculate
+        from pulsar_ai.agent.builtin_tools import _calculate
 
         assert _calculate("17 % 5") == "2"
 
     def test_negative_numbers(self):
-        from llm_forge.agent.builtin_tools import _calculate
+        from pulsar_ai.agent.builtin_tools import _calculate
 
         assert _calculate("-5 + 3") == "-2"
 
     def test_float(self):
-        from llm_forge.agent.builtin_tools import _calculate
+        from pulsar_ai.agent.builtin_tools import _calculate
 
         result = _calculate("3.14 * 2")
         assert float(result) == pytest.approx(6.28)
 
     def test_division_by_zero(self):
-        from llm_forge.agent.builtin_tools import _calculate
+        from pulsar_ai.agent.builtin_tools import _calculate
 
         result = _calculate("1 / 0")
         assert "Error" in result
 
     def test_rejects_function_calls(self):
-        from llm_forge.agent.builtin_tools import _calculate
+        from pulsar_ai.agent.builtin_tools import _calculate
 
         result = _calculate("__import__('os').system('ls')")
         assert "Error" in result
 
     def test_rejects_variable_names(self):
-        from llm_forge.agent.builtin_tools import _calculate
+        from pulsar_ai.agent.builtin_tools import _calculate
 
         result = _calculate("abc + 1")
         assert "Error" in result
 
     def test_rejects_string_literals(self):
-        from llm_forge.agent.builtin_tools import _calculate
+        from pulsar_ai.agent.builtin_tools import _calculate
 
         result = _calculate("'hello'")
         assert "Error" in result
 
     def test_rejects_list_comprehension(self):
-        from llm_forge.agent.builtin_tools import _calculate
+        from pulsar_ai.agent.builtin_tools import _calculate
 
         result = _calculate("[x for x in range(10)]")
         assert "Error" in result
@@ -141,12 +140,15 @@ class TestRemoteRunnerNoHeredoc:
     """Tests that remote_runner uses SFTP instead of heredoc."""
 
     def test_write_remote_json_uses_put_file(self):
-        from llm_forge.compute.remote_runner import RemoteJobRunner
-        from llm_forge.compute.manager import ComputeTarget
+        from pulsar_ai.compute.remote_runner import RemoteJobRunner
+        from pulsar_ai.compute.manager import ComputeTarget
 
         target = ComputeTarget(
-            id="test", name="test", host="example.com",
-            user="root", port=22,
+            id="test",
+            name="test",
+            host="example.com",
+            user="root",
+            port=22,
         )
         runner = RemoteJobRunner(target)
 
@@ -163,12 +165,16 @@ class TestRemoteRunnerNoHeredoc:
 
     def test_submit_job_no_heredoc_in_commands(self):
         """Ensure submit_job doesn't use cat heredoc for config writing."""
-        from llm_forge.compute.remote_runner import RemoteJobRunner
-        from llm_forge.compute.manager import ComputeTarget
+        from pulsar_ai.compute.remote_runner import RemoteJobRunner
+        from pulsar_ai.compute.manager import ComputeTarget
 
         target = ComputeTarget(
-            id="test", name="test", host="example.com",
-            user="root", port=22, gpu_count=1,
+            id="test",
+            name="test",
+            host="example.com",
+            user="root",
+            port=22,
+            gpu_count=1,
         )
         runner = RemoteJobRunner(target)
 

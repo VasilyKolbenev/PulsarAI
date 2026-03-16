@@ -7,7 +7,7 @@
 
 ## Важно по ссылкам
 
-Причина падений вида `ERR_CONNECTION_REFUSED` была в том, что открывался порт, на котором процесс не запущен, или запускался старый `forge ui` из другого окружения.
+Причина падений вида `ERR_CONNECTION_REFUSED` была в том, что открывался порт, на котором процесс не запущен, или запускался старый `pulsar ui` из другого окружения.
 
 Теперь UI всегда поднимается через `scripts/run_ui_server.py` из текущего репозитория.
 
@@ -16,7 +16,7 @@
 Старт (стабильный, с перезапуском старого процесса):
 
 ```powershell
-cd C:\Users\User\Desktop\llm-forge
+cd C:\Users\User\Desktop\pulsar-ai
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\start_investor_demo.ps1 -ForceRestart
 ```
 
@@ -43,7 +43,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\stop_ui_persistent
 Старт:
 
 ```powershell
-cd C:\Users\User\Desktop\llm-forge
+cd C:\Users\User\Desktop\pulsar-ai
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\start_prod_ready_dev.ps1 -ForceRestart
 ```
 
@@ -56,7 +56,7 @@ http://127.0.0.1:18888/experiments
 Что делает скрипт:
 
 1. Загружает профиль `.env.prod-ready.example`.
-2. Включает `FORGE_AUTH_ENABLED=true`.
+2. Включает `PULSAR_AUTH_ENABLED=true`.
 3. Генерирует API-ключ `prod-dev-admin`.
 4. Сохраняет ключ в `outputs/access/prod-dev-admin.key`.
 5. Печатает ссылку входа вида `http://127.0.0.1:18888/?api_key=<KEY>`.
@@ -67,13 +67,13 @@ http://127.0.0.1:18888/experiments
 Запуск DPO (пример Qwen3.5-2B):
 
 ```powershell
-cd C:\Users\User\Desktop\llm-forge
+cd C:\Users\User\Desktop\pulsar-ai
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\run_dpo_qwen35_2b.ps1
 ```
 
 ## 4) Минимальный чеклист prod-ready
 
-1. Auth включен (`FORGE_AUTH_ENABLED=true`).
+1. Auth включен (`PULSAR_AUTH_ENABLED=true`).
 2. CORS ограничен только нужными origin.
 3. API-ключи выдаются по ролям, ротация и revoke протестированы.
 4. Логи и артефакты тренировок сохраняются в `outputs/`.

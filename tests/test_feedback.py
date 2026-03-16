@@ -1,4 +1,4 @@
-"""Tests for llm_forge.feedback module.
+"""Tests for pulsar_ai.feedback module.
 
 Tests FeedbackCollector recording thumbs/rating/preference,
 DPO pair export, get_stats(), and persistence to storage_dir.
@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from llm_forge.feedback import FeedbackCollector, FeedbackEntry
+from pulsar_ai.feedback import FeedbackCollector, FeedbackEntry
 
 
 @pytest.fixture
@@ -64,21 +64,30 @@ class TestRecordThumbs:
         assert entry.rating == -1
 
     def test_record_thumbs_with_model_and_user(
-        self, collector: FeedbackCollector,
+        self,
+        collector: FeedbackCollector,
     ) -> None:
         """Thumbs record stores model and user_id."""
         entry = collector.record_thumbs(
-            "p", "r", is_positive=True, model="gpt-4o", user_id="u1",
+            "p",
+            "r",
+            is_positive=True,
+            model="gpt-4o",
+            user_id="u1",
         )
         assert entry.model == "gpt-4o"
         assert entry.user_id == "u1"
 
     def test_record_thumbs_with_metadata(
-        self, collector: FeedbackCollector,
+        self,
+        collector: FeedbackCollector,
     ) -> None:
         """Extra kwargs are stored as metadata."""
         entry = collector.record_thumbs(
-            "p", "r", is_positive=True, session="s1",
+            "p",
+            "r",
+            is_positive=True,
+            session="s1",
         )
         assert entry.metadata["session"] == "s1"
 
@@ -103,7 +112,8 @@ class TestRecordRating:
         assert entry.rating == 5
 
     def test_record_rating_with_text_feedback(
-        self, collector: FeedbackCollector,
+        self,
+        collector: FeedbackCollector,
     ) -> None:
         """Text feedback is stored alongside the rating."""
         entry = collector.record_rating("p", "r", rating=3, text_feedback="okay")
@@ -121,11 +131,15 @@ class TestRecordPreference:
         assert entry.rejected == "worst"
 
     def test_record_preference_with_model(
-        self, collector: FeedbackCollector,
+        self,
+        collector: FeedbackCollector,
     ) -> None:
         """Preference records model name."""
         entry = collector.record_preference(
-            "p", chosen="a", rejected="b", model="gpt-4o",
+            "p",
+            chosen="a",
+            rejected="b",
+            model="gpt-4o",
         )
         assert entry.model == "gpt-4o"
 
@@ -144,7 +158,8 @@ class TestExportDPOPairs:
         assert "p2" in prompts
 
     def test_export_from_thumbs_cross_join(
-        self, collector: FeedbackCollector,
+        self,
+        collector: FeedbackCollector,
     ) -> None:
         """Thumbs are cross-joined into chosen/rejected pairs for same prompt."""
         collector.record_thumbs("p", "good_a", is_positive=True)
@@ -164,7 +179,8 @@ class TestExportDPOPairs:
         assert collector.export_dpo_pairs() == []
 
     def test_export_thumbs_only_positive_no_pairs(
-        self, collector: FeedbackCollector,
+        self,
+        collector: FeedbackCollector,
     ) -> None:
         """Only positive thumbs (no negatives) produce no DPO pairs."""
         collector.record_thumbs("p", "good", is_positive=True)
@@ -223,7 +239,9 @@ class TestPersistence:
     """Tests for persistence to storage_dir."""
 
     def test_persist_creates_jsonl_file(
-        self, persistent_collector: FeedbackCollector, tmp_path: Path,
+        self,
+        persistent_collector: FeedbackCollector,
+        tmp_path: Path,
     ) -> None:
         """Recording feedback creates a feedback.jsonl file."""
         persistent_collector.record_thumbs("p", "r", is_positive=True)
@@ -231,7 +249,9 @@ class TestPersistence:
         assert filepath.exists()
 
     def test_persist_appends_entries(
-        self, persistent_collector: FeedbackCollector, tmp_path: Path,
+        self,
+        persistent_collector: FeedbackCollector,
+        tmp_path: Path,
     ) -> None:
         """Multiple records append lines to feedback.jsonl."""
         persistent_collector.record_thumbs("p1", "r1", is_positive=True)
@@ -242,7 +262,9 @@ class TestPersistence:
         assert len(lines) == 3
 
     def test_persisted_entries_are_valid_json(
-        self, persistent_collector: FeedbackCollector, tmp_path: Path,
+        self,
+        persistent_collector: FeedbackCollector,
+        tmp_path: Path,
     ) -> None:
         """Each persisted line is valid JSON."""
         persistent_collector.record_thumbs("p", "r", is_positive=True)
@@ -255,5 +277,5 @@ class TestPersistence:
     def test_storage_dir_created_automatically(self, tmp_path: Path) -> None:
         """storage_dir is created if it doesn't exist."""
         dir_path = tmp_path / "deep" / "nested" / "feedback"
-        collector = FeedbackCollector(storage_dir=str(dir_path))
+        FeedbackCollector(storage_dir=str(dir_path))
         assert dir_path.exists()

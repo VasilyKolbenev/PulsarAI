@@ -1,4 +1,4 @@
-"""Tests for llm_forge.deployment.canary module.
+"""Tests for pulsar_ai.deployment.canary module.
 
 Tests CanaryDeployer routing, rollback, promote, traffic splitting,
 CanaryConfig.from_dict, ABTester routing/metrics/winner detection.
@@ -9,7 +9,7 @@ from collections import Counter
 
 import pytest
 
-from llm_forge.deployment.canary import (
+from pulsar_ai.deployment.canary import (
     ABTestConfig,
     ABTester,
     CanaryConfig,
@@ -32,7 +32,8 @@ def canary_endpoint() -> ModelEndpoint:
 
 @pytest.fixture
 def canary_config(
-    primary_endpoint: ModelEndpoint, canary_endpoint: ModelEndpoint,
+    primary_endpoint: ModelEndpoint,
+    canary_endpoint: ModelEndpoint,
 ) -> CanaryConfig:
     """Create a canary deployment config."""
     return CanaryConfig(
@@ -92,7 +93,8 @@ class TestCanaryDeployerRouting:
     """Tests for CanaryDeployer.route()."""
 
     def test_route_returns_primary_when_no_canary(
-        self, primary_endpoint: ModelEndpoint,
+        self,
+        primary_endpoint: ModelEndpoint,
     ) -> None:
         """Route returns 'primary' when no canary is configured."""
         config = CanaryConfig(primary=primary_endpoint, canary=None)
@@ -100,7 +102,9 @@ class TestCanaryDeployerRouting:
         assert deployer.route() == "primary"
 
     def test_route_returns_primary_when_canary_inactive(
-        self, primary_endpoint: ModelEndpoint, canary_endpoint: ModelEndpoint,
+        self,
+        primary_endpoint: ModelEndpoint,
+        canary_endpoint: ModelEndpoint,
     ) -> None:
         """Route returns 'primary' when canary status is not 'active'."""
         canary_endpoint.status = "rolled_back"
@@ -109,7 +113,8 @@ class TestCanaryDeployerRouting:
         assert deployer.route() == "primary"
 
     def test_traffic_split_respects_canary_weight(
-        self, canary_config: CanaryConfig,
+        self,
+        canary_config: CanaryConfig,
     ) -> None:
         """Traffic split roughly matches canary_weight over many requests."""
         deployer = CanaryDeployer(canary_config)
@@ -120,11 +125,15 @@ class TestCanaryDeployerRouting:
         assert 0.10 <= canary_ratio <= 0.35
 
     def test_route_all_primary_when_weight_zero(
-        self, primary_endpoint: ModelEndpoint, canary_endpoint: ModelEndpoint,
+        self,
+        primary_endpoint: ModelEndpoint,
+        canary_endpoint: ModelEndpoint,
     ) -> None:
         """Zero canary weight routes everything to primary."""
         config = CanaryConfig(
-            primary=primary_endpoint, canary=canary_endpoint, canary_weight=0.0,
+            primary=primary_endpoint,
+            canary=canary_endpoint,
+            canary_weight=0.0,
         )
         deployer = CanaryDeployer(config)
         results = [deployer.route() for _ in range(100)]
@@ -135,7 +144,8 @@ class TestCanaryAutoRollback:
     """Tests for automatic rollback on error threshold."""
 
     def test_auto_rollback_on_error_threshold(
-        self, canary_config: CanaryConfig,
+        self,
+        canary_config: CanaryConfig,
     ) -> None:
         """Canary is rolled back when error rate exceeds threshold."""
         canary_config.canary_weight = 1.0  # force all traffic to canary
@@ -152,7 +162,8 @@ class TestCanaryAutoRollback:
         assert canary_config.canary.status == "rolled_back"
 
     def test_no_rollback_below_min_requests(
-        self, canary_config: CanaryConfig,
+        self,
+        canary_config: CanaryConfig,
     ) -> None:
         """No rollback if canary has fewer than min_requests."""
         deployer = CanaryDeployer(canary_config)
@@ -164,12 +175,16 @@ class TestCanaryAutoRollback:
         assert canary_config.canary.status == "active"
 
     def test_no_rollback_when_disabled(
-        self, primary_endpoint: ModelEndpoint, canary_endpoint: ModelEndpoint,
+        self,
+        primary_endpoint: ModelEndpoint,
+        canary_endpoint: ModelEndpoint,
     ) -> None:
         """No auto-rollback when auto_rollback=False."""
         config = CanaryConfig(
-            primary=primary_endpoint, canary=canary_endpoint,
-            auto_rollback=False, min_requests=5,
+            primary=primary_endpoint,
+            canary=canary_endpoint,
+            auto_rollback=False,
+            min_requests=5,
         )
         deployer = CanaryDeployer(config)
         for _ in range(10):
@@ -188,12 +203,17 @@ class TestCanaryPromote:
         assert canary_config.canary.status == "promoted"
 
     def test_auto_promote_after_threshold(
-        self, primary_endpoint: ModelEndpoint, canary_endpoint: ModelEndpoint,
+        self,
+        primary_endpoint: ModelEndpoint,
+        canary_endpoint: ModelEndpoint,
     ) -> None:
         """Auto-promote when canary reaches promote_after requests."""
         config = CanaryConfig(
-            primary=primary_endpoint, canary=canary_endpoint,
-            canary_weight=1.0, auto_promote=True, promote_after=10,
+            primary=primary_endpoint,
+            canary=canary_endpoint,
+            canary_weight=1.0,
+            auto_promote=True,
+            promote_after=10,
             auto_rollback=False,
         )
         deployer = CanaryDeployer(config)

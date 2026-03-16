@@ -37,7 +37,7 @@ trap cleanup SIGINT SIGTERM EXIT
 start_backend() {
     log "Starting backend (FastAPI) on port 8888..."
     cd "$PROJECT_DIR"
-    python -c "from llm_forge.ui.app import create_app; import uvicorn; uvicorn.run(create_app(), host='127.0.0.1', port=8888)" \
+    python -c "from pulsar_ai.ui.app import create_app; import uvicorn; uvicorn.run(create_app(), host='127.0.0.1', port=8888)" \
         >> "$BACKEND_LOG" 2>&1 &
     BACKEND_PID=$!
     log "Backend started (PID: $BACKEND_PID)"

@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback } from "react"
 import { useDropzone } from "react-dropzone"
 import { api } from "@/api/client"
-import { Upload, Trash2, Eye } from "lucide-react"
+import { Upload, Trash2, Eye, Database } from "lucide-react"
+import { EmptyState } from "@/components/ui/EmptyState"
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs"
 
 export function Datasets() {
   const [datasets, setDatasets] = useState<Array<Record<string, unknown>>>([])
@@ -61,6 +63,7 @@ export function Datasets() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Datasets" }]} />
       <div>
         <h2 className="text-2xl font-bold">Datasets</h2>
         <p className="text-muted-foreground text-sm mt-1">Upload and manage training data</p>
@@ -90,6 +93,13 @@ export function Datasets() {
       {error && <p className="text-destructive text-sm">{error}</p>}
 
       {/* Datasets list */}
+      {datasets.length === 0 && !uploading && (
+        <EmptyState
+          icon={Database}
+          title="No datasets uploaded"
+          description="Upload a CSV, JSONL, Parquet, or Excel file to get started with training."
+        />
+      )}
       {datasets.length > 0 && (
         <div className="border border-border rounded-lg overflow-hidden">
           <table className="w-full text-sm">

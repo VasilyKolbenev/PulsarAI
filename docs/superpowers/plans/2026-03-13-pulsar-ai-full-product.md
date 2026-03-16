@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rebrand llm-forge to Pulsar AI, complete the SQLite migration, harden security, polish the UI with a landing page, and add CI/Docker — delivering a production-capable platform in 10 days.
+**Goal:** Rebrand pulsar-ai to Pulsar AI, complete the SQLite migration, harden security, polish the UI with a landing page, and add CI/Docker — delivering a production-capable platform in 10 days.
 
 **Architecture:** Four parallel streams (Brand, Core, UI, Quality) with cross-dependencies managed via merge order. Each stream produces independently testable results. The rename (Stream 1) must complete first since all subsequent streams use the new package name.
 
@@ -17,11 +17,11 @@
 ### File Structure
 
 **New files:**
-- `src/pulsar_ai/env.py` — centralized env var helper with FORGE_ deprecation
+- `src/pulsar_ai/env.py` — centralized env var helper with PULSAR_ deprecation
 - `ui/src/pages/Landing.tsx` — public landing page
 
 **Renamed directory:**
-- `src/llm_forge/` → `src/pulsar_ai/`
+- `src/pulsar_ai/` → `src/pulsar_ai/`
 
 **Modified files (key ones):**
 - `pyproject.toml` — package name, entry points, optional deps
@@ -32,8 +32,8 @@
 - `docker-compose.yml` — service name, volume, env vars
 - `README.md` — complete rewrite
 - `LICENSE` — switch to Apache 2.0
-- ~90 Python files — all `from llm_forge` imports
-- ~48 test files — all `from llm_forge` imports
+- ~90 Python files — all `from pulsar_ai` imports
+- ~48 test files — all `from pulsar_ai` imports
 - All scripts in `scripts/` — env var references
 - All docs in `docs/` — text references
 
@@ -42,7 +42,7 @@
 ### Task 1: Create env.py helper module
 
 **Files:**
-- Create: `src/llm_forge/env.py` (pre-rename location, will be renamed with everything else)
+- Create: `src/pulsar_ai/env.py` (pre-rename location, will be renamed with everything else)
 - Test: `tests/test_env.py`
 
 - [ ] **Step 1: Write test for env var helper**
@@ -54,7 +54,7 @@ import os
 import warnings
 import pytest
 
-from llm_forge.env import get_env, _warned
+from pulsar_ai.env import get_env, _warned
 
 
 @pytest.fixture(autouse=True)
@@ -72,31 +72,31 @@ def test_get_env_reads_pulsar_prefix(monkeypatch):
 
 def test_get_env_falls_back_to_forge_prefix(monkeypatch):
     monkeypatch.delenv("PULSAR_PORT", raising=False)
-    monkeypatch.setenv("FORGE_PORT", "8888")
+    monkeypatch.setenv("PULSAR_PORT", "8888")
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         result = get_env("PORT")
         assert result == "8888"
         assert len(w) == 1
-        assert "FORGE_PORT" in str(w[0].message)
+        assert "PULSAR_PORT" in str(w[0].message)
 
 
 def test_get_env_returns_default_when_neither_set(monkeypatch):
     monkeypatch.delenv("PULSAR_PORT", raising=False)
-    monkeypatch.delenv("FORGE_PORT", raising=False)
+    monkeypatch.delenv("PULSAR_PORT", raising=False)
     assert get_env("PORT", "8888") == "8888"
 
 
 def test_get_env_pulsar_takes_precedence(monkeypatch):
     monkeypatch.setenv("PULSAR_PORT", "9999")
-    monkeypatch.setenv("FORGE_PORT", "8888")
+    monkeypatch.setenv("PULSAR_PORT", "8888")
     assert get_env("PORT") == "9999"
 
 
 def test_forge_warning_only_once(monkeypatch):
     """Deprecation warning fires only once per variable name."""
     monkeypatch.delenv("PULSAR_PORT", raising=False)
-    monkeypatch.setenv("FORGE_PORT", "8888")
+    monkeypatch.setenv("PULSAR_PORT", "8888")
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         get_env("PORT")
@@ -106,17 +106,17 @@ def test_forge_warning_only_once(monkeypatch):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd C:\Users\User\Desktop\llm-forge && python -m pytest tests/test_env.py -v`
-Expected: FAIL — `ModuleNotFoundError: No module named 'llm_forge.env'`
+Run: `cd C:\Users\User\Desktop\pulsar-ai && python -m pytest tests/test_env.py -v`
+Expected: FAIL — `ModuleNotFoundError: No module named 'pulsar_ai.env'`
 
 - [ ] **Step 3: Implement env.py**
 
 ```python
-# src/llm_forge/env.py
-"""Centralized environment variable access with FORGE_ → PULSAR_ deprecation.
+# src/pulsar_ai/env.py
+"""Centralized environment variable access with PULSAR_ → PULSAR_ deprecation.
 
 Usage::
-    from llm_forge.env import get_env
+    from pulsar_ai.env import get_env
     port = get_env("PORT", "8888")
 """
 import os
@@ -127,7 +127,7 @@ _warned: set[str] = set()
 
 
 def get_env(name: str, default: str | None = None) -> str | None:
-    """Read an environment variable with PULSAR_ prefix, falling back to FORGE_.
+    """Read an environment variable with PULSAR_ prefix, falling back to PULSAR_.
 
     Args:
         name: Variable name without prefix (e.g. "PORT", "AUTH_ENABLED").
@@ -140,11 +140,11 @@ def get_env(name: str, default: str | None = None) -> str | None:
     if pulsar_val is not None:
         return pulsar_val
 
-    forge_val = os.environ.get(f"FORGE_{name}")
+    forge_val = os.environ.get(f"PULSAR_{name}")
     if forge_val is not None:
         if name not in _warned:
             warnings.warn(
-                f"FORGE_{name} is deprecated, use PULSAR_{name} instead.",
+                f"PULSAR_{name} is deprecated, use PULSAR_{name} instead.",
                 DeprecationWarning,
                 stacklevel=2,
             )
@@ -156,59 +156,59 @@ def get_env(name: str, default: str | None = None) -> str | None:
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `cd C:\Users\User\Desktop\llm-forge && python -m pytest tests/test_env.py -v`
+Run: `cd C:\Users\User\Desktop\pulsar-ai && python -m pytest tests/test_env.py -v`
 Expected: 4 passed
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/llm_forge/env.py tests/test_env.py
-git commit -m "feat: add env.py helper with FORGE_ → PULSAR_ deprecation"
+git add src/pulsar_ai/env.py tests/test_env.py
+git commit -m "feat: add env.py helper with PULSAR_ → PULSAR_ deprecation"
 ```
 
 ---
 
-### Task 2: Rename Python package llm_forge → pulsar_ai
+### Task 2: Rename Python package pulsar_ai → pulsar_ai
 
 **Files:**
-- Rename: `src/llm_forge/` → `src/pulsar_ai/`
+- Rename: `src/pulsar_ai/` → `src/pulsar_ai/`
 - Modify: `pyproject.toml`
-- Modify: every `.py` file with `llm_forge` imports
-- Modify: every test file with `llm_forge` imports
+- Modify: every `.py` file with `pulsar_ai` imports
+- Modify: every test file with `pulsar_ai` imports
 
 - [ ] **Step 1: Rename the source directory**
 
 ```bash
-cd C:\Users\User\Desktop\llm-forge
-git mv src/llm_forge src/pulsar_ai
+cd C:\Users\User\Desktop\pulsar-ai
+git mv src/pulsar_ai src/pulsar_ai
 ```
 
 - [ ] **Step 2: Bulk-rename all Python imports**
 
 ```bash
-cd C:\Users\User\Desktop\llm-forge
+cd C:\Users\User\Desktop\pulsar-ai
 # Replace in all .py files under src/ and tests/
-find src/ tests/ -name "*.py" -exec sed -i 's/from llm_forge/from pulsar_ai/g; s/import llm_forge/import pulsar_ai/g; s/"llm_forge/"pulsar_ai/g; s/llm_forge\./pulsar_ai./g' {} +
+find src/ tests/ -name "*.py" -exec sed -i 's/from pulsar_ai/from pulsar_ai/g; s/import pulsar_ai/import pulsar_ai/g; s/"pulsar_ai/"pulsar_ai/g; s/pulsar_ai\./pulsar_ai./g' {} +
 ```
 
 - [ ] **Step 3: Update pyproject.toml**
 
 Replace in `pyproject.toml`:
-- `name = "llm-forge"` → `name = "pulsar-ai"`
+- `name = "pulsar-ai"` → `name = "pulsar-ai"`
 - `description` → new description
 - `license = {text = "MIT"}` → `license = {text = "Apache-2.0"}`
-- `forge = "llm_forge.cli:main"` → `pulsar = "pulsar_ai.cli:main"`
-- `packages = ["src/llm_forge"]` → `packages = ["src/pulsar_ai"]`
-- `"llm-forge[...]"` → `"pulsar-ai[...]"` in all optional deps
+- `forge = "pulsar_ai.cli:main"` → `pulsar = "pulsar_ai.cli:main"`
+- `packages = ["src/pulsar_ai"]` → `packages = ["src/pulsar_ai"]`
+- `"pulsar-ai[...]"` → `"pulsar-ai[...]"` in all optional deps
 - `pythonpath = ["src"]` stays unchanged
 
 - [ ] **Step 4: Update storage database default path**
 
 In `src/pulsar_ai/storage/database.py` line 27:
-- `DEFAULT_DB_PATH = Path("./data/llm_forge.db")` → `DEFAULT_DB_PATH = Path("./data/pulsar.db")`
+- `DEFAULT_DB_PATH = Path("./data/pulsar_ai.db")` → `DEFAULT_DB_PATH = Path("./data/pulsar.db")`
 
 In `src/pulsar_ai/storage/schema.py` line 96:
-- `project TEXT DEFAULT 'llm-forge'` → `project TEXT DEFAULT 'pulsar-ai'`
+- `project TEXT DEFAULT 'pulsar-ai'` → `project TEXT DEFAULT 'pulsar-ai'`
 
 - [ ] **Step 5: Update API key prefix**
 
@@ -218,7 +218,7 @@ In `src/pulsar_ai/ui/auth.py` line 58:
 - [ ] **Step 6: Verify Python package builds**
 
 ```bash
-cd C:\Users\User\Desktop\llm-forge
+cd C:\Users\User\Desktop\pulsar-ai
 pip install -e ".[dev]"
 python -c "from pulsar_ai.cli import main; print('OK')"
 ```
@@ -227,7 +227,7 @@ Expected: `OK`
 - [ ] **Step 7: Run existing tests to check for import breakage**
 
 ```bash
-cd C:\Users\User\Desktop\llm-forge
+cd C:\Users\User\Desktop\pulsar-ai
 python -m pytest tests/ -x --timeout=30 -q 2>&1 | head -40
 ```
 Expected: tests start running (some may fail for other reasons, but no `ModuleNotFoundError`)
@@ -236,7 +236,7 @@ Expected: tests start running (some may fail for other reasons, but no `ModuleNo
 
 ```bash
 git add -A
-git commit -m "feat: rename llm_forge → pulsar_ai, update pyproject.toml"
+git commit -m "feat: rename pulsar_ai → pulsar_ai, update pyproject.toml"
 ```
 
 ---
@@ -250,7 +250,7 @@ git commit -m "feat: rename llm_forge → pulsar_ai, update pyproject.toml"
 
 - [ ] **Step 1: Update package.json name**
 
-In `ui/package.json`: `"name": "llm-forge-ui"` → `"name": "pulsar-ai-ui"` (or whatever the current name is)
+In `ui/package.json`: `"name": "pulsar-ai-ui"` → `"name": "pulsar-ai-ui"` (or whatever the current name is)
 
 - [ ] **Step 2: Update client.ts — remove URL api_key bootstrap, rename localStorage**
 
@@ -264,7 +264,7 @@ Replace full content of `ui/src/api/client.ts`:
 - [ ] **Step 3: Verify frontend builds**
 
 ```bash
-cd C:\Users\User\Desktop\llm-forge\ui
+cd C:\Users\User\Desktop\pulsar-ai\ui
 npm run build
 ```
 Expected: build succeeds
@@ -293,32 +293,32 @@ git commit -m "feat: rename frontend references, remove URL api_key bootstrap"
 - [ ] **Step 1: Update Dockerfile**
 
 In `Dockerfile`:
-- Line 20: `COPY --from=frontend /app/src/llm_forge/ui/static src/llm_forge/ui/static/` → `COPY --from=frontend /app/src/pulsar_ai/ui/static src/pulsar_ai/ui/static/`
+- Line 20: `COPY --from=frontend /app/src/pulsar_ai/ui/static src/pulsar_ai/ui/static/` → `COPY --from=frontend /app/src/pulsar_ai/ui/static src/pulsar_ai/ui/static/`
 - Line 27: comment `# Create data directory for JSON stores` → `# Create data directory for SQLite database`
-- Line 32: `FORGE_CORS_ORIGINS` → `PULSAR_CORS_ORIGINS`
-- Line 33: `FORGE_AUTH_ENABLED` → `PULSAR_AUTH_ENABLED`
+- Line 32: `PULSAR_CORS_ORIGINS` → `PULSAR_CORS_ORIGINS`
+- Line 33: `PULSAR_AUTH_ENABLED` → `PULSAR_AUTH_ENABLED`
 
 - [ ] **Step 2: Update docker-compose.yml**
 
-Replace service name `forge` → `pulsar`, volume `forge_data`/`forge-data` → `pulsar-data`, all `FORGE_*` → `PULSAR_*` env vars.
+Replace service name `pulsar` → `pulsar`, volume `forge_data`/`forge-data` → `pulsar-data`, all `PULSAR_*` → `PULSAR_*` env vars.
 
 - [ ] **Step 3: Bulk-rename in scripts and docs**
 
 ```bash
-cd C:\Users\User\Desktop\llm-forge
+cd C:\Users\User\Desktop\pulsar-ai
 # Scripts
-find scripts/ -type f -exec sed -i 's/FORGE_/PULSAR_/g; s/llm.forge/pulsar_ai/g; s/llm-forge/pulsar-ai/g; s/LLM Forge/Pulsar AI/g; s/LLM-Forge/Pulsar-AI/g' {} +
+find scripts/ -type f -exec sed -i 's/PULSAR_/PULSAR_/g; s/llm.forge/pulsar_ai/g; s/pulsar-ai/pulsar-ai/g; s/Pulsar AI/Pulsar AI/g; s/Pulsar-AI/Pulsar-AI/g' {} +
 # Docs
-find docs/ -name "*.md" -exec sed -i 's/llm.forge/pulsar_ai/g; s/llm-forge/pulsar-ai/g; s/LLM Forge/Pulsar AI/g; s/LLM-Forge/Pulsar-AI/g; s/FORGE_/PULSAR_/g' {} +
+find docs/ -name "*.md" -exec sed -i 's/llm.forge/pulsar_ai/g; s/pulsar-ai/pulsar-ai/g; s/Pulsar AI/Pulsar AI/g; s/Pulsar-AI/Pulsar-AI/g; s/PULSAR_/PULSAR_/g' {} +
 # Configs
-find configs/ -name "*.yaml" -exec sed -i 's/llm.forge/pulsar_ai/g; s/llm-forge/pulsar-ai/g' {} +
+find configs/ -name "*.yaml" -exec sed -i 's/llm.forge/pulsar_ai/g; s/pulsar-ai/pulsar-ai/g' {} +
 # Root docs
-sed -i 's/llm.forge/pulsar_ai/g; s/llm-forge/pulsar-ai/g; s/LLM Forge/Pulsar AI/g; s/FORGE_/PULSAR_/g' AGENTS.md PRESENTATION.md
+sed -i 's/llm.forge/pulsar_ai/g; s/pulsar-ai/pulsar-ai/g; s/Pulsar AI/Pulsar AI/g; s/PULSAR_/PULSAR_/g' AGENTS.md PRESENTATION.md
 ```
 
 - [ ] **Step 4: Update site_chat.py system prompt**
 
-In `src/pulsar_ai/ui/routes/site_chat.py`: find the hardcoded "LLM Forge" and "MIT license" strings and replace with "Pulsar AI" and "Apache 2.0".
+In `src/pulsar_ai/ui/routes/site_chat.py`: find the hardcoded "Pulsar AI" and "MIT license" strings and replace with "Pulsar AI" and "Apache 2.0".
 
 - [ ] **Step 5: Create Apache 2.0 LICENSE file**
 
@@ -327,7 +327,7 @@ Replace the existing LICENSE file with the standard Apache License 2.0 text, wit
 - [ ] **Step 6: Verify everything still works**
 
 ```bash
-cd C:\Users\User\Desktop\llm-forge
+cd C:\Users\User\Desktop\pulsar-ai
 pip install -e ".[dev]"
 python -m pytest tests/ -x --timeout=30 -q 2>&1 | head -40
 cd ui && npm run build
@@ -419,7 +419,7 @@ In `ui/src/components/layout/Layout.tsx` (or Sidebar component): change `href="/
 - [ ] **Step 4: Verify build and visual**
 
 ```bash
-cd C:\Users\User\Desktop\llm-forge\ui && npm run build
+cd C:\Users\User\Desktop\pulsar-ai\ui && npm run build
 ```
 
 - [ ] **Step 5: Commit**

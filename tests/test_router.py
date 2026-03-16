@@ -2,12 +2,11 @@
 
 from unittest.mock import MagicMock
 
-import pytest
 
-from llm_forge.agent.base import BaseAgent
-from llm_forge.agent.client import ModelClient
-from llm_forge.agent.router import AgentRoute, RouterAgent
-from llm_forge.agent.tool import ToolRegistry
+from pulsar_ai.agent.base import BaseAgent
+from pulsar_ai.agent.client import ModelClient
+from pulsar_ai.agent.router import AgentRoute, RouterAgent
+from pulsar_ai.agent.tool import ToolRegistry
 
 
 def _mock_agent(answer: str = "mock answer") -> BaseAgent:

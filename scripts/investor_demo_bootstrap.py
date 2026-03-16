@@ -22,9 +22,9 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from llm_forge.prompts.store import PromptStore
-from llm_forge.ui.workflow_store import WorkflowStore
-from llm_forge.ui.routes.workflows import _TEMPLATES
+from pulsar_ai.prompts.store import PromptStore
+from pulsar_ai.ui.workflow_store import WorkflowStore
+from pulsar_ai.ui.routes.workflows import _TEMPLATES
 
 
 DATA_DIR = ROOT / "data"

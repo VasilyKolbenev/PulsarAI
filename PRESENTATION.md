@@ -1,6 +1,6 @@
-# LLM Forge — Technical & Business Presentation
+# Pulsar AI — Technical & Business Presentation
 
-## What is LLM Forge?
+## What is Pulsar AI?
 
 **Self-hosted, open-source platform for the full LLM lifecycle: from raw data to deployed agent.**
 
@@ -22,7 +22,7 @@ Teams building LLM-powered products today juggle:
 
 ---
 
-## The Solution: LLM Forge
+## The Solution: Pulsar AI
 
 | Capability | Description |
 |-----------|-------------|
@@ -62,7 +62,7 @@ Teams building LLM-powered products today juggle:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    LLM Forge Web UI (React)                  │
+│                    Pulsar AI Web UI (React)                  │
 │  Dashboard │ Experiments │ Datasets │ Workflows │ Prompts   │
 │  Monitoring │ Compute │ Agent Chat │ Settings               │
 ├─────────────────────────────────────────────────────────────┤
@@ -139,7 +139,7 @@ Independent branches (no shared edges) are resolved correctly but execute one at
 ### Agent Layer
 | Node | Purpose | Key Config |
 |------|---------|-----------|
-| **Agent** | Build agent with framework choice | framework (Forge/LangGraph/CrewAI/AutoGen), tools, memory |
+| **Agent** | Build agent with framework choice | framework (Pulsar AI/LangGraph/CrewAI/AutoGen), tools, memory |
 | **RAG** | Retrieval-Augmented Generation | embedding model, vector store, chunk_size, top_k |
 | **Router** | Multi-agent routing | strategy (LLM/keyword/semantic), routes |
 | **Inference** | Batch generation | temperature, top_p, max_tokens, streaming |
@@ -194,7 +194,7 @@ Agent runs → traces collected → DataGen → SFT/DPO → improved model → b
 No other platform offers this integrated feedback loop.
 
 ### 2. Protocol-Native Agent Ecosystem
-MCP + A2A support means your agents can **expose tools** to any MCP client (Claude, Cursor, etc.) and **delegate tasks** to remote agents via the A2A protocol. Plus choose your framework per node — Forge ReAct, LangGraph, CrewAI, or AutoGen.
+MCP + A2A support means your agents can **expose tools** to any MCP client (Claude, Cursor, etc.) and **delegate tasks** to remote agents via the A2A protocol. Plus choose your framework per node — Pulsar ReAct, LangGraph, CrewAI, or AutoGen.
 
 ### 3. Self-Hosted by Design
 - No data leaves your infrastructure
@@ -239,9 +239,9 @@ Powered by Optuna — supports log-scale, integer, and categorical search spaces
 
 ### Model Registry
 ```bash
-forge registry register --name my-model --path ./output/lora
-forge registry promote my-model-v3 --status production
-forge registry list --status production
+pulsar registry register --name my-model --path ./output/lora
+pulsar registry promote my-model-v3 --status production
+pulsar registry list --status production
 ```
 
 Full lifecycle: registered → staging → production → archived.
@@ -322,7 +322,7 @@ Unified access point for all your agents:
 9. **Agent Chat** — interactive chat with fine-tuned agents
 10. **Settings** — server info, API keys, hardware details
 
-Plus: **Forge Co-pilot** (floating assistant widget on every page)
+Plus: **Pulsar Co-pilot** (floating assistant widget on every page)
 
 ---
 
@@ -354,13 +354,13 @@ docker compose up -d  # → http://localhost:8888
 # From source
 pip install -e ".[ui,dev]"
 cd ui && npm install && npm run build
-forge ui  # → http://localhost:8888
+pulsar ui  # → http://localhost:8888
 ```
 
 Environment variables:
-- `FORGE_PORT` — server port (default: 8888)
-- `FORGE_CORS_ORIGINS` — allowed origins
-- `FORGE_AUTH_ENABLED` — enable API key auth (default: false)
+- `PULSAR_PORT` — server port (default: 8888)
+- `PULSAR_CORS_ORIGINS` — allowed origins
+- `PULSAR_AUTH_ENABLED` — enable API key auth (default: false)
 
 ---
 
@@ -373,7 +373,7 @@ Environment variables:
 | Test count | 809 |
 | API endpoints | ~50 |
 | Node types | 26 |
-| Supported frameworks | 5 (Forge, LangGraph, CrewAI, AutoGen, Custom) |
+| Supported frameworks | 5 (Pulsar AI, LangGraph, CrewAI, AutoGen, Custom) |
 | Supported protocols | 3 (MCP, A2A, API Gateway) |
 | Supported model formats | 5 (GGUF, merged, LoRA, HF, custom) |
 | Supported serving engines | 4 (vLLM, llama.cpp, TGI, Ollama) |
@@ -409,7 +409,7 @@ Environment variables:
 
 ### Competitive Landscape
 
-| Competitor | Weakness vs LLM Forge |
+| Competitor | Weakness vs Pulsar AI |
 |-----------|----------------------|
 | **Weights & Biases** | Tracking only, no training/serving/agents |
 | **Hugging Face** | No visual pipeline, no agent framework |

@@ -1,4 +1,4 @@
-"""Tests for llm_forge.observability.tracer module.
+"""Tests for pulsar_ai.observability.tracer module.
 
 Tests Span creation/duration/attributes/events, Trace aggregation,
 Tracer context managers, record_llm_call, list_traces, eviction,
@@ -9,7 +9,7 @@ import time
 
 import pytest
 
-from llm_forge.observability.tracer import Span, Trace, Tracer, get_tracer
+from pulsar_ai.observability.tracer import Span, Trace, Tracer, get_tracer
 
 
 class TestSpan:
@@ -217,8 +217,11 @@ class TestTracer:
         tracer = Tracer()
         with tracer.start_trace("t") as trace:
             span = tracer.record_llm_call(
-                trace=trace, model="local", input_tokens=1000,
-                output_tokens=500, latency_ms=100.0,
+                trace=trace,
+                model="local",
+                input_tokens=1000,
+                output_tokens=500,
+                latency_ms=100.0,
             )
         assert span.attributes["estimated_cost"] == 0.0
 

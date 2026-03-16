@@ -1,8 +1,6 @@
 """Tests for agent config validation."""
 
-import pytest
-
-from llm_forge.validation import validate_agent_config
+from pulsar_ai.validation import validate_agent_config
 
 
 class TestValidateAgentConfig:

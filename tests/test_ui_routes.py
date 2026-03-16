@@ -1,22 +1,22 @@
 """Tests for Web UI API routes."""
 
-import json
 import pytest
-from unittest.mock import patch, MagicMock
-from pathlib import Path
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-from llm_forge.ui.app import create_app
+from pulsar_ai.ui.app import create_app
 
 
 @pytest.fixture
 def client(tmp_path):
     """Create a test client with temp experiment store."""
-    with patch("llm_forge.ui.routes.training._store") as mock_store, \
-         patch("llm_forge.ui.routes.experiments._store") as mock_exp_store, \
-         patch("llm_forge.ui.routes.evaluation._store") as mock_eval_store, \
-         patch("llm_forge.ui.routes.export_routes._store") as mock_export_store:
+    with (
+        patch("pulsar_ai.ui.routes.training._store") as mock_store,
+        patch("pulsar_ai.ui.routes.experiments._store") as mock_exp_store,
+        patch("pulsar_ai.ui.routes.evaluation._store") as mock_eval_store,
+        patch("pulsar_ai.ui.routes.export_routes._store") as mock_export_store,
+    ):
 
         mock_store.create.return_value = "exp123"
         mock_exp_store.list_all.return_value = []
@@ -41,16 +41,19 @@ class TestHealthEndpoint:
 class TestTrainingRoutes:
     """Test training endpoints."""
 
-    @patch("llm_forge.ui.routes.training.submit_training_job")
+    @patch("pulsar_ai.ui.routes.training.submit_training_job")
     def test_start_training(self, mock_submit, client):
         """Test POST /api/v1/training/start."""
         mock_submit.return_value = "job123"
 
-        resp = client.post("/api/v1/training/start", json={
-            "name": "test-experiment",
-            "config": {"model": {"name": "test"}},
-            "task": "sft",
-        })
+        resp = client.post(
+            "/api/v1/training/start",
+            json={
+                "name": "test-experiment",
+                "config": {"model": {"name": "test"}},
+                "task": "sft",
+            },
+        )
 
         assert resp.status_code == 200
         data = resp.json()
@@ -58,7 +61,7 @@ class TestTrainingRoutes:
         assert data["experiment_id"] == "exp123"
         assert data["status"] == "running"
 
-    @patch("llm_forge.ui.routes.training.list_jobs")
+    @patch("pulsar_ai.ui.routes.training.list_jobs")
     def test_list_jobs(self, mock_list, client):
         """Test GET /api/v1/training/jobs."""
         mock_list.return_value = [
@@ -68,14 +71,14 @@ class TestTrainingRoutes:
         assert resp.status_code == 200
         assert len(resp.json()) == 1
 
-    @patch("llm_forge.ui.routes.training.get_job")
+    @patch("pulsar_ai.ui.routes.training.get_job")
     def test_get_job_not_found(self, mock_get, client):
         """Test GET /api/v1/training/jobs/{id} returns 404."""
         mock_get.return_value = None
         resp = client.get("/api/v1/training/jobs/unknown")
         assert resp.status_code == 404
 
-    @patch("llm_forge.ui.routes.training.cancel_job")
+    @patch("pulsar_ai.ui.routes.training.cancel_job")
     def test_cancel_job(self, mock_cancel, client):
         """Test DELETE /api/v1/training/jobs/{id}."""
         mock_cancel.return_value = True
@@ -83,7 +86,7 @@ class TestTrainingRoutes:
         assert resp.status_code == 200
         assert resp.json()["status"] == "cancelled"
 
-    @patch("llm_forge.ui.routes.training.cancel_job")
+    @patch("pulsar_ai.ui.routes.training.cancel_job")
     def test_cancel_job_fails(self, mock_cancel, client):
         """Test cancel returns 400 when job can't be cancelled."""
         mock_cancel.return_value = False
@@ -112,7 +115,7 @@ class TestDatasetRoutes:
         """Test POST /api/v1/datasets/upload with CSV."""
         csv_content = b"text,label\nhello,positive\nbye,negative\n"
 
-        with patch("llm_forge.ui.routes.datasets.DATA_DIR", tmp_path):
+        with patch("pulsar_ai.ui.routes.datasets.DATA_DIR", tmp_path):
             resp = client.post(
                 "/api/v1/datasets/upload",
                 files={"file": ("test.csv", csv_content, "text/csv")},
@@ -140,7 +143,7 @@ class TestDatasetRoutes:
         csv_path = tmp_path / "abc123.csv"
         csv_path.write_text("a,b\n1,2\n")
 
-        with patch("llm_forge.ui.routes.datasets.DATA_DIR", tmp_path):
+        with patch("pulsar_ai.ui.routes.datasets.DATA_DIR", tmp_path):
             resp = client.get("/api/v1/datasets")
 
         assert resp.status_code == 200
@@ -153,7 +156,7 @@ class TestDatasetRoutes:
         csv_path = tmp_path / "ds1.csv"
         csv_path.write_text("col1,col2\nval1,val2\nval3,val4\n")
 
-        with patch("llm_forge.ui.routes.datasets.DATA_DIR", tmp_path):
+        with patch("pulsar_ai.ui.routes.datasets.DATA_DIR", tmp_path):
             resp = client.get("/api/v1/datasets/ds1/preview")
 
         assert resp.status_code == 200
@@ -164,7 +167,7 @@ class TestDatasetRoutes:
 
     def test_preview_not_found(self, client, tmp_path):
         """Test preview returns 404 for missing dataset."""
-        with patch("llm_forge.ui.routes.datasets.DATA_DIR", tmp_path):
+        with patch("pulsar_ai.ui.routes.datasets.DATA_DIR", tmp_path):
             resp = client.get("/api/v1/datasets/missing/preview")
         assert resp.status_code == 404
 
@@ -173,7 +176,7 @@ class TestDatasetRoutes:
         csv_path = tmp_path / "del1.csv"
         csv_path.write_text("a\n1\n")
 
-        with patch("llm_forge.ui.routes.datasets.DATA_DIR", tmp_path):
+        with patch("pulsar_ai.ui.routes.datasets.DATA_DIR", tmp_path):
             resp = client.delete("/api/v1/datasets/del1")
 
         assert resp.status_code == 200
@@ -182,7 +185,7 @@ class TestDatasetRoutes:
 
     def test_delete_not_found(self, client, tmp_path):
         """Test delete returns 404 for missing dataset."""
-        with patch("llm_forge.ui.routes.datasets.DATA_DIR", tmp_path):
+        with patch("pulsar_ai.ui.routes.datasets.DATA_DIR", tmp_path):
             resp = client.delete("/api/v1/datasets/missing")
         assert resp.status_code == 404
 
@@ -190,10 +193,10 @@ class TestDatasetRoutes:
 class TestHardwareRoute:
     """Test hardware endpoint."""
 
-    @patch("llm_forge.hardware.detect_hardware")
+    @patch("pulsar_ai.hardware.detect_hardware")
     def test_get_hardware(self, mock_detect, client):
         """Test GET /api/v1/hardware."""
-        from llm_forge.hardware import HardwareInfo
+        from pulsar_ai.hardware import HardwareInfo
 
         mock_detect.return_value = HardwareInfo(
             num_gpus=1,
@@ -220,10 +223,13 @@ class TestEvalRoute:
 
     def test_eval_experiment_not_found(self, client):
         """Test eval returns 404 when experiment not found."""
-        resp = client.post("/api/v1/evaluation/run", json={
-            "experiment_id": "missing",
-            "test_data_path": "data/test.csv",
-        })
+        resp = client.post(
+            "/api/v1/evaluation/run",
+            json={
+                "experiment_id": "missing",
+                "test_data_path": "data/test.csv",
+            },
+        )
         assert resp.status_code == 404
 
 
@@ -232,7 +238,10 @@ class TestExportRoute:
 
     def test_export_experiment_not_found(self, client):
         """Test export returns 404 when experiment not found."""
-        resp = client.post("/api/v1/export", json={
-            "experiment_id": "missing",
-        })
+        resp = client.post(
+            "/api/v1/export",
+            json={
+                "experiment_id": "missing",
+            },
+        )
         assert resp.status_code == 404

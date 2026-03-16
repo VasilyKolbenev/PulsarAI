@@ -1,10 +1,10 @@
 """Tests for pipeline executor and tracker."""
 
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-from llm_forge.pipeline.executor import PipelineExecutor
-from llm_forge.pipeline.tracker import PipelineTracker
+from pulsar_ai.pipeline.executor import PipelineExecutor
+from pulsar_ai.pipeline.tracker import PipelineTracker
 
 
 @pytest.fixture
@@ -125,14 +125,16 @@ class TestPipelineExecutor:
         executor = PipelineExecutor(config, tracker=tracker)
         executor._outputs["s1"] = {"dir": "/out"}
 
-        resolved = executor._resolve_vars({
-            "a": {"b": "${s1.dir}/model"},
-            "c": ["${s1.dir}/data"],
-        })
+        resolved = executor._resolve_vars(
+            {
+                "a": {"b": "${s1.dir}/model"},
+                "c": ["${s1.dir}/data"],
+            }
+        )
         assert resolved["a"]["b"] == "/out/model"
         assert resolved["c"][0] == "/out/data"
 
-    @patch("llm_forge.pipeline.executor.dispatch_step")
+    @patch("pulsar_ai.pipeline.executor.dispatch_step")
     def test_run_success(self, mock_dispatch, simple_pipeline, tracker):
         """Test successful pipeline run."""
         mock_dispatch.return_value = {"adapter_dir": "/path", "training_loss": 0.1}
@@ -144,7 +146,7 @@ class TestPipelineExecutor:
         assert outputs["step1"]["adapter_dir"] == "/path"
         mock_dispatch.assert_called_once()
 
-    @patch("llm_forge.pipeline.executor.dispatch_step")
+    @patch("pulsar_ai.pipeline.executor.dispatch_step")
     def test_run_failure(self, mock_dispatch, simple_pipeline, tracker):
         """Test pipeline failure propagation."""
         mock_dispatch.side_effect = RuntimeError("GPU OOM")
@@ -153,7 +155,7 @@ class TestPipelineExecutor:
         with pytest.raises(RuntimeError, match="GPU OOM"):
             executor.run()
 
-    @patch("llm_forge.pipeline.executor.dispatch_step")
+    @patch("pulsar_ai.pipeline.executor.dispatch_step")
     def test_run_multi_step_with_vars(self, mock_dispatch, multi_step_pipeline, tracker):
         """Test multi-step pipeline with variable resolution."""
         mock_dispatch.side_effect = [

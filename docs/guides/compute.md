@@ -1,14 +1,14 @@
 # Compute Management
 
 Управление вычислительными ресурсами позволяет запускать обучение не только на локальной
-машине, но и на удалённых серверах через SSH. Forge автоматически определяет доступные GPU
+машине, но и на удалённых серверах через SSH. Pulsar AI автоматически определяет доступные GPU
 и управляет подключениями.
 
 ---
 
 ## Локальная машина
 
-Локальная машина добавляется автоматически при первом запуске Forge:
+Локальная машина добавляется автоматически при первом запуске Pulsar AI:
 
 ```json
 {
@@ -37,7 +37,7 @@
 === "CLI"
 
     ```bash
-    forge compute add \
+    pulsar compute add \
       --name "gpu-server-1" \
       --host 192.168.1.100 \
       --user ubuntu \
@@ -81,7 +81,7 @@
 === "CLI"
 
     ```bash
-    forge compute test gpu-server-1
+    pulsar compute test gpu-server-1
     ```
 
 === "API"
@@ -117,7 +117,7 @@
 === "CLI"
 
     ```bash
-    forge compute detect gpu-server-1
+    pulsar compute detect gpu-server-1
     ```
 
 === "API"
@@ -178,7 +178,7 @@
 === "CLI"
 
     ```bash
-    forge compute list
+    pulsar compute list
     ```
 
 === "API"
@@ -192,7 +192,7 @@
 === "CLI"
 
     ```bash
-    forge compute remove gpu-server-1
+    pulsar compute remove gpu-server-1
     ```
 
 === "API"
@@ -204,7 +204,7 @@
 ### Выбор сервера для обучения
 
 ```bash
-forge train configs/sft_config.yaml --target gpu-server-1
+pulsar train configs/sft_config.yaml --target gpu-server-1
 ```
 
 !!! info "Автовыбор"

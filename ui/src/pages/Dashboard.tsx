@@ -18,6 +18,19 @@ import {
 import { api } from "@/api/client"
 import { useMetrics } from "@/hooks/useMetrics"
 import { AnimatedPage, FadeIn } from "@/components/ui/AnimatedPage"
+import { MetricCard } from "@/components/ui/MetricCard"
+import { Badge } from "@/components/ui/Badge"
+import { StatusDot } from "@/components/ui/StatusDot"
+import { Card, CardHeader, CardTitle } from "@/components/ui/Card"
+import { EmptyState } from "@/components/ui/EmptyState"
+
+const statusVariant: Record<string, "success" | "warning" | "error" | "default"> = {
+  running: "warning",
+  completed: "success",
+  failed: "error",
+  queued: "default",
+  cancelled: "default",
+}
 
 export function Dashboard() {
   const [experiments, setExperiments] = useState<Array<Record<string, unknown>>>([])
@@ -60,39 +73,35 @@ export function Dashboard() {
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <FadeIn delay={0}>
-            <StatCard
+            <MetricCard
               icon={FlaskConical}
               label="Experiments"
               value={experiments.length}
-              sub={`${running} running · ${completed} completed`}
-              color="#6d5dfc"
+              subtext={`${running} running · ${completed} completed`}
             />
           </FadeIn>
           <FadeIn delay={0.05}>
-            <StatCard
+            <MetricCard
               icon={Database}
               label="Datasets"
               value={datasets.length}
-              sub="uploaded"
-              color="#3b82f6"
+              subtext="uploaded"
             />
           </FadeIn>
           <FadeIn delay={0.1}>
-            <StatCard
+            <MetricCard
               icon={Workflow}
               label="Workflows"
               value={workflows.length}
-              sub="saved pipelines"
-              color="#22c55e"
+              subtext="saved pipelines"
             />
           </FadeIn>
           <FadeIn delay={0.15}>
-            <StatCard
+            <MetricCard
               icon={FileText}
               label="Prompts"
               value={prompts.length}
-              sub="versioned"
-              color="#06b6d4"
+              subtext="versioned"
             />
           </FadeIn>
         </div>
@@ -101,10 +110,10 @@ export function Dashboard() {
         <FadeIn delay={0.2}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* GPU card */}
-            <div className="bg-card border border-border rounded-lg p-4">
+            <Card>
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#6d5dfc]/10">
-                  <MonitorDot size={16} className="text-[#6d5dfc]" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10">
+                  <MonitorDot size={16} className="text-primary" />
                 </div>
                 <div>
                   <div className="text-sm font-medium">GPU</div>
@@ -140,13 +149,13 @@ export function Dashboard() {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
+            </Card>
 
             {/* CPU card */}
-            <div className="bg-card border border-border rounded-lg p-4">
+            <Card>
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-[#22c55e]/10">
-                  <Cpu size={16} className="text-[#22c55e]" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-success/10">
+                  <Cpu size={16} className="text-success" />
                 </div>
                 <div>
                   <div className="text-sm font-medium">CPU</div>
@@ -182,37 +191,50 @@ export function Dashboard() {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
+            </Card>
 
             {/* Quick actions card */}
-            <div className="bg-card border border-border rounded-lg p-4 flex flex-col">
-              <div className="text-sm font-medium mb-3">Quick Actions</div>
+            <Card className="flex flex-col">
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
               <div className="space-y-2 flex-1">
                 <QuickAction to="/new" icon={FlaskConical} label="New Experiment" color="#6d5dfc" />
                 <QuickAction to="/workflows" icon={Workflow} label="Build Workflow" color="#22c55e" />
                 <QuickAction to="/prompts" icon={FileText} label="New Prompt" color="#06b6d4" />
                 <QuickAction to="/compute" icon={Server} label="Add Compute" color="#f97316" />
               </div>
-            </div>
+            </Card>
           </div>
         </FadeIn>
 
         {/* Recent experiments */}
         <FadeIn delay={0.25}>
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold">Recent Experiments</h3>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold">Recent Experiments</CardTitle>
               <Link
                 to="/experiments"
                 className="flex items-center gap-1 text-xs text-primary hover:text-primary/80"
               >
                 View all <ArrowRight size={12} />
               </Link>
-            </div>
+            </CardHeader>
             {experiments.length === 0 ? (
-              <p className="text-muted-foreground text-sm py-4 text-center">
-                No experiments yet. Start a new one!
-              </p>
+              <EmptyState
+                icon={FlaskConical}
+                title="No experiments yet"
+                description="Start your first fine-tuning experiment to see results here."
+                action={
+                  <Link
+                    to="/new"
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90 transition-colors"
+                  >
+                    New Experiment
+                  </Link>
+                }
+                className="py-8"
+              />
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -226,70 +248,44 @@ export function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {experiments.slice(0, 8).map((exp) => (
-                      <tr
-                        key={String(exp.id)}
-                        className="border-t border-border/50 hover:bg-secondary/30 transition-colors"
-                      >
-                        <td className="px-3 py-2">
-                          <Link to="/experiments" className="text-primary hover:underline text-xs">
-                            {String(exp.name)}
-                          </Link>
-                        </td>
-                        <td className="px-3 py-2">
-                          <StatusBadge status={String(exp.status)} />
-                        </td>
-                        <td className="px-3 py-2 text-xs text-muted-foreground">
-                          {String(exp.task || "sft").toUpperCase()}
-                        </td>
-                        <td className="px-3 py-2 text-right font-mono text-xs">
-                          {exp.final_loss != null ? Number(exp.final_loss).toFixed(4) : "—"}
-                        </td>
-                        <td className="px-3 py-2 text-right text-xs text-muted-foreground">
-                          {String(exp.created_at || "").slice(0, 10)}
-                        </td>
-                      </tr>
-                    ))}
+                    {experiments.slice(0, 8).map((exp) => {
+                      const status = String(exp.status)
+                      return (
+                        <tr
+                          key={String(exp.id)}
+                          className="border-t border-border/50 hover:bg-secondary/30 transition-colors"
+                        >
+                          <td className="px-3 py-2">
+                            <Link to="/experiments" className="text-primary hover:underline text-xs">
+                              {String(exp.name)}
+                            </Link>
+                          </td>
+                          <td className="px-3 py-2">
+                            <Badge variant={statusVariant[status] || "default"}>
+                              {status === "running" && <StatusDot status="warning" pulse className="mr-1" />}
+                              {status}
+                            </Badge>
+                          </td>
+                          <td className="px-3 py-2 text-xs text-muted-foreground">
+                            {String(exp.task || "sft").toUpperCase()}
+                          </td>
+                          <td className="px-3 py-2 text-right font-mono text-xs">
+                            {exp.final_loss != null ? Number(exp.final_loss).toFixed(4) : "—"}
+                          </td>
+                          <td className="px-3 py-2 text-right text-xs text-muted-foreground">
+                            {String(exp.created_at || "").slice(0, 10)}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
             )}
-          </div>
+          </Card>
         </FadeIn>
       </div>
     </AnimatedPage>
-  )
-}
-
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  sub,
-  color,
-}: {
-  icon: React.ComponentType<{ size?: number }>
-  label: string
-  value: string | number
-  sub: string
-  color: string
-}) {
-  return (
-    <div className="bg-card border border-border rounded-lg p-4 hover:border-border/80 transition-colors">
-      <div className="flex items-center gap-2 mb-2">
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center"
-          style={{ backgroundColor: `${color}15` }}
-        >
-          <Icon size={16} />
-        </div>
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          {label}
-        </span>
-      </div>
-      <div className="text-2xl font-bold">{value}</div>
-      <div className="text-xs text-muted-foreground mt-1">{sub}</div>
-    </div>
   )
 }
 
@@ -321,24 +317,5 @@ function QuickAction({
         className="ml-auto text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
       />
     </Link>
-  )
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const colors: Record<string, string> = {
-    running: "bg-warning/20 text-warning",
-    completed: "bg-success/20 text-success",
-    failed: "bg-destructive/20 text-destructive",
-    queued: "bg-muted text-muted-foreground",
-    cancelled: "bg-muted text-muted-foreground",
-  }
-  return (
-    <span
-      className={`inline-block px-2 py-0.5 rounded text-[10px] font-medium ${
-        colors[status] || colors.queued
-      }`}
-    >
-      {status}
-    </span>
   )
 }

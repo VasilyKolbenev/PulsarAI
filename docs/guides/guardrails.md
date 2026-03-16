@@ -52,7 +52,7 @@ Guardrails -- система защитных правил для фильтра
 ### Фабричные функции
 
 ```python
-from llm_forge.guardrails import create_input_guard, create_output_guard
+from pulsar_ai.guardrails import create_input_guard, create_output_guard
 
 # Входной guardrail: блокировать инъекции, маскировать PII
 input_guard = create_input_guard(
@@ -100,7 +100,7 @@ if output_result.warnings:
 ### Полный пример с моделью
 
 ```python
-from llm_forge.guardrails import create_input_guard, create_output_guard
+from pulsar_ai.guardrails import create_input_guard, create_output_guard
 
 input_guard = create_input_guard(
     rules=[

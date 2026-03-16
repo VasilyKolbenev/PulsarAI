@@ -36,9 +36,9 @@ Claude Code
 
 ### Files to inspect first
 
-- `src/llm_forge/ui/experiment_store.py`
-- `src/llm_forge/prompts/store.py`
-- `src/llm_forge/tracking.py`
+- `src/pulsar_ai/ui/experiment_store.py`
+- `src/pulsar_ai/prompts/store.py`
+- `src/pulsar_ai/tracking.py`
 - `pyproject.toml`
 - связанные tests для store и tracking.
 
@@ -80,8 +80,8 @@ Claude Code
 
 ### Files to inspect first
 
-- `src/llm_forge/ui/experiment_store.py`
-- `src/llm_forge/ui/routes/experiments.py`
+- `src/pulsar_ai/ui/experiment_store.py`
+- `src/pulsar_ai/ui/routes/experiments.py`
 - связанные tests.
 
 ### Work
@@ -119,8 +119,8 @@ Claude Code
 
 ### Files to inspect first
 
-- `src/llm_forge/prompts/store.py`
-- `src/llm_forge/ui/routes/prompts.py`
+- `src/pulsar_ai/prompts/store.py`
+- `src/pulsar_ai/ui/routes/prompts.py`
 - связанные tests.
 
 ### Work
@@ -159,8 +159,8 @@ Codex
 
 - новый storage module;
 - tests вокруг stores;
-- `src/llm_forge/ui/experiment_store.py`
-- `src/llm_forge/prompts/store.py`.
+- `src/pulsar_ai/ui/experiment_store.py`
+- `src/pulsar_ai/prompts/store.py`.
 
 ### Work
 
@@ -197,11 +197,11 @@ Claude Code
 
 ### Files to inspect first
 
-- `src/llm_forge/ui/jobs.py`
-- `src/llm_forge/ui/assistant.py`
-- `src/llm_forge/ui/routes/site_chat.py`
-- `src/llm_forge/ui/routes/pipeline_run.py`
-- `src/llm_forge/tracking.py`.
+- `src/pulsar_ai/ui/jobs.py`
+- `src/pulsar_ai/ui/assistant.py`
+- `src/pulsar_ai/ui/routes/site_chat.py`
+- `src/pulsar_ai/ui/routes/pipeline_run.py`
+- `src/pulsar_ai/tracking.py`.
 
 ### Work
 
@@ -237,8 +237,8 @@ Claude Code
 
 ### Files to inspect first
 
-- `src/llm_forge/ui/app.py`
-- `src/llm_forge/ui/auth.py`
+- `src/pulsar_ai/ui/app.py`
+- `src/pulsar_ai/ui/auth.py`
 - `ui/src/api/client.ts`
 - `tests/test_auth.py`
 - `tests/test_security.py`.
@@ -318,8 +318,8 @@ Claude Code
 
 ### Files to inspect first
 
-- `src/llm_forge/pipeline/executor.py`
-- `src/llm_forge/ui/routes/pipeline_run.py`
+- `src/pulsar_ai/pipeline/executor.py`
+- `src/pulsar_ai/ui/routes/pipeline_run.py`
 - `tests/test_pipeline_executor.py`.
 
 ### Work
@@ -356,9 +356,9 @@ Claude Code
 
 ### Files to inspect first
 
-- `src/llm_forge/compute/ssh.py`
-- `src/llm_forge/compute/remote_runner.py`
-- `src/llm_forge/ui/routes/compute.py`
+- `src/pulsar_ai/compute/ssh.py`
+- `src/pulsar_ai/compute/remote_runner.py`
+- `src/pulsar_ai/ui/routes/compute.py`
 - `tests/test_compute.py`.
 
 ### Work

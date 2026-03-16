@@ -7,7 +7,7 @@
 
 ## 1. Подготовка датасета
 
-llm-forge принимает CSV, JSONL, JSON, Parquet и Excel. Минимальный формат -- CSV с колонками
+pulsar-ai принимает CSV, JSONL, JSON, Parquet и Excel. Минимальный формат -- CSV с колонками
 для текста и меток:
 
 ```csv title="data/my_intents.csv"
@@ -62,7 +62,7 @@ Respond ONLY with valid JSON object. No explanations.
 === "Через CLI (рекомендуется)"
 
     ```bash
-    forge init my-experiment --task sft --model qwen3.5-0.8b
+    pulsar init my-experiment --task sft --model qwen3.5-0.8b
     ```
 
     Команда создаст файл `configs/examples/my-experiment.yaml` с настройками по умолчанию.
@@ -144,7 +144,7 @@ lora:
 ## 5. Запуск обучения
 
 ```bash
-forge train configs/examples/my-experiment.yaml
+pulsar train configs/examples/my-experiment.yaml
 ```
 
 Вы увидите прогресс обучения:
@@ -168,7 +168,7 @@ Adapter saved: outputs/my-experiment/lora
 С переопределением параметров на лету:
 
 ```bash
-forge train configs/examples/my-experiment.yaml epochs=5 learning_rate=1e-4
+pulsar train configs/examples/my-experiment.yaml epochs=5 learning_rate=1e-4
 ```
 
 !!! warning "CUDA Out of Memory"
@@ -184,7 +184,7 @@ forge train configs/examples/my-experiment.yaml epochs=5 learning_rate=1e-4
 ## 6. Оценка модели
 
 ```bash
-forge eval \
+pulsar eval \
   --model outputs/my-experiment/lora \
   --test-data data/my_intents_test.csv
 ```
@@ -242,10 +242,10 @@ Results:
 
 ```bash
 # Экспорт в GGUF
-forge export --model outputs/my-experiment/lora --format gguf --quant q4_k_m
+pulsar export --model outputs/my-experiment/lora --format gguf --quant q4_k_m
 
 # Запуск сервера
-forge serve --model outputs/my-experiment-q4_k_m.gguf --port 8080
+pulsar serve --model outputs/my-experiment-q4_k_m.gguf --port 8080
 ```
 
 ### DPO (улучшение через предпочтения)
@@ -253,7 +253,7 @@ forge serve --model outputs/my-experiment-q4_k_m.gguf --port 8080
 После SFT можно улучшить модель через DPO:
 
 ```bash
-forge train configs/examples/cam-dpo-qwen3.5-0.8b.yaml
+pulsar train configs/examples/cam-dpo-qwen3.5-0.8b.yaml
 ```
 
 Подробнее: [Руководство по DPO](../guides/training/dpo.md)
@@ -262,7 +262,7 @@ forge train configs/examples/cam-dpo-qwen3.5-0.8b.yaml
 
 ```bash
 pip install -e ".[hpo]"
-forge sweep configs/examples/my-experiment.yaml configs/sweeps/lr-sweep.yaml
+pulsar sweep configs/examples/my-experiment.yaml configs/sweeps/lr-sweep.yaml
 ```
 
 Подробнее: [HPO / Sweep](../guides/hpo.md)

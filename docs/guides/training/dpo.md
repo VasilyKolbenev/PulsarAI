@@ -93,15 +93,15 @@ output:
 
     ```bash
     # Стандартный запуск
-    forge train configs/experiments/my-classifier-dpo.yaml --task dpo
+    pulsar train configs/experiments/my-classifier-dpo.yaml --task dpo
 
     # С явным указанием SFT-адаптера
-    forge train configs/experiments/my-classifier-dpo.yaml \
+    pulsar train configs/experiments/my-classifier-dpo.yaml \
       --task dpo \
       --base-model ./outputs/my-classifier-sft/lora
 
     # С переопределением параметров
-    forge train configs/experiments/my-classifier-dpo.yaml \
+    pulsar train configs/experiments/my-classifier-dpo.yaml \
       --task dpo \
       dpo.beta=0.2 training.epochs=3
     ```

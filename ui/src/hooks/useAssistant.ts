@@ -17,7 +17,7 @@ interface PlatformStatus {
   llm_available: boolean
 }
 
-const SESSION_KEY = "forge_assistant_session"
+const SESSION_KEY = "pulsar_assistant_session"
 const POLL_INTERVAL = 10_000
 
 export function useAssistant() {

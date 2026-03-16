@@ -1,4 +1,4 @@
-"""Tests for llm_forge.cost module.
+"""Tests for pulsar_ai.cost module.
 
 Tests CostTracker.record(), estimate_cost(), budget management,
 get_summary() breakdowns, add_pricing(), and reset().
@@ -6,7 +6,7 @@ get_summary() breakdowns, add_pricing(), and reset().
 
 import pytest
 
-from llm_forge.cost import CostTracker, MODEL_PRICING
+from pulsar_ai.cost import CostTracker
 
 
 class TestEstimateCost:

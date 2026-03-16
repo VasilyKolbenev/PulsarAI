@@ -1,6 +1,6 @@
 # Архитектура
 
-Обзор компонентов llm-forge, их взаимосвязей и потоков данных.
+Обзор компонентов pulsar-ai, их взаимосвязей и потоков данных.
 
 ---
 
@@ -9,12 +9,12 @@
 ```mermaid
 graph TB
     subgraph CLI["CLI (Click + Rich)"]
-        C1[forge train]
-        C2[forge eval]
-        C3[forge export]
-        C4[forge serve]
-        C5[forge agent]
-        C6[forge pipeline]
+        C1[pulsar train]
+        C2[pulsar eval]
+        C3[pulsar export]
+        C4[pulsar serve]
+        C5[pulsar agent]
+        C6[pulsar pipeline]
     end
 
     subgraph Core["Core Engine"]
@@ -194,7 +194,7 @@ sequenceDiagram
     participant GPU
     participant UI
 
-    User->>CLI: forge train config.yaml
+    User->>CLI: pulsar train config.yaml
     CLI->>Config: Загрузка + inheritance
     Config->>Config: Auto-detect hardware
     Config-->>CLI: Final config
@@ -219,7 +219,7 @@ sequenceDiagram
     participant Steps
     participant WS as WebSocket
 
-    User->>CLI: forge pipeline run pipeline.yaml
+    User->>CLI: pulsar pipeline run pipeline.yaml
     CLI->>Executor: Парсинг DAG
     Executor->>Executor: Топологическая сортировка
     loop Каждый шаг

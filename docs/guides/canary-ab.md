@@ -25,7 +25,7 @@
 ### Использование
 
 ```python
-from llm_forge.deployment import CanaryDeployer
+from pulsar_ai.deployment import CanaryDeployer
 
 deployer = CanaryDeployer(
     primary="http://localhost:8081/v1/chat",
@@ -102,7 +102,7 @@ A/B-тестирование для сравнения двух и более в
 ### Использование
 
 ```python
-from llm_forge.deployment import ABTester
+from pulsar_ai.deployment import ABTester
 
 tester = ABTester(
     variants={

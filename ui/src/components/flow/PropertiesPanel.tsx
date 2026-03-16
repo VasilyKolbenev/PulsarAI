@@ -101,7 +101,7 @@ const FLAT_FIELDS: Record<string, FieldDef[]> = {
     { key: "quantization", label: "Quantization", type: "select", options: ["none", "q4_k_m", "q5_k_m", "q8_0", "f16"] },
   ],
   agent: [
-    { key: "framework", label: "Framework", type: "select", options: ["forge-react", "langgraph", "crewai", "autogen", "custom"] },
+    { key: "framework", label: "Framework", type: "select", options: ["pulsar-react", "langgraph", "crewai", "autogen", "custom"] },
     { key: "system_prompt", label: "System Prompt", type: "textarea", placeholder: "You are a helpful assistant..." },
     { key: "tools", label: "Tools (comma-separated)", type: "text", placeholder: "search,calculator,code" },
     { key: "max_iterations", label: "Max Iterations", type: "number", placeholder: "10" },

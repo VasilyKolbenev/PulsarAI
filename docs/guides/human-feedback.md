@@ -11,7 +11,7 @@
 Сбор оценок на ответы модели:
 
 ```python
-from llm_forge.feedback import FeedbackCollector
+from pulsar_ai.feedback import FeedbackCollector
 
 collector = FeedbackCollector(storage_path="data/feedback.jsonl")
 
@@ -79,8 +79,8 @@ graph LR
 Пример полного цикла:
 
 ```python
-from llm_forge.feedback import FeedbackCollector
-from llm_forge.training import DPOTrainer
+from pulsar_ai.feedback import FeedbackCollector
+from pulsar_ai.training import DPOTrainer
 
 # 1. Собрать обратную связь (в процессе эксплуатации)
 collector = FeedbackCollector(storage_path="data/feedback.jsonl")

@@ -77,7 +77,7 @@ Workflow Builder содержит **26 типов нод**, организова
 
 ### Шаг 1: Откройте Workflow Builder
 
-1. Запустите Web UI: `forge ui`
+1. Запустите Web UI: `pulsar ui`
 2. Перейдите на страницу **Workflow Builder** в навигации
 
 ### Шаг 2: Добавьте ноды
@@ -218,14 +218,14 @@ curl http://localhost:8888/api/workflows/wf_abc123/config
 
 ## Экспорт в Pipeline YAML
 
-Workflow можно экспортировать в YAML-конфиг для запуска через CLI (`forge pipeline run`):
+Workflow можно экспортировать в YAML-конфиг для запуска через CLI (`pulsar pipeline run`):
 
 ```bash
 # Получить конфиг из API
 curl http://localhost:8888/api/workflows/wf_abc123/config > pipeline.yaml
 
 # Запустить через CLI
-forge pipeline run pipeline.yaml
+pulsar pipeline run pipeline.yaml
 ```
 
 Это позволяет:

@@ -1,6 +1,6 @@
 # Agent Framework
 
-Forge Agent Framework позволяет создавать, тестировать и деплоить AI-агентов с поддержкой
+Pulsar Agent Framework позволяет создавать, тестировать и деплоить AI-агентов с поддержкой
 инструментов, памяти и guardrails. Агенты работают в режиме ReAct или с нативным
 tool calling.
 
@@ -11,7 +11,7 @@ tool calling.
 Инициализация нового агента создаёт директорию с шаблоном конфигурации:
 
 ```bash
-forge agent init my-assistant
+pulsar agent init my-assistant
 ```
 
 Структура:
@@ -85,7 +85,7 @@ guardrails:
     Python-функция с декоратором `@tool`:
 
     ```python
-    from llm_forge.agents import tool
+    from pulsar_ai.agents import tool
 
     @tool(description="Поиск в базе данных по запросу")
     def search_database(query: str, limit: int = 10) -> list[dict]:
@@ -101,7 +101,7 @@ guardrails:
 ### Интерактивный REPL
 
 ```bash
-forge agent test config.yaml
+pulsar agent test config.yaml
 ```
 
 Запускает интерактивную сессию для тестирования агента:
@@ -131,7 +131,7 @@ Type /quit to exit
 Для моделей с поддержкой нативного tool calling (GPT-4o, Claude, Llama 3.1+):
 
 ```bash
-forge agent test config.yaml --native-tools
+pulsar agent test config.yaml --native-tools
 ```
 
 !!! info "ReAct vs Native Tool Calling"
@@ -150,7 +150,7 @@ forge agent test config.yaml --native-tools
 Запуск агента как HTTP-сервиса:
 
 ```bash
-forge agent serve config.yaml --port 8081
+pulsar agent serve config.yaml --port 8081
 ```
 
 Сервер предоставляет два эндпоинта:

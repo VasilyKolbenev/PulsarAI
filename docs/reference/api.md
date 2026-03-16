@@ -1,13 +1,13 @@
 # REST API Reference
 
-REST API llm-forge запускается через `forge ui` и доступен по умолчанию на `http://localhost:8888`. Все эндпоинты имеют префикс `/api/v1/`.
+REST API pulsar-ai запускается через `pulsar ui` и доступен по умолчанию на `http://localhost:8888`. Все эндпоинты имеют префикс `/api/v1/`.
 
 !!! info "Swagger UI"
     Интерактивная документация автоматически доступна по адресу `/docs` (Swagger UI)
     и `/redoc` (ReDoc) при запущенном сервере.
 
 !!! tip "Аутентификация"
-    Когда `FORGE_AUTH_ENABLED=true`, все запросы должны содержать заголовок
+    Когда `PULSAR_AUTH_ENABLED=true`, все запросы должны содержать заголовок
     `X-API-Key` с валидным ключом. Ключи управляются через эндпоинты Settings.
 
 ---
@@ -1597,7 +1597,7 @@ curl http://localhost:8888/api/v1/settings/keys
 ```json
 {
   "name": "ci-pipeline",
-  "key": "forge_key_xxxxxxxxxxxx",
+  "key": "pulsar_key_xxxxxxxxxxxx",
   "created_at": "2026-03-03T15:00:00Z"
 }
 ```
@@ -1700,7 +1700,7 @@ curl -X POST http://localhost:8888/api/v1/protocols/mcp/configure \
 
 ```json
 {
-  "name": "llm-forge",
+  "name": "pulsar-ai",
   "description": "Universal LLM Fine-tuning Pipeline",
   "capabilities": ["train", "eval", "export", "serve"],
   "endpoint": "http://localhost:8888/api/v1/protocols/a2a"
@@ -1969,7 +1969,7 @@ curl http://localhost:8888/api/v1/assistant/status
 
 ```json
 {
-  "message": "Что такое llm-forge?",
+  "message": "Что такое pulsar-ai?",
   "session_id": "sess_xyz"
 }
 ```
@@ -1978,7 +1978,7 @@ curl http://localhost:8888/api/v1/assistant/status
 
 ```json
 {
-  "response": "llm-forge -- это платформа для файнтюнинга LLM...",
+  "response": "pulsar-ai -- это платформа для файнтюнинга LLM...",
   "session_id": "sess_xyz"
 }
 ```
@@ -1988,7 +1988,7 @@ curl http://localhost:8888/api/v1/assistant/status
 ```bash
 curl -X POST http://localhost:8888/api/v1/site/chat \
   -H "Content-Type: application/json" \
-  -d '{"message": "Что такое llm-forge?"}'
+  -d '{"message": "Что такое pulsar-ai?"}'
 ```
 
 ### GET /api/v1/site/chat/status

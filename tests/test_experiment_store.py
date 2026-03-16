@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from llm_forge.storage.database import Database, reset_database
-from llm_forge.ui.experiment_store import ExperimentStore
+from pulsar_ai.storage.database import Database, reset_database
+from pulsar_ai.ui.experiment_store import ExperimentStore
 
 
 @pytest.fixture(autouse=True)
@@ -292,7 +292,6 @@ def test_migrate_from_json(tmp_path: Path) -> None:
 
 def test_auto_migrate_from_json(tmp_path: Path) -> None:
     """Auto-migration triggers when using the default singleton and JSON exists."""
-    import llm_forge.ui.experiment_store as mod
 
     # Write a JSON file at the default path.
     json_path = tmp_path / "data" / "experiments.json"

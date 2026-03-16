@@ -6,7 +6,7 @@ Show a stable end-to-end product narrative without relying on live model trainin
 ## One-command startup (Windows)
 
 ```powershell
-cd C:\Users\User\Desktop\llm-forge
+cd C:\Users\User\Desktop\pulsar-ai
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\start_investor_demo.ps1
 ```
 

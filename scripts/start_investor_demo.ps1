@@ -18,11 +18,11 @@ if (-not (Test-Path $EnvFile)) {
 }
 
 $env:PYTHONPATH = "src"
-$env:FORGE_ENV_FILE = (Resolve-Path $EnvFile).Path
-$env:FORGE_STAND_MODE = "demo"
-$env:FORGE_AUTH_ENABLED = "false"
-if (-not $env:FORGE_CORS_ORIGINS) {
-    $env:FORGE_CORS_ORIGINS = "http://$BindHost`:$Port"
+$env:PULSAR_ENV_FILE = (Resolve-Path $EnvFile).Path
+$env:PULSAR_STAND_MODE = "demo"
+$env:PULSAR_AUTH_ENABLED = "false"
+if (-not $env:PULSAR_CORS_ORIGINS) {
+    $env:PULSAR_CORS_ORIGINS = "http://$BindHost`:$Port"
 }
 
 Write-Host "[1/2] Bootstrapping investor demo data..."

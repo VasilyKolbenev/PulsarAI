@@ -85,15 +85,15 @@ search_space:
 
     ```bash
     # Базовый запуск
-    forge sweep configs/sft_config.yaml sweep_config.yaml
+    pulsar sweep configs/sft_config.yaml sweep_config.yaml
 
     # С параметрами
-    forge sweep configs/sft_config.yaml sweep_config.yaml \
+    pulsar sweep configs/sft_config.yaml sweep_config.yaml \
       --n-trials 20 \
       --name my-lr-search
 
     # С ограничением GPU
-    forge sweep configs/sft_config.yaml sweep_config.yaml \
+    pulsar sweep configs/sft_config.yaml sweep_config.yaml \
       --n-trials 30 \
       --name full-search \
       --gpu 0
@@ -157,13 +157,13 @@ search_space:
 
     ```bash
     # Лучшие параметры
-    forge sweep results my-lr-search
+    pulsar sweep results my-lr-search
 
     # Топ-5 испытаний
-    forge sweep results my-lr-search --top 5
+    pulsar sweep results my-lr-search --top 5
 
     # Таблица всех испытаний
-    forge sweep results my-lr-search --all
+    pulsar sweep results my-lr-search --all
     ```
 
 === "API"
@@ -180,7 +180,7 @@ search_space:
 
 ```bash
 # Автоматически подставить лучшие параметры из sweep
-forge train configs/sft_config.yaml \
+pulsar train configs/sft_config.yaml \
   --from-sweep my-lr-search
 ```
 
@@ -202,8 +202,8 @@ training:
 
     ```bash
     # Шаг 1: грубый поиск
-    forge sweep config.yaml sweep_coarse.yaml --n-trials 10 --name coarse
+    pulsar sweep config.yaml sweep_coarse.yaml --n-trials 10 --name coarse
 
     # Шаг 2: уточняющий поиск
-    forge sweep config.yaml sweep_fine.yaml --n-trials 20 --name fine
+    pulsar sweep config.yaml sweep_fine.yaml --n-trials 20 --name fine
     ```

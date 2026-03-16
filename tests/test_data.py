@@ -1,14 +1,13 @@
 """Tests for data loading, formatting, and splitting."""
 
 import json
-import tempfile
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
-from llm_forge.data.loader import load_dataset_from_config, _detect_format
-from llm_forge.data.formatter import (
+from pulsar_ai.data.loader import load_dataset_from_config, _detect_format
+from pulsar_ai.data.formatter import (
     build_chat_examples,
     load_system_prompt,
     build_dpo_pairs,
@@ -76,10 +75,12 @@ class TestBuildChatExamples:
     """Tests for chat example formatting."""
 
     def test_build_json_format(self) -> None:
-        df = pd.DataFrame({
-            "phrase": ["hello world", "test input"],
-            "domain": ["GREETING", "TEST"],
-        })
+        df = pd.DataFrame(
+            {
+                "phrase": ["hello world", "test input"],
+                "domain": ["GREETING", "TEST"],
+            }
+        )
         examples = build_chat_examples(
             df=df,
             system_prompt="You are a classifier.",
@@ -99,10 +100,12 @@ class TestBuildChatExamples:
         assert parsed["domain"] == "GREETING"
 
     def test_build_text_format(self) -> None:
-        df = pd.DataFrame({
-            "phrase": ["hello"],
-            "label": ["greet"],
-        })
+        df = pd.DataFrame(
+            {
+                "phrase": ["hello"],
+                "label": ["greet"],
+            }
+        )
         examples = build_chat_examples(
             df=df,
             system_prompt="Classify.",
@@ -113,10 +116,12 @@ class TestBuildChatExamples:
         assert examples[0]["messages"][2]["content"] == "greet"
 
     def test_build_skips_empty_text(self) -> None:
-        df = pd.DataFrame({
-            "phrase": ["hello", "", "  "],
-            "label": ["greet", "empty", "space"],
-        })
+        df = pd.DataFrame(
+            {
+                "phrase": ["hello", "", "  "],
+                "label": ["greet", "empty", "space"],
+            }
+        )
         examples = build_chat_examples(
             df=df,
             system_prompt="Classify.",
@@ -144,15 +149,19 @@ class TestBuildDpoPairs:
     """Tests for DPO pair generation."""
 
     def test_build_pairs_from_errors(self) -> None:
-        errors_df = pd.DataFrame({
-            "phrase": ["hello world"],
-            "true_domain": ["GREETING"],
-            "pred_domain": ["FAREWELL"],
-        })
-        all_data = pd.DataFrame({
-            "phrase": ["hello", "bye", "test"],
-            "domain": ["GREETING", "FAREWELL", "TEST"],
-        })
+        errors_df = pd.DataFrame(
+            {
+                "phrase": ["hello world"],
+                "true_domain": ["GREETING"],
+                "pred_domain": ["FAREWELL"],
+            }
+        )
+        all_data = pd.DataFrame(
+            {
+                "phrase": ["hello", "bye", "test"],
+                "domain": ["GREETING", "FAREWELL", "TEST"],
+            }
+        )
         pairs = build_dpo_pairs(
             errors_df=errors_df,
             all_data=all_data,
@@ -162,21 +171,22 @@ class TestBuildDpoPairs:
         )
         # Should have 1 error pair + up to 2 synthetic
         assert len(pairs) >= 1
-        assert all(
-            "prompt" in p and "chosen" in p and "rejected" in p
-            for p in pairs
-        )
+        assert all("prompt" in p and "chosen" in p and "rejected" in p for p in pairs)
 
     def test_build_pairs_chosen_differs_from_rejected(self) -> None:
-        errors_df = pd.DataFrame({
-            "phrase": ["test"],
-            "true_domain": ["A"],
-            "pred_domain": ["B"],
-        })
-        all_data = pd.DataFrame({
-            "phrase": ["x", "y", "z"],
-            "domain": ["A", "B", "C"],
-        })
+        errors_df = pd.DataFrame(
+            {
+                "phrase": ["test"],
+                "true_domain": ["A"],
+                "pred_domain": ["B"],
+            }
+        )
+        all_data = pd.DataFrame(
+            {
+                "phrase": ["x", "y", "z"],
+                "domain": ["A", "B", "C"],
+            }
+        )
         pairs = build_dpo_pairs(
             errors_df=errors_df,
             all_data=all_data,

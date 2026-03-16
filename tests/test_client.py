@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from llm_forge.agent.client import ModelClient
+from pulsar_ai.agent.client import ModelClient
 
 
 def _make_chat_response(
@@ -40,7 +40,7 @@ class TestModelClient:
         assert client.base_url == "http://my-server:9000/v1"
         assert client.model == "my-model"
 
-    @patch("llm_forge.agent.client.requests.Session.post")
+    @patch("pulsar_ai.agent.client.requests.Session.post")
     def test_chat_basic(self, mock_post: MagicMock) -> None:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -54,7 +54,7 @@ class TestModelClient:
         assert result["role"] == "assistant"
         assert "usage" in result
 
-    @patch("llm_forge.agent.client.requests.Session.post")
+    @patch("pulsar_ai.agent.client.requests.Session.post")
     def test_chat_with_tool_calls(self, mock_post: MagicMock) -> None:
         tool_calls = [
             {
@@ -66,9 +66,7 @@ class TestModelClient:
         ]
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.json.return_value = _make_chat_response(
-            content="", tool_calls=tool_calls
-        )
+        mock_response.json.return_value = _make_chat_response(content="", tool_calls=tool_calls)
         mock_post.return_value = mock_response
 
         client = ModelClient()
@@ -81,7 +79,7 @@ class TestModelClient:
         assert result["tool_calls"][0]["name"] == "search"
         assert result["tool_calls"][0]["arguments"] == {"query": "test"}
 
-    @patch("llm_forge.agent.client.requests.Session.post")
+    @patch("pulsar_ai.agent.client.requests.Session.post")
     def test_chat_api_error(self, mock_post: MagicMock) -> None:
         mock_response = MagicMock()
         mock_response.status_code = 500
@@ -92,7 +90,7 @@ class TestModelClient:
         with pytest.raises(RuntimeError, match="API error 500"):
             client.chat([{"role": "user", "content": "Hello"}])
 
-    @patch("llm_forge.agent.client.requests.Session.post")
+    @patch("pulsar_ai.agent.client.requests.Session.post")
     def test_chat_connection_error(self, mock_post: MagicMock) -> None:
         import requests
 
@@ -102,7 +100,7 @@ class TestModelClient:
         with pytest.raises(ConnectionError, match="Cannot connect"):
             client.chat([{"role": "user", "content": "Hello"}])
 
-    @patch("llm_forge.agent.client.requests.Session.get")
+    @patch("pulsar_ai.agent.client.requests.Session.get")
     def test_health_check_healthy(self, mock_get: MagicMock) -> None:
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -111,7 +109,7 @@ class TestModelClient:
         client = ModelClient()
         assert client.health_check() is True
 
-    @patch("llm_forge.agent.client.requests.Session.get")
+    @patch("pulsar_ai.agent.client.requests.Session.get")
     def test_health_check_unhealthy(self, mock_get: MagicMock) -> None:
         import requests
 

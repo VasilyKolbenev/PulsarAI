@@ -1,5 +1,5 @@
 # Example agent config — customize for your use case
-# Run: forge agent test configs/agents/example.yaml
+# Run: pulsar agent test configs/agents/example.yaml
 
 inherit:
   - agents/base
@@ -18,9 +18,9 @@ model:
 
 tools:
   - name: search_files
-    module: llm_forge.agent.builtin_tools
+    module: pulsar_ai.agent.builtin_tools
   - name: read_file
-    module: llm_forge.agent.builtin_tools
+    module: pulsar_ai.agent.builtin_tools
 
 memory:
   max_tokens: 4096

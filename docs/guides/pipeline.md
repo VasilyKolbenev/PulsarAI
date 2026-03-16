@@ -155,13 +155,13 @@ steps:
 
 ```bash
 # Запуск пайплайна
-forge pipeline run configs/pipelines/my-pipeline.yaml
+pulsar pipeline run configs/pipelines/my-pipeline.yaml
 
 # Список прошлых запусков
-forge pipeline list
+pulsar pipeline list
 
 # Фильтр по имени
-forge pipeline list --name full-pipeline
+pulsar pipeline list --name full-pipeline
 ```
 
 Вывод после успешного запуска:
@@ -385,7 +385,7 @@ steps:
 Запуск:
 
 ```bash
-forge pipeline run configs/pipelines/full-e2e.yaml
+pulsar pipeline run configs/pipelines/full-e2e.yaml
 ```
 
 !!! tip "Идемпотентность"

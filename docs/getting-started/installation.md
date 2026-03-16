@@ -1,6 +1,6 @@
 # Установка
 
-Полное руководство по установке и настройке llm-forge.
+Полное руководство по установке и настройке pulsar-ai.
 
 ---
 
@@ -40,8 +40,8 @@
 ## Клонирование репозитория
 
 ```bash
-git clone https://github.com/your-org/llm-forge.git
-cd llm-forge
+git clone https://github.com/your-org/pulsar-ai.git
+cd pulsar-ai
 ```
 
 ---
@@ -120,10 +120,10 @@ cd ..
 OPENAI_API_KEY=sk-your-key-here
 
 # Аутентификация API (опционально)
-FORGE_AUTH_ENABLED=false
+PULSAR_AUTH_ENABLED=false
 
 # CORS origins для frontend (опционально)
-FORGE_CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+PULSAR_CORS_ORIGINS=http://localhost:3000,http://localhost:5173
 
 # HuggingFace токен для gated-моделей: Llama и др. (опционально)
 HF_TOKEN=hf_your_token_here
@@ -132,8 +132,8 @@ HF_TOKEN=hf_your_token_here
 | Переменная | По умолчанию | Описание |
 |-----------|-------------|----------|
 | `OPENAI_API_KEY` | -- | Ключ для Co-pilot (LLM-режим) и Site Chat |
-| `FORGE_AUTH_ENABLED` | `false` | Включить аутентификацию API |
-| `FORGE_CORS_ORIGINS` | `localhost:3000,8888` | Разрешённые CORS origins |
+| `PULSAR_AUTH_ENABLED` | `false` | Включить аутентификацию API |
+| `PULSAR_CORS_ORIGINS` | `localhost:3000,8888` | Разрешённые CORS origins |
 | `HF_TOKEN` | -- | HuggingFace токен для gated-моделей |
 
 !!! warning "Безопасность"
@@ -147,13 +147,13 @@ HF_TOKEN=hf_your_token_here
 ### CLI
 
 ```bash
-forge info
+pulsar info
 ```
 
 Ожидаемый вывод:
 
 ```
-llm-forge v0.x.x
+pulsar-ai v0.x.x
 Python:  3.12.x
 PyTorch: 2.x.x (CUDA 12.x)
 GPU:     NVIDIA RTX 4060 (8 GB)
@@ -165,7 +165,7 @@ Extras:  ui, eval
 Запустите backend:
 
 ```bash
-forge ui
+pulsar ui
 ```
 
 В отдельном терминале:
@@ -243,7 +243,7 @@ npm install --legacy-peer-deps
 **Проверьте:**
 
 1. Backend запущен на порту 8888: `curl http://localhost:8888/api/v1/health`
-2. CORS настроен в `.env`: `FORGE_CORS_ORIGINS=http://localhost:5173`
+2. CORS настроен в `.env`: `PULSAR_CORS_ORIGINS=http://localhost:5173`
 3. Перезапустите backend после изменения `.env`
 
 ### Модель не скачивается (gated model)
@@ -264,7 +264,7 @@ HF_TOKEN=hf_your_token_here
 ### Import ошибки после установки
 
 ```
-ModuleNotFoundError: No module named 'llm_forge'
+ModuleNotFoundError: No module named 'pulsar_ai'
 ```
 
 **Решение:**

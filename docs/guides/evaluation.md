@@ -2,7 +2,7 @@
 
 ## Обзор
 
-Evaluation в llm-forge -- это автоматическая оценка качества обученной модели на тестовых данных. Система запускает batch-инференс, парсит ответы модели (JSON), сравнивает с ground truth и вычисляет метрики: accuracy, F1, JSON parse rate, confusion matrix.
+Evaluation в pulsar-ai -- это автоматическая оценка качества обученной модели на тестовых данных. Система запускает batch-инференс, парсит ответы модели (JSON), сравнивает с ground truth и вычисляет метрики: accuracy, F1, JSON parse rate, confusion matrix.
 
 ---
 
@@ -12,12 +12,12 @@ Evaluation в llm-forge -- это автоматическая оценка ка
 
     ```bash
     # Базовый запуск
-    forge eval \
+    pulsar eval \
       --model ./outputs/cam-sft/lora \
       --test-data data/test.csv
 
     # С указанием конфига и выходной директории
-    forge eval \
+    pulsar eval \
       --model ./outputs/cam-sft/lora \
       --test-data data/test.csv \
       --config configs/tasks/eval.yaml \
@@ -48,7 +48,7 @@ Evaluation в llm-forge -- это автоматическая оценка ка
 === "Скрипт"
 
     ```python
-    from llm_forge.evaluation.runner import run_evaluation
+    from pulsar_ai.evaluation.runner import run_evaluation
 
     config = {
         "model_path": "./outputs/cam-sft/lora",
@@ -131,7 +131,7 @@ Evaluation в llm-forge -- это автоматическая оценка ка
 
 ## LLM-as-Judge
 
-Помимо автоматических метрик, llm-forge поддерживает оценку с помощью другой LLM (LLM-as-Judge). Судья оценивает ответы по нескольким критериям:
+Помимо автоматических метрик, pulsar-ai поддерживает оценку с помощью другой LLM (LLM-as-Judge). Судья оценивает ответы по нескольким критериям:
 
 | Критерий | Описание | Шкала |
 |---|---|---|
@@ -143,7 +143,7 @@ Evaluation в llm-forge -- это автоматическая оценка ка
 Пример использования:
 
 ```python
-from llm_forge.evaluation.llm_judge import LLMJudge, JudgeCriterion
+from pulsar_ai.evaluation.llm_judge import LLMJudge, JudgeCriterion
 
 # Инициализация с кастомными критериями
 judge = LLMJudge(criteria=[
@@ -216,7 +216,7 @@ outputs/eval/
 === "CLI"
 
     ```bash
-    forge runs compare run_abc123 run_def456 run_ghi789
+    pulsar runs compare run_abc123 run_def456 run_ghi789
     ```
 
     Выводит таблицу с отличиями конфигов и метрик side-by-side.
