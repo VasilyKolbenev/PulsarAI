@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { Layout } from "@/components/layout/Layout"
 import { Landing } from "@/pages/Landing"
+import { Login } from "@/pages/Login"
+import { AuthProvider } from "@/components/AuthProvider"
 import { ToastContainer } from "@/components/ui/Toast"
 import { lazy, Suspense } from "react"
 
@@ -27,6 +29,7 @@ import { Settings } from "@/pages/Settings"
 export default function App() {
   return (
     <BrowserRouter>
+      <AuthProvider>
       <ToastContainer />
       <Suspense
         fallback={
@@ -37,6 +40,7 @@ export default function App() {
       >
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/new" element={<NewExperiment />} />
@@ -51,6 +55,7 @@ export default function App() {
           </Route>
         </Routes>
       </Suspense>
+      </AuthProvider>
     </BrowserRouter>
   )
 }

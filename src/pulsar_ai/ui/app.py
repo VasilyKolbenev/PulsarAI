@@ -18,7 +18,13 @@ from slowapi import Limiter
 from slowapi.middleware import SlowAPIMiddleware
 from slowapi.util import get_remote_address
 
-from pulsar_ai.ui.auth import ApiKeyMiddleware, ApiKeyStore, DemoModeMiddleware
+from pulsar_ai.ui.auth import (
+    ApiKeyMiddleware,
+    ApiKeyStore,
+    DemoModeMiddleware,
+    JWTAuthMiddleware,
+)
+from pulsar_ai.ui.auth_routes import router as auth_router
 from pulsar_ai.ui.routes import training, datasets, experiments, evaluation
 from pulsar_ai.ui.routes import export_routes, hardware
 from pulsar_ai.ui.assistant import router as assistant_router
@@ -33,6 +39,7 @@ from pulsar_ai.ui.routes.serving import router as serving_router
 from pulsar_ai.ui.routes.protocols import router as protocols_router
 from pulsar_ai.ui.routes.pipeline_run import router as pipeline_run_router
 from pulsar_ai.ui.routes.site_chat import router as site_chat_router
+from pulsar_ai.ui.prometheus import router as prometheus_router
 
 _env_file = os.environ.get("PULSAR_ENV_FILE", "").strip()
 if _env_file:
@@ -48,6 +55,10 @@ STATIC_DIR = Path(__file__).parent / "static"
 @asynccontextmanager
 async def _lifespan(app: FastAPI):  # noqa: ARG001
     """FastAPI lifespan: startup and shutdown hooks."""
+    # Initialize structured logging
+    from pulsar_ai.logging_config import setup_logging
+
+    setup_logging()
     logger.info("Pulsar AI backend starting up")
     yield
     logger.info("Pulsar AI backend shutting down, cleaning up...")
@@ -86,11 +97,21 @@ def create_app() -> FastAPI:
         allow_headers=["Content-Type", "Authorization"],
     )
 
-    # API key authentication (opt-in via PULSAR_AUTH_ENABLED=true)
+    # Authentication (opt-in via PULSAR_AUTH_ENABLED=true)
     auth_enabled = os.environ.get("PULSAR_AUTH_ENABLED", "false").lower() == "true"
     key_store = ApiKeyStore()
     if auth_enabled:
+        # Validate JWT secret is set
+        jwt_secret = os.environ.get("PULSAR_JWT_SECRET", "").strip()
+        if not jwt_secret:
+            logger.warning(
+                "PULSAR_JWT_SECRET not set — using random secret. "
+                "Tokens will be invalidated on restart."
+            )
+        # API key fallback (checked after JWT)
         app.add_middleware(ApiKeyMiddleware, key_store=key_store, enabled=True)
+        # JWT auth (checked first — sets request.state.user)
+        app.add_middleware(JWTAuthMiddleware, enabled=True)
         if not key_store.list_keys():
             initial_key = key_store.generate_key("default")
             logger.warning(
@@ -112,7 +133,11 @@ def create_app() -> FastAPI:
     app.state.limiter = limiter
     app.add_middleware(SlowAPIMiddleware)
 
+    # Prometheus metrics (no prefix — standard /metrics path)
+    app.include_router(prometheus_router)
+
     # API routes
+    app.include_router(auth_router, prefix="/api/v1")
     app.include_router(training.router, prefix="/api/v1")
     app.include_router(datasets.router, prefix="/api/v1")
     app.include_router(experiments.router, prefix="/api/v1")

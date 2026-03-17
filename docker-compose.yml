@@ -1,14 +1,58 @@
 services:
-  pulsar:
+  app:
     build: .
+    expose:
+      - "8888"
     ports:
       - "${PULSAR_PORT:-8888}:8888"
     volumes:
       - pulsar-data:/app/data
     environment:
-      - PULSAR_CORS_ORIGINS=${PULSAR_CORS_ORIGINS:-http://localhost:8888}
+      - PULSAR_CORS_ORIGINS=${PULSAR_CORS_ORIGINS:-https://localhost}
       - PULSAR_AUTH_ENABLED=${PULSAR_AUTH_ENABLED:-false}
+      - PULSAR_JWT_SECRET=${PULSAR_JWT_SECRET:-}
+      - PULSAR_DB_URL=${PULSAR_DB_URL:-}
+      - PULSAR_REDIS_URL=${PULSAR_REDIS_URL:-}
+      - PULSAR_LOG_LEVEL=${PULSAR_LOG_LEVEL:-INFO}
+      - PULSAR_LOG_FORMAT=${PULSAR_LOG_FORMAT:-json}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
     restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  # Optional: uncomment to enable Redis job queue
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   restart: unless-stopped
+
+  # Optional: uncomment to enable PostgreSQL
+  # postgres:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     POSTGRES_DB: pulsar
+  #     POSTGRES_USER: pulsar
+  #     POSTGRES_PASSWORD: ${PULSAR_PG_PASSWORD:-changeme}
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - pg-data:/var/lib/postgresql/data
+  #   restart: unless-stopped
 
 volumes:
   pulsar-data:
+  # redis-data:
+  # pg-data:

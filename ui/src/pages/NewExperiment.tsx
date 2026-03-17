@@ -2,19 +2,13 @@ import { useState, useEffect } from "react"
 import { api } from "@/api/client"
 import { useSSE } from "@/hooks/useSSE"
 import { LossChart } from "@/components/training/LossChart"
-
-const MODELS = [
-  "Qwen/Qwen2.5-3B-Instruct",
-  "Qwen/Qwen2.5-1.5B-Instruct",
-  "meta-llama/Llama-3.2-1B-Instruct",
-  "mistralai/Mistral-7B-Instruct-v0.3",
-]
+import { ModelSelector } from "@/components/ui/ModelSelector"
 
 export function NewExperiment() {
   const [step, setStep] = useState(0)
   const [name, setName] = useState("")
   const [task, setTask] = useState("sft")
-  const [model, setModel] = useState(MODELS[0])
+  const [model, setModel] = useState("Qwen/Qwen2.5-3B-Instruct")
   const [datasetId, setDatasetId] = useState("")
   const [datasetPath, setDatasetPath] = useState("")
   const [lr, setLr] = useState("2e-4")
@@ -104,15 +98,7 @@ export function NewExperiment() {
             </select>
           </Field>
           <Field label="Base Model">
-            <select
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              className="w-full bg-input border border-border rounded-md px-3 py-2 text-sm"
-            >
-              {MODELS.map((m) => (
-                <option key={m} value={m}>{m}</option>
-              ))}
-            </select>
+            <ModelSelector value={model} onChange={setModel} />
           </Field>
           <button
             onClick={() => setStep(1)}

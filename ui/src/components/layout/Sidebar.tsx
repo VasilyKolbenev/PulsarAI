@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import {
   LayoutDashboard,
   FlaskConical,
@@ -10,10 +10,13 @@ import {
   Server,
   Workflow,
   FileText,
+  LogOut,
+  User,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ResourceBar } from "@/components/metrics/ResourceBar"
 import { useMetrics } from "@/hooks/useMetrics"
+import { useAuth } from "@/lib/auth"
 
 const links = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -30,6 +33,13 @@ const links = [
 
 export function Sidebar() {
   const { current, connected } = useMetrics()
+  const { user, isAuthenticated, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate("/login")
+  }
 
   return (
     <aside className="w-56 shrink-0 border-r border-border bg-card flex flex-col">
@@ -65,6 +75,24 @@ export function Sidebar() {
       <div className="border-t border-border pt-2 pb-2">
         <ResourceBar metrics={current} connected={connected} />
       </div>
+      {isAuthenticated && user && (
+        <div className="border-t border-border px-3 py-2.5 flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+            <User size={14} className="text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium truncate">{user.name || user.email}</p>
+            <p className="text-[10px] text-muted-foreground truncate">{user.role}</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="text-muted-foreground hover:text-foreground transition-colors p-1"
+            title="Logout"
+          >
+            <LogOut size={14} />
+          </button>
+        </div>
+      )}
     </aside>
   )
 }

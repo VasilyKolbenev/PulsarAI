@@ -32,8 +32,8 @@ outputs/
 *.pt
 *.pth
 
-# Data
-data/
+# Data (root-level only, not src/pulsar_ai/data/)
+/data/
 *.csv
 *.jsonl
 *.parquet
@@ -66,4 +66,19 @@ node_modules/
 .env.*.local
 .env.demo
 .env.prod-ready
+
+# Internal docs (not for public repo)
+00 Daily/
+AGENTS.md
+WORKLOG*.md
+PRESENTATION.md
+docs/CLAUDE_CODE_*.md
+docs/INVESTOR_DEMO.md
+docs/MULTI_AGENT_OPERATING_MODEL.md
+docs/STANDS.md
+docs/TASK_PACKETS.md
+docs/superpowers/
+
+# Site previews
+site/logo-preview.html
 

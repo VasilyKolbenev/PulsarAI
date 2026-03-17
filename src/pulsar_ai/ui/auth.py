@@ -1,8 +1,9 @@
-"""API key authentication and security middleware for Pulsar AI UI.
+"""API key and JWT authentication middleware for Pulsar AI UI.
 
 Provides:
 - ApiKeyStore: SQLite-backed hashed key storage with audit trail
 - ApiKeyMiddleware: FastAPI middleware for Bearer token auth
+- JWTAuthMiddleware: JWT-based user authentication
 - DemoModeMiddleware: Read-only mode for investor demos
 
 Enable auth via PULSAR_AUTH_ENABLED=true.
@@ -20,6 +21,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
 from pulsar_ai.storage.database import Database, get_database
+from pulsar_ai.ui.jwt_utils import verify_token
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +29,9 @@ logger = logging.getLogger(__name__)
 PUBLIC_PATHS = frozenset(
     {
         "/api/v1/health",
+        "/api/v1/auth/login",
+        "/api/v1/auth/register",
+        "/api/v1/auth/refresh",
         "/docs",
         "/openapi.json",
         "/redoc",
@@ -187,10 +192,54 @@ class ApiKeyStore:
         return cursor.rowcount > 0
 
 
+class JWTAuthMiddleware(BaseHTTPMiddleware):
+    """FastAPI middleware for JWT-based user authentication.
+
+    Validates ``Authorization: Bearer <jwt>`` headers for API routes.
+    On success, attaches user info to ``request.state.user``.
+    Falls through to ``ApiKeyMiddleware`` if token is not a valid JWT.
+
+    Args:
+        app: FastAPI/Starlette application.
+        enabled: Whether JWT auth is active.
+    """
+
+    def __init__(self, app, enabled: bool = True):
+        super().__init__(app)
+        self.enabled = enabled
+
+    async def dispatch(self, request: Request, call_next):
+        """Attempt JWT auth, set request.state.user on success."""
+        if not self.enabled:
+            return await call_next(request)
+
+        path = request.url.path
+
+        # Skip for public endpoints and non-API routes
+        if path in PUBLIC_PATHS or not path.startswith("/api/"):
+            return await call_next(request)
+
+        auth = request.headers.get("Authorization", "")
+        if auth.startswith("Bearer "):
+            token = auth[7:]
+            payload = verify_token(token, expected_type="access")
+            if payload:
+                # Attach user info for downstream routes
+                request.state.user = {
+                    "id": payload["sub"],
+                    "email": payload.get("email", ""),
+                    "role": payload.get("role", "user"),
+                }
+
+        # Always pass through — ApiKeyMiddleware handles fallback auth
+        return await call_next(request)
+
+
 class ApiKeyMiddleware(BaseHTTPMiddleware):
     """FastAPI middleware that validates Authorization: Bearer tokens.
 
     Skips authentication for public paths and non-API routes (static files).
+    Also skips if JWTAuthMiddleware already authenticated the user.
     Can be disabled entirely via the enabled flag.
 
     Args:
@@ -217,6 +266,10 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
 
         # Skip auth for non-API routes (static files, frontend)
         if not path.startswith("/api/"):
+            return await call_next(request)
+
+        # Skip if JWT middleware already authenticated
+        if getattr(request.state, "user", None):
             return await call_next(request)
 
         ip = request.client.host if request.client else ""

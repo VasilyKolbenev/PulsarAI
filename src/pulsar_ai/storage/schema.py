@@ -8,7 +8,7 @@ Schema version is tracked in ``_schema_meta`` so future migrations
 can inspect the current version before applying ALTER TABLE / new tables.
 """
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 BOOTSTRAP_SQL = """
 -- ── Meta ────────────────────────────────────────────────────────────
@@ -160,6 +160,20 @@ CREATE TABLE IF NOT EXISTS assistant_sessions (
     updated_at      TEXT NOT NULL,
     ttl_hours       INTEGER DEFAULT 24
 );
+
+-- ── Users ────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS users (
+    id              TEXT PRIMARY KEY,
+    email           TEXT NOT NULL UNIQUE,
+    password_hash   TEXT NOT NULL,
+    name            TEXT DEFAULT '',
+    role            TEXT NOT NULL DEFAULT 'user',
+    is_active       INTEGER DEFAULT 1,
+    created_at      TEXT NOT NULL,
+    last_login_at   TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
 -- ── API Key Events (audit trail) ──────────────────────────────────
 CREATE TABLE IF NOT EXISTS api_key_events (

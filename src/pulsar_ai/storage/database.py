@@ -194,21 +194,30 @@ class Database:
 def get_database(db_path: Path | None = None) -> Database:
     """Return the module-level ``Database`` singleton.
 
-    Thread-safe.  The first call creates the instance and bootstraps the
-    schema; subsequent calls return the same object.
+    Thread-safe.  Supports PostgreSQL via ``PULSAR_DB_URL`` env var.
+    When set to a ``postgresql://`` URL, returns a PostgresDatabase.
 
     Args:
-        db_path: Override path (only effective on the first call).
+        db_path: Override path (only effective on first call, SQLite only).
 
     Returns:
-        ``Database`` instance.
+        Database instance (SQLite or PostgreSQL).
     """
+    import os
+
     global _instance
     if _instance is not None:
         return _instance
     with _instance_lock:
         if _instance is None:
-            _instance = Database(db_path)
+            db_url = os.environ.get("PULSAR_DB_URL", "").strip()
+            if db_url.startswith(("postgresql://", "postgres://")):
+                from pulsar_ai.storage.postgres import PostgresDatabase
+
+                _instance = PostgresDatabase(db_url)  # type: ignore[assignment]
+                logger.info("Using PostgreSQL backend")
+            else:
+                _instance = Database(db_path)
     return _instance
 
 
